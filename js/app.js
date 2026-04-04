@@ -2,7 +2,7 @@
  * App Controller — Theme, i18n, export, UI binding.
  */
 
-let _history = null, _floor = null, _expResults = null, _currentMode = 'sim';
+let _history = null, _floor = null, _expResults = null;
 
 /* ================================================================
    Theme management
@@ -131,9 +131,9 @@ function readExpConfig() {
   if (c('exp-k3')) knowledgeConfigs.push({ bias: 0.50, noise: 0.40, anchor: 0.6, label: t('know.severe') });
   if (!knowledgeConfigs.length) knowledgeConfigs.push({ bias: 0.30, noise: 0.25, anchor: 0.4, label: t('know.moderate') });
   return { nValues, riskConfigs, knowledgeConfigs, baseParams: {
-    T: v('exp-T'), expectedDiv: v('exp-div'), initialCash: 1000, initialShares: 5,
-    expNoise: 0.05, inexpAnchor: 0.4, momentum: 0.2, communication: false,
-    alphaSteps: v('exp-steps'), replications: v('exp-reps'), bubbleThreshold: v('exp-threshold') / 100, seed: v('exp-seed'),
+    T: v('p-T'), expectedDiv: v('p-div'), initialCash: v('p-cash'), initialShares: v('p-shares'),
+    expNoise: 0.05, inexpAnchor: v('p-anchor') / 100, momentum: v('p-momentum') / 100, communication: false,
+    alphaSteps: v('exp-steps'), replications: v('exp-reps'), bubbleThreshold: v('exp-threshold') / 100, seed: v('p-seed'),
   }};
 }
 
@@ -276,6 +276,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_history) { renderAllCharts(_history); renderLog(_history); }
   });
 
+  // Nav tabs (Experiment / Architecture / Glossary)
+  document.querySelectorAll('.nav-tab').forEach(tab => tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    const target = document.getElementById('tab-' + tab.dataset.tab);
+    if (target) target.classList.add('active');
+  }));
+
   // Hamburger
   const hamburger = document.getElementById('nav-hamburger');
   const navMenu = document.getElementById('nav-menu');
@@ -288,13 +297,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sidebar-toggle').addEventListener('click', () => { sidebar.classList.toggle('open'); backdrop.classList.toggle('visible'); });
   backdrop.addEventListener('click', () => { sidebar.classList.remove('open'); backdrop.classList.remove('visible'); });
 
-  // Mode tabs
-  document.querySelectorAll('.mode-tab').forEach(tab => tab.addEventListener('click', () => {
-    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active'); _currentMode = tab.dataset.mode;
-    document.getElementById('sim-params').style.display = _currentMode === 'sim' ? 'block' : 'none';
-    document.getElementById('exp-params').style.display = _currentMode === 'exp' ? 'block' : 'none';
-  }));
+  // Draw.io link
+  (function setupDrawio() {
+    const btn = document.getElementById('btn-drawio');
+    if (btn) {
+      const base = window.location.href.replace(/\/[^/]*$/, '/');
+      btn.href = 'https://app.diagrams.net/#U' + encodeURIComponent(base + 'architecture.drawio');
+    }
+  })();
 
   // View toggle
   document.querySelectorAll('.view-btn').forEach(btn => btn.addEventListener('click', () => {
@@ -314,17 +324,48 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inp && val) inp.addEventListener('input', () => { val.textContent = (iid === 'exp-threshold' ? (+inp.value / 100).toFixed(2) : inp.value) + suf; });
   });
 
-  // Tri-sliders
-  const sliders = document.querySelectorAll('.tri-slider[data-group="risk"]');
-  sliders.forEach(s => s.addEventListener('input', () => {
-    const vals = Array.from(sliders).map(el => +el.value);
-    if (vals.reduce((a, b) => a + b, 0) > 100) {
-      const other = Array.from(sliders).find(el => el !== s);
-      other.value = Math.max(0, +other.value - (vals.reduce((a, b) => a + b, 0) - 100));
+  // Risk composition — linked sliders + comp-bar
+  function updateCompBar() {
+    const rl = +document.getElementById('p-rl').value;
+    const rn = +document.getElementById('p-rn').value;
+    const ra = +document.getElementById('p-ra').value;
+    const bar = document.getElementById('comp-bar');
+    if (bar) {
+      bar.children[0].style.flex = rl || 0.001;
+      bar.children[1].style.flex = rn || 0.001;
+      bar.children[2].style.flex = ra || 0.001;
+      bar.children[0].querySelector('span').textContent = rl + '%';
+      bar.children[1].querySelector('span').textContent = rn + '%';
+      bar.children[2].querySelector('span').textContent = ra + '%';
     }
-    sliders.forEach(el => { document.getElementById('v-' + el.id.replace('p-', '')).textContent = el.value + '%'; });
-    document.getElementById('v-ra').textContent = Math.max(0, 100 - Array.from(sliders).reduce((a, el) => a + (+el.value), 0)) + '%';
-  }));
+    document.getElementById('v-rl').textContent = rl + '%';
+    document.getElementById('v-rn').textContent = rn + '%';
+    document.getElementById('v-ra').textContent = ra + '%';
+  }
+  function constrainRisk(changedId) {
+    const ids = ['p-rl', 'p-rn', 'p-ra'];
+    const els = ids.map(id => document.getElementById(id));
+    const ci = ids.indexOf(changedId);
+    const cv = +els[ci].value;
+    const oi = ids.map((_, i) => i).filter(i => i !== ci);
+    const others = oi.map(i => +els[i].value);
+    const otherSum = others[0] + others[1];
+    const remaining = 100 - cv;
+    if (otherSum > 0) {
+      const r0 = Math.round(others[0] / otherSum * remaining);
+      els[oi[0]].value = r0;
+      els[oi[1]].value = remaining - r0;
+    } else {
+      const half = Math.round(remaining / 2);
+      els[oi[0]].value = half;
+      els[oi[1]].value = remaining - half;
+    }
+    updateCompBar();
+  }
+  ['p-rl', 'p-rn', 'p-ra'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => constrainRisk(id));
+  });
+  updateCompBar();
 
   // Game controls
   document.getElementById('btn-play').addEventListener('click', () => { if (_floor && _floor.paused) _floor.togglePause(); else if (_history) initGame(_history); });

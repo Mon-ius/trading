@@ -12,14 +12,20 @@ const CHART_COLORS = {
   experienced: '#007AFF', inexperienced: '#FF3B30',
 };
 
-const CHART_LAYOUT = {
-  font: { family: "-apple-system, 'SF Pro Text', 'Inter', sans-serif", size: 11 },
-  margin: { t: 40, r: 24, b: 44, l: 54 },
-  paper_bgcolor: 'transparent',
-  plot_bgcolor: 'transparent',
-  xaxis: { gridcolor: 'rgba(0,0,0,0.06)', zerolinecolor: 'rgba(0,0,0,0.1)' },
-  yaxis: { gridcolor: 'rgba(0,0,0,0.06)', zerolinecolor: 'rgba(0,0,0,0.1)' },
-};
+function _chartLayout() {
+  const dark = typeof _isDark === 'function' && _isDark();
+  return {
+    font: { family: "-apple-system, 'SF Pro Text', 'Inter', sans-serif", size: 11,
+      color: dark ? '#8b949e' : '#6b7080' },
+    margin: { t: 8, r: 24, b: 44, l: 54 },
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: dark ? '#0d1117' : '#fafbfc',
+    xaxis: { gridcolor: dark ? '#1e242e' : '#eef0f3', zerolinecolor: dark ? '#3d4450' : '#c0c4cc' },
+    yaxis: { gridcolor: dark ? '#1e242e' : '#eef0f3', zerolinecolor: dark ? '#3d4450' : '#c0c4cc' },
+    autosize: true,
+  };
+}
+const CHART_LAYOUT = _chartLayout();
 const PC = { responsive: true, displayModeBar: false };
 
 /* ================================================================
@@ -38,11 +44,11 @@ function renderPriceChart(id, history) {
     { x: periods, y: history.volumes, type: 'bar', name: 'Volume', yaxis: 'y2',
       marker: { color: 'rgba(0,122,255,0.12)' } },
   ];
+  const L = _chartLayout();
   Plotly.newPlot(id, traces, {
-    ...CHART_LAYOUT,
-    title: { text: t('chart.price'), font: { size: 13, weight: 600 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'Period' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: 'Price / FV' },
+    ...L,
+    xaxis: { ...L.xaxis, title: 'Period' },
+    yaxis: { ...L.yaxis, title: 'Price / FV' },
     yaxis2: { overlaying: 'y', side: 'right', showgrid: false, title: 'Volume',
       range: [0, Math.max(1, ...history.volumes) * 4] },
     legend: { x: 0, y: 1.15, orientation: 'h' }, showlegend: true,
@@ -60,14 +66,13 @@ function renderSpreadChart(id, history) {
       fillcolor: 'rgba(255,59,48,0.06)' },
     { x: periods, y: history.spreads, type: 'scatter', mode: 'lines',
       name: 'Spread', line: { color: CHART_COLORS.purple, width: 1, dash: 'dot' }, yaxis: 'y2' },
-  ], {
-    ...CHART_LAYOUT,
-    title: { text: t('chart.orderbook'), font: { size: 13, weight: 600 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'Period' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: 'Price' },
+  ], (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: 'Period' },
+    yaxis: { ...L.yaxis, title: 'Price' },
     yaxis2: { overlaying: 'y', side: 'right', showgrid: false, title: 'Spread' },
     legend: { x: 0, y: 1.15, orientation: 'h' },
-  }, PC);
+  }; })(), PC);
 }
 
 /** P&L Distribution by experience type */
@@ -79,13 +84,12 @@ function renderPnLChart(id, agents) {
     marker: { color: CHART_COLORS.experienced }, opacity: 0.7, nbinsx: 12 });
   if (inexp.length) traces.push({ x: inexp.map(a => a.totalPnL), type: 'histogram', name: 'Inexperienced',
     marker: { color: CHART_COLORS.inexperienced }, opacity: 0.7, nbinsx: 12 });
-  Plotly.newPlot(id, traces, {
-    ...CHART_LAYOUT,
-    title: { text: t('chart.pnl'), font: { size: 13, weight: 600 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'P&L' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: 'Count' },
+  Plotly.newPlot(id, traces, (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: 'P&L' },
+    yaxis: { ...L.yaxis, title: 'Count' },
     barmode: 'overlay', legend: { x: 0, y: 1.15, orientation: 'h' },
-  }, PC);
+  }; })(), PC);
 }
 
 /** Bubble Deviation — bar chart of (price - FV)/FV per period */
@@ -98,13 +102,12 @@ function renderBubbleChart(id, history) {
       marker: { color: devs.map(d => d > 0 ? 'rgba(255,59,48,0.6)' : 'rgba(52,199,89,0.6)') } },
     { x: [1, periods.length], y: [0, 0], type: 'scatter', mode: 'lines',
       line: { color: 'rgba(0,0,0,0.3)', width: 1, dash: 'dash' }, showlegend: false },
-  ], {
-    ...CHART_LAYOUT,
-    title: { text: t('chart.bubble'), font: { size: 13, weight: 600 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'Period' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: 'Deviation from FV (%)' },
+  ], (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: 'Period' },
+    yaxis: { ...L.yaxis, title: 'Deviation from FV (%)' },
     showlegend: false,
-  }, PC);
+  }; })(), PC);
 }
 
 /** Belief trajectories — experienced vs inexperienced */
@@ -132,13 +135,12 @@ function renderBeliefChart(id, history) {
     traces.push({ x: fvs.map((_, i) => i + 1), y: fvs, type: 'scatter', mode: 'lines',
       name: 'Fundamental', line: { color: CHART_COLORS.fv, width: 2.5, dash: 'dash' } });
   }
-  Plotly.newPlot(id, traces, {
-    ...CHART_LAYOUT,
-    title: { text: t('chart.beliefs'), font: { size: 13, weight: 600 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'Period' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: 'Belief / FV' },
+  Plotly.newPlot(id, traces, (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: 'Period' },
+    yaxis: { ...L.yaxis, title: 'Belief / FV' },
     legend: { x: 1.02, y: 1, font: { size: 9 } },
-  }, PC);
+  }; })(), PC);
 }
 
 /** Volume + lies per round */
@@ -154,14 +156,13 @@ function renderVolumeChart(id, history) {
     x: periods, y: lies, type: 'scatter', mode: 'lines+markers', name: 'Lies',
     line: { color: CHART_COLORS.red, width: 2 }, marker: { size: 4 }, yaxis: 'y2',
   });
-  Plotly.newPlot(id, traces, {
-    ...CHART_LAYOUT,
-    title: { text: t('chart.volume'), font: { size: 13, weight: 600 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'Period' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: 'Trades' },
+  Plotly.newPlot(id, traces, (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: 'Period' },
+    yaxis: { ...L.yaxis, title: 'Trades' },
     yaxis2: hasComm ? { overlaying: 'y', side: 'right', showgrid: false, title: 'Lies' } : undefined,
     legend: { x: 0, y: 1.15, orientation: 'h' },
-  }, PC);
+  }; })(), PC);
 }
 
 function renderAllCharts(history) {
@@ -195,14 +196,13 @@ function renderAlphaSweep(id, sweep, alphaStar, threshold) {
       type: 'scatter', mode: 'lines',
       name: `\u03b1* = ${(alphaStar * 100).toFixed(0)}%`,
       line: { color: CHART_COLORS.red, width: 2, dash: 'dashdot' } },
-  ], {
-    ...CHART_LAYOUT,
-    title: { text: '\u03b1 Sweep: Bubble Metrics vs Experienced Fraction', font: { size: 13, weight: 600 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: '\u03b1 — Experienced Fraction (%)' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: 'NAPD / Amplitude' },
+  ], (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: '\u03b1 — Experienced Fraction (%)' },
+    yaxis: { ...L.yaxis, title: 'NAPD / Amplitude' },
     yaxis2: { overlaying: 'y', side: 'right', showgrid: false, title: 'Haessel-R\u00b2', range: [0, 1.1] },
     legend: { x: 0, y: 1.18, orientation: 'h' },
-  }, PC);
+  }; })(), PC);
 }
 
 /** Alpha* vs N — main result chart */
@@ -221,13 +221,12 @@ function renderAlphaVsN(id, experimentResults) {
     x: g.ns, y: g.alphas, type: 'scatter', mode: 'lines+markers',
     name: g.label, line: { color: colors[i % colors.length], width: 2 }, marker: { size: 6 },
   }));
-  Plotly.newPlot(id, traces, {
-    ...CHART_LAYOUT,
-    title: { text: '\u03b1* vs Market Size (n)', font: { size: 14, weight: 700 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'Number of Agents (n)', type: 'log' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: '\u03b1* — Critical Experienced Fraction (%)', range: [0, 105] },
+  Plotly.newPlot(id, traces, (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: 'Number of Agents (n)', type: 'log' },
+    yaxis: { ...L.yaxis, title: '\u03b1* — Critical Experienced Fraction (%)', range: [0, 105] },
     legend: { x: 1.02, y: 1, font: { size: 9 } },
-  }, PC);
+  }; })(), PC);
 }
 
 /** Alpha* heatmap — risk × knowledge */
@@ -261,12 +260,11 @@ function renderAlphaHeatmap(id, experimentResults, fixedN) {
     text: z.map(row => row.map(v => v != null ? v.toFixed(0) + '%' : '')),
     texttemplate: '%{text}',
     hovertemplate: '%{x}<br>%{y}<br>\u03b1* = %{z:.1f}%<extra></extra>',
-  }], {
-    ...CHART_LAYOUT,
-    title: { text: `\u03b1* Heatmap (n=${fixedN || 'all'})`, font: { size: 14, weight: 700 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'Risk Composition' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: 'Knowledge Level' },
-  }, PC);
+  }], (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: 'Risk Composition' },
+    yaxis: { ...L.yaxis, title: 'Knowledge Level' },
+  }; })(), PC);
 }
 
 /** Alpha* vs risk composition (grouped bar) */
@@ -285,11 +283,10 @@ function renderAlphaVsRisk(id, experimentResults, fixedN) {
     type: 'bar', name: label,
     marker: { color: colors[i % colors.length], opacity: 0.8 },
   }));
-  Plotly.newPlot(id, traces, {
-    ...CHART_LAYOUT,
-    title: { text: `\u03b1* vs Risk Composition (n=${fixedN || 'all'})`, font: { size: 13, weight: 600 } },
-    xaxis: { ...CHART_LAYOUT.xaxis, title: 'Risk Composition' },
-    yaxis: { ...CHART_LAYOUT.yaxis, title: '\u03b1* (%)', range: [0, 105] },
+  Plotly.newPlot(id, traces, (() => { const L = _chartLayout(); return {
+    ...L,
+    xaxis: { ...L.xaxis, title: 'Risk Composition' },
+    yaxis: { ...L.yaxis, title: '\u03b1* (%)', range: [0, 105] },
     barmode: 'group', legend: { x: 0, y: 1.15, orientation: 'h' },
-  }, PC);
+  }; })(), PC);
 }

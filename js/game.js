@@ -231,24 +231,50 @@ class TradingFloor {
 
   _setupInput() {
     const cv = this.canvas;
-    let drag = false, lx, ly;
-    cv.addEventListener('pointerdown', e => {
-      drag = true; lx = e.clientX; ly = e.clientY;
-      this._camFollow = false;
+    let dragging = false, dragSX, dragSY, dragOX, dragOY, lastPinch = 0;
+
+    // Mouse drag
+    cv.addEventListener('mousedown', e => {
+      dragging = true; dragSX = e.clientX; dragSY = e.clientY;
+      dragOX = this._camX; dragOY = this._camY;
+      cv.style.cursor = 'grabbing'; this._camFollow = false;
     });
-    cv.addEventListener('pointermove', e => {
-      if (!drag) return;
-      this._camX -= (e.clientX - lx) / this._camZoom;
-      this._camY -= (e.clientY - ly) / this._camZoom;
-      lx = e.clientX; ly = e.clientY;
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      this._camX = dragOX - (e.clientX - dragSX) / this._camZoom;
+      this._camY = dragOY - (e.clientY - dragSY) / this._camZoom;
     });
-    cv.addEventListener('pointerup', () => drag = false);
-    cv.addEventListener('pointerleave', () => drag = false);
+    window.addEventListener('mouseup', () => { if (dragging) { dragging = false; cv.style.cursor = 'grab'; } });
+
+    // Touch: single-finger drag, two-finger pinch zoom
+    cv.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) {
+        dragging = true; dragSX = e.touches[0].clientX; dragSY = e.touches[0].clientY;
+        dragOX = this._camX; dragOY = this._camY; this._camFollow = false;
+      } else if (e.touches.length === 2) {
+        dragging = false;
+        lastPinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      }
+    }, { passive: true });
+    cv.addEventListener('touchmove', e => {
+      if (e.touches.length === 1 && dragging) {
+        this._camX = dragOX - (e.touches[0].clientX - dragSX) / this._camZoom;
+        this._camY = dragOY - (e.touches[0].clientY - dragSY) / this._camZoom;
+      } else if (e.touches.length === 2 && lastPinch > 0) {
+        const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        this._camZoom = clamp(this._camZoom * (dist / lastPinch), 0.3, 5);
+        lastPinch = dist;
+      }
+    }, { passive: true });
+    cv.addEventListener('touchend', () => { dragging = false; lastPinch = 0; }, { passive: true });
+
+    // Scroll wheel zoom (non-passive to prevent page scroll)
     cv.addEventListener('wheel', e => {
       e.preventDefault();
-      const dz = e.deltaY > 0 ? 0.9 : 1.1;
-      this._camZoom = clamp(this._camZoom * dz, 0.3, 4);
+      this._camZoom = clamp(this._camZoom * (e.deltaY > 0 ? 0.9 : 1.1), 0.3, 5);
     }, { passive: false });
+
+    cv.style.cursor = 'grab';
   }
 
   _resize() {
@@ -609,15 +635,25 @@ class TradingFloor {
       this._roundNum = r + 1;
       const rd = rounds[r];
 
-      // Communication phase (if any)
+      // Communication phase — agents visit Comm Lounge
       if (rd.messages && rd.messages.length > 0) {
+        this._arrangeIn('comm', this.sprites, true);
+        this._focusBuilding('comm');
         this._log('round', `Round ${r + 1}: Communication`);
+        await this._wait(Math.round(600 * stepScale));
+
+        // Show speech bubbles with lie/truth signals
         for (const msg of rd.messages) {
           const sp = this.sprites[msg.senderId];
           const label = msg.isLie ? 'LIE' : 'TRUTH';
-          sp.bubble = { text: `$${msg.message.toFixed(0)} ${label}`, alpha: 1.5, isLie: msg.isLie };
+          sp.bubble = { text: `$${msg.message.toFixed(0)} ${label}`, alpha: 2.0, isLie: msg.isLie };
         }
         await this._wait(Math.round(1200 * stepScale));
+
+        // Move back to trading pit
+        this._arrangeIn('pit', this.sprites, true);
+        this._focusBuilding('pit');
+        await this._wait(Math.round(400 * stepScale));
       }
 
       // Trading round
