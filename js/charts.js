@@ -148,9 +148,10 @@ function renderVolumeChart(id, history) {
   const periods = history.volumes.map((_, i) => i + 1);
   const lies = history.rounds.map(r => r.messages ? r.messages.filter(m => m.isLie).length : 0);
   const hasComm = lies.some(l => l > 0);
+  const maxVol = Math.max(1, ...history.volumes);
   const traces = [
-    { x: periods, y: history.volumes, type: 'bar', name: t('chart.volume'),
-      marker: { color: 'rgba(0,122,255,0.75)' } },
+    { x: periods, y: history.volumes, type: 'bar', name: 'Volume',
+      marker: { color: CHART_COLORS.blue }, opacity: 0.8 },
   ];
   if (hasComm) traces.push({
     x: periods, y: lies, type: 'scatter', mode: 'lines+markers', name: 'Lies',
@@ -159,7 +160,7 @@ function renderVolumeChart(id, history) {
   Plotly.newPlot(id, traces, (() => { const L = _chartLayout(); return {
     ...L,
     xaxis: { ...L.xaxis, title: 'Period' },
-    yaxis: { ...L.yaxis, title: 'Trades' },
+    yaxis: { ...L.yaxis, title: 'Trades', range: [0, maxVol * 1.15], dtick: maxVol > 10 ? undefined : 1 },
     yaxis2: hasComm ? { overlaying: 'y', side: 'right', showgrid: false, title: 'Lies' } : undefined,
     legend: { x: 0, y: 1.15, orientation: 'h' },
   }; })(), PC);

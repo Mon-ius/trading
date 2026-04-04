@@ -335,6 +335,7 @@ body {
   display: flex; align-items: center; gap: 6px;
 }
 .chart-title .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.chart-card .js-plotly-plot { width: 100%; border-radius: var(--radius-sm); }
 .chart-note {
   font-size: .64rem; line-height: 1.65; color: var(--fg-3);
   margin: 0; padding: 8px 8px 0; border-top: 1px solid var(--border); margin-top: 8px;
