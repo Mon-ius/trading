@@ -21,6 +21,7 @@ class Sprite {
   constructor(id, name, infoType, riskType, x, y) {
     this.id = id;
     this.name = name;
+    this.displayName = `${id + 1}.${name}`;
     this.infoType = infoType;
     this.riskType = riskType;
     this.x = x; this.y = y;
@@ -52,15 +53,15 @@ class Sprite {
     }
   }
 
-  draw(ctx, sc) {
+  draw(ctx, sc, isDark) {
     const r = 10 * sc;
     const { x, y } = this;
+    const fgMain = isDark ? '#e6edf3' : '#1a1d23';
+    const fgSub = isDark ? '#8b949e' : '#6b7080';
 
-    // Body
-    const colors = {
-      informed: '#007AFF', partial: '#FF9500', uninformed: '#FF3B30',
-    };
-    ctx.fillStyle = colors[this.infoType] || '#8E8E93';
+    // Body circle — color by experience type
+    const expType = this.agent ? this.agent.expType : this.infoType;
+    ctx.fillStyle = expType === 'experienced' ? '#2563eb' : '#dc2626';
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -82,20 +83,29 @@ class Sprite {
     ctx.fill();
     ctx.beginPath();
     ctx.arc(x, y + 2 * sc, 3 * sc, 0, Math.PI);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1 * sc;
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1 * sc;
     ctx.stroke();
 
-    // Name label
-    ctx.fillStyle = '#1d1d1f';
-    ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
+    // Name label — numbered: "1.Ada"
+    // Background pill for readability
+    const nameText = this.displayName;
+    ctx.font = `600 ${7 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'center';
-    ctx.fillText(this.name, x, y + r + 10 * sc);
+    const tw = ctx.measureText(nameText).width + 6 * sc;
+    const ny = y + r + 10 * sc;
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.8)' : 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.roundRect(x - tw / 2, ny - 7 * sc, tw, 9 * sc, 3 * sc);
+    ctx.fill();
+    ctx.fillStyle = fgMain;
+    ctx.fillText(nameText, x, ny);
 
-    // Info type label
-    ctx.fillStyle = '#6e6e73';
-    ctx.font = `500 ${6 * sc}px -apple-system, sans-serif`;
-    ctx.fillText(this.label || this.infoType, x, y + r + 18 * sc);
+    // Sub label (risk type or status)
+    if (this.label) {
+      ctx.fillStyle = fgSub;
+      ctx.font = `500 ${5.5 * sc}px -apple-system, sans-serif`;
+      ctx.fillText(this.label, x, ny + 8 * sc);
+    }
 
     // P&L flash
     if (this.pnlFlash) {
@@ -210,9 +220,11 @@ class TradingFloor {
   _initSprites() {
     const agents = this.history.agents;
     for (const a of agents) {
-      const sp = new Sprite(a.id, a.name, a.infoType, a.riskType, 0, 0);
+      const expType = a.expType || a.infoType;
+      const sp = new Sprite(a.id, a.name, expType, a.riskType, 0, 0);
       sp.agent = a;
-      sp.label = t('info.' + a.infoType);
+      sp.displayName = a.displayName || `${a.id + 1}.${a.name}`;
+      sp.label = expType === 'experienced' ? t('info.experienced') : t('info.inexperienced');
       this.sprites.push(sp);
     }
   }
@@ -328,7 +340,8 @@ class TradingFloor {
 
     // Draw sprites
     const sc = this._scale;
-    for (const sp of this.sprites) sp.draw(ctx, sc);
+    const isDark = typeof _isDark === 'function' && _isDark();
+    for (const sp of this.sprites) sp.draw(ctx, sc, isDark);
 
     // Draw in-world price chart
     this._drawPriceDisplay(ctx);
@@ -365,7 +378,8 @@ class TradingFloor {
       ctx.roundRect(x, y, b.w, 28, [12, 12, 0, 0]);
       ctx.fill();
 
-      ctx.fillStyle = '#1d1d1f';
+      const isDk = typeof _isDark === 'function' && _isDark();
+      ctx.fillStyle = isDk ? '#e6edf3' : '#1a1d23';
       ctx.font = `700 ${11 * sc}px -apple-system, sans-serif`;
       ctx.textAlign = 'left';
       ctx.fillText(t(b.label), x + 10, y + 18);
