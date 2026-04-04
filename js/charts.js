@@ -150,7 +150,7 @@ function renderVolumeChart(id, history) {
   const hasComm = lies.some(l => l > 0);
   const traces = [
     { x: periods, y: history.volumes, type: 'bar', name: t('chart.volume'),
-      marker: { color: CHART_COLORS.blue, opacity: 0.7 } },
+      marker: { color: 'rgba(0,122,255,0.75)' } },
   ];
   if (hasComm) traces.push({
     x: periods, y: lies, type: 'scatter', mode: 'lines+markers', name: 'Lies',

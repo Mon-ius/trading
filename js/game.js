@@ -243,11 +243,13 @@ class TradingFloor {
       dragging = true; dragSX = e.clientX; dragSY = e.clientY;
       dragOX = this._camX; dragOY = this._camY;
       cv.style.cursor = 'grabbing'; this._camFollow = false;
+      this._ensureDrawing();
     });
     window.addEventListener('mousemove', e => {
       if (!dragging) return;
       this._camX = dragOX - (e.clientX - dragSX) / this._camZoom;
       this._camY = dragOY - (e.clientY - dragSY) / this._camZoom;
+      this._ensureDrawing();
     });
     window.addEventListener('mouseup', () => { if (dragging) { dragging = false; cv.style.cursor = 'grab'; } });
 
@@ -255,6 +257,7 @@ class TradingFloor {
       if (e.touches.length === 1) {
         dragging = true; dragSX = e.touches[0].clientX; dragSY = e.touches[0].clientY;
         dragOX = this._camX; dragOY = this._camY; this._camFollow = false;
+        this._ensureDrawing();
       } else if (e.touches.length === 2) {
         dragging = false;
         lastPinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
@@ -264,6 +267,7 @@ class TradingFloor {
       if (e.touches.length === 1 && dragging) {
         this._camX = dragOX - (e.touches[0].clientX - dragSX) / this._camZoom;
         this._camY = dragOY - (e.touches[0].clientY - dragSY) / this._camZoom;
+        this._ensureDrawing();
       } else if (e.touches.length === 2 && lastPinch > 0) {
         const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         this._camZoom = clamp(this._camZoom * (dist / lastPinch), 0.3, 5);
@@ -275,6 +279,7 @@ class TradingFloor {
     cv.addEventListener('wheel', e => {
       e.preventDefault();
       this._camZoom = clamp(this._camZoom * (e.deltaY > 0 ? 0.9 : 1.1), 0.3, 5);
+      this._ensureDrawing();
     }, { passive: false });
 
     cv.style.cursor = 'grab';
@@ -643,6 +648,16 @@ class TradingFloor {
     ctx.font = `700 ${9 * sc}px monospace`;
     ctx.textAlign = 'center';
     ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', x + w / 2, y + 44);
+  }
+
+  /* ---- Ensure canvas redraws on interaction (even after game ends) ---- */
+  _ensureDrawing() {
+    if (this.running) return;           // loop already active
+    if (this._idleFrame) return;        // already scheduled
+    this._idleFrame = requestAnimationFrame(() => {
+      this._idleFrame = null;
+      this._draw();
+    });
   }
 
   /* ---- Animation loop ---- */

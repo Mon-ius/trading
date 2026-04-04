@@ -289,18 +289,58 @@
           <div class="summary-card"><div class="sc-label" data-i18n="sc.pnlInexp">Avg P&amp;L (Inexp)</div><div class="sc-value" id="sc-pnl-inexp">-</div></div>
         </div>
         <div id="sim-charts" class="chart-grid">
-          <div class="chart-card"><h4 class="chart-title" data-i18n="chart.price">Price vs Fundamental Value</h4><div id="chart-price"></div></div>
-          <div class="chart-card"><h4 class="chart-title" data-i18n="chart.orderbook">Bid-Ask Spread</h4><div id="chart-spread"></div></div>
-          <div class="chart-card"><h4 class="chart-title" data-i18n="chart.pnl">P&amp;L Distribution</h4><div id="chart-pnl"></div></div>
-          <div class="chart-card"><h4 class="chart-title" data-i18n="chart.bubble">Price Deviation from FV</h4><div id="chart-bubble"></div></div>
-          <div class="chart-card"><h4 class="chart-title" data-i18n="chart.beliefs">Belief Convergence</h4><div id="chart-beliefs"></div></div>
-          <div class="chart-card"><h4 class="chart-title" data-i18n="chart.volume">Trading Volume</h4><div id="chart-volume"></div></div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--accent)"></span> <span data-i18n="chart.price">Fig. 1 &mdash; Price vs Fundamental Value</span></h4>
+            <div id="chart-price"></div>
+            <p class="chart-note"><strong>Note.</strong> Market clearing price (blue) against declining FV (green dashed). Volume as background bars. Core visualization from DLM (2005) Figure 1. Prices above FV indicate bubble; below indicate underpricing.</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--teal)"></span> <span data-i18n="chart.orderbook">Fig. 2 &mdash; Bid-Ask Spread</span></h4>
+            <div id="chart-spread"></div>
+            <p class="chart-note"><strong>Note.</strong> Best bid (green) and best ask (red) with shaded spread region. Purple dotted line shows absolute spread. Narrower spreads indicate better price discovery and higher liquidity.</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--purple)"></span> <span data-i18n="chart.pnl">Fig. 3 &mdash; P&amp;L Distribution</span></h4>
+            <div id="chart-pnl"></div>
+            <p class="chart-note"><strong>Note.</strong> Final profit-and-loss histogram: experienced (blue) vs inexperienced (red). In bubble markets, experienced agents typically profit at inexperienced agents' expense (DLM &sect;II p.1735).</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> <span data-i18n="chart.bubble">Fig. 4 &mdash; Price Deviation from FV</span></h4>
+            <div id="chart-bubble"></div>
+            <p class="chart-note"><strong>Note.</strong> Per-period percentage deviation (P&minus;FV)/FV. Red bars = overpricing (bubble), green = underpricing. Feeds into NAPD = &Sigma;|P&minus;FV|/(T&times;FV&#x2080;) metric (DLM &sect;II p.1733&ndash;1734).</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--amber)"></span> <span data-i18n="chart.beliefs">Fig. 5 &mdash; Belief Convergence</span></h4>
+            <div id="chart-beliefs"></div>
+            <p class="chart-note"><strong>Note.</strong> Sampled agent belief trajectories. Experienced agents (solid) track FV; inexperienced (dotted) may diverge due to bias and anchoring. Convergence indicates information aggregation.</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--green)"></span> <span data-i18n="chart.volume">Fig. 6 &mdash; Trading Volume</span></h4>
+            <div id="chart-volume"></div>
+            <p class="chart-note"><strong>Note.</strong> Number of executed trades per period. Higher volume in early periods reflects more disagreement about value. DLM &sect;II p.1735 notes marginally significant turnover increase in mixed-experience markets.</p>
+          </div>
         </div>
         <div id="exp-charts" class="chart-grid" style="display:none">
-          <div class="chart-card chart-wide"><h4 class="chart-title">&alpha; Sweep: Bubble Metrics</h4><div id="chart-alpha-sweep"></div></div>
-          <div class="chart-card chart-wide"><h4 class="chart-title">&alpha;* vs Market Size (n)</h4><div id="chart-alpha-n"></div></div>
-          <div class="chart-card"><h4 class="chart-title">&alpha;* Heatmap</h4><div id="chart-alpha-heatmap"></div></div>
-          <div class="chart-card"><h4 class="chart-title">&alpha;* vs Risk</h4><div id="chart-alpha-risk"></div></div>
+          <div class="chart-card chart-wide">
+            <h4 class="chart-title"><span class="dot" style="background:var(--accent)"></span> Fig. 7 &mdash; &alpha; Sweep: Bubble Metrics</h4>
+            <div id="chart-alpha-sweep"></div>
+            <p class="chart-note"><strong>Note.</strong> NAPD (blue), amplitude (orange), and Haessel-R&sup2; (green) vs experienced fraction &alpha;. Red vertical line = &alpha;* where NAPD drops below threshold.</p>
+          </div>
+          <div class="chart-card chart-wide">
+            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> Fig. 8 &mdash; &alpha;* vs Market Size (n)</h4>
+            <div id="chart-alpha-n"></div>
+            <p class="chart-note"><strong>Note.</strong> Main result: how &alpha;* varies with market size. Each line = a (risk, knowledge) configuration. Key finding: &alpha;* = f(n, risk, knowledge).</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--amber)"></span> Fig. 9 &mdash; &alpha;* Heatmap</h4>
+            <div id="chart-alpha-heatmap"></div>
+            <p class="chart-note"><strong>Note.</strong> Risk &times; knowledge matrix. Green = low &alpha;* (easy to suppress), red = high &alpha;* (stubborn bubbles).</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--purple)"></span> Fig. 10 &mdash; &alpha;* vs Risk Composition</h4>
+            <div id="chart-alpha-risk"></div>
+            <p class="chart-note"><strong>Note.</strong> Grouped bar chart comparing &alpha;* across risk distributions. More risk-loving agents &rarr; higher &alpha;* needed.</p>
+          </div>
         </div>
         <div id="exp-table-wrap" style="display:none">
           <h3 class="table-title">&alpha;* Results</h3>
@@ -591,6 +631,22 @@
                 <p data-i18n="pd.alpharisk.d">Grouped bar chart comparing &alpha;* across risk distributions for each knowledge level. Reveals how risk-loving populations affect bubble persistence.</p>
               </div>
             </div>
+          </div>
+
+          <!-- Source Papers -->
+          <div class="gloss-section">
+            <h3>Source Papers</h3>
+            <table class="gloss-table">
+              <thead><tr><th style="width:30%">Reference</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="term">DLM (2005)</td><td>Dufwenberg, M., Lindqvist, T. &amp; Moore, E. &ldquo;Bubbles and Experience: An Experiment.&rdquo; <em>American Economic Review</em>, 95(5), pp.&thinsp;1731&ndash;1737. Core paper: shows &frac13; experienced traders sufficient to suppress bubbles in laboratory CDA markets.</td></tr>
+                <tr><td class="term">SSW (1988)</td><td>Smith, V.L., Suchanek, G.L. &amp; Williams, A.W. &ldquo;Bubbles, Crashes, and Endogenous Expectations in Experimental Spot Asset Markets.&rdquo; <em>Econometrica</em>, 56(5), pp.&thinsp;1119&ndash;1151. Foundational paper on asset market bubbles with declining fundamental value.</td></tr>
+                <tr><td class="term">Haessel (1978)</td><td>Haessel, W.W. &ldquo;Measuring Goodness of Fit in Linear and Nonlinear Models.&rdquo; <em>Southern Economic Journal</em>, 44(3), pp.&thinsp;648&ndash;652. Defines Haessel-R&sup2; used to measure price-FV tracking quality.</td></tr>
+                <tr><td class="term">King et al. (1993)</td><td>King, R.R., Smith, V.L., Williams, A.W. &amp; Van Boening, M.V. &ldquo;The Robustness of Bubbles and Crashes in Experimental Stock Markets.&rdquo; In Chen, P. (ed.), <em>Nonlinear Dynamics and Evolutionary Economics</em>, pp.&thinsp;183&ndash;200. Bubble measures: NAPD, amplitude.</td></tr>
+                <tr><td class="term">Choi et al. (2025)</td><td>Choi, S., Lee, J. &amp; Lim, W. (2025). Strategic communication with lying and deception costs. Defines augmented utility EU<sup>a</sup> = material &minus; c<sub>l</sub>&middot;lie &minus; c<sub>d</sub>&middot;deception. Used in the Communication panel.</td></tr>
+                <tr><td class="term">Smith (1962)</td><td>Smith, V.L. &ldquo;An Experimental Study of Competitive Market Behavior.&rdquo; <em>Journal of Political Economy</em>, 70(2), pp.&thinsp;111&ndash;137. Pioneering work on CDA market mechanism.</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div><!-- /tab-glossary -->
