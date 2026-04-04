@@ -145,10 +145,10 @@ body {
 .sidebar {
   background: var(--bg-1); border-right: 1px solid var(--border);
   padding: 20px 18px 30px; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  display: flex; flex-direction: column; gap: 6px;
   max-height: calc(100vh - 52px); max-height: calc(100dvh - 52px);
   position: sticky; top: 52px;
 }
+.sidebar > * + * { margin-top: 6px; }
 
 /* Mode tabs (sim/exp) */
 .mode-tabs {
@@ -163,7 +163,7 @@ body {
 .mode-tab.active { background: var(--accent); color: #fff; }
 
 /* Panels */
-.panel { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0; }
+.panel { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
 .panel-header {
   display: flex; align-items: center; gap: 8px; padding: 8px 12px;
   background: var(--bg-2); cursor: pointer; user-select: none;
@@ -197,12 +197,11 @@ body {
   font-size: .7rem; color: var(--fg-1); margin-bottom: 5px; gap: 6px;
 }
 .panel-body label > span:first-child { flex-shrink: 0; min-width: 65px; font-weight: 500; }
-.panel-body input[type="number"], .panel-body .text-input {
-  width: 70px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px;
+.panel-body .text-input {
+  width: 100%; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px;
   background: var(--bg-2); color: var(--fg-0); font-family: var(--font-mono);
-  font-size: .66rem; text-align: right;
+  font-size: .66rem; text-align: left;
 }
-.panel-body .text-input { width: 100%; text-align: left; }
 .range-wrap {
   display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0;
 }
@@ -237,13 +236,13 @@ body {
 
 /* Panel divider */
 .panel-divider {
-  height: 1px; background: var(--border); margin: 10px 0; flex-shrink: 0;
+  height: 1px; background: var(--border); margin: 10px 0;
 }
 
 /* Primary button — sticky at bottom of sidebar scroll */
 .btn-primary {
   display: block; width: 100%; padding: 10px; margin-top: 8px;
-  border: none; border-radius: var(--radius-sm); flex-shrink: 0;
+  border: none; border-radius: var(--radius-sm);
   background: var(--accent); color: #fff; font-family: var(--font-sans);
   font-size: .74rem; font-weight: 700; cursor: pointer;
   transition: all .2s var(--ease); letter-spacing: .02em;
@@ -256,7 +255,7 @@ body {
 /* Secondary button */
 .btn-secondary {
   display: block; width: 100%; padding: 10px; margin-top: 8px;
-  border: 1px solid var(--accent); border-radius: var(--radius-sm); flex-shrink: 0;
+  border: 1px solid var(--accent); border-radius: var(--radius-sm);
   background: transparent; color: var(--accent); font-family: var(--font-sans);
   font-size: .74rem; font-weight: 700; cursor: pointer;
   transition: all .2s var(--ease); letter-spacing: .02em;

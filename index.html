@@ -53,17 +53,23 @@
           <span class="icon">&#x1F4B0;</span><h3 data-i18n="grp.asset">Asset &amp; Market</h3><span class="chevron">&#x25BC;</span>
         </div>
         <div class="panel-body">
-          <label><span data-i18n="p.periods">Periods (T)</span><input type="number" id="p-T" value="15" min="3" max="50"></label>
+          <label><span data-i18n="p.periods">Periods (T)</span>
+            <div class="range-wrap"><input type="range" id="p-T" value="15" min="3" max="50"><span class="range-val" id="v-T">15</span></div></label>
           <div class="form-hint">Asset lifespan. Each period: agents trade, then a stochastic dividend is paid. FV declines by E[d] each period (DLM &sect;I p.1732)</div>
-          <label><span data-i18n="p.div">E[dividend]</span><input type="number" id="p-div" value="8" min="1" max="100"></label>
+          <label><span data-i18n="p.div">E[dividend]</span>
+            <div class="range-wrap"><input type="range" id="p-div" value="8" min="1" max="100"><span class="range-val" id="v-div">8</span></div></label>
           <div class="form-hint">Expected per-period dividend. Each period pays 0 or 2&times;E[d] with equal probability. FV(0) = T&times;E[d] (DLM fn.5)</div>
-          <label><span data-i18n="p.agents">Agents (n)</span><input type="number" id="p-n" value="20" min="2" max="128"></label>
+          <label><span data-i18n="p.agents">Agents (n)</span>
+            <div class="range-wrap"><input type="range" id="p-n" value="20" min="2" max="128"><span class="range-val" id="v-n">20</span></div></label>
           <div class="form-hint">Population size. Original experiment: n=6. Larger n &rarr; more liquid market, different &alpha;* threshold</div>
-          <label><span data-i18n="p.cash">Initial Cash</span><input type="number" id="p-cash" value="1000" min="100" max="100000" step="100"></label>
+          <label><span data-i18n="p.cash">Initial Cash</span>
+            <div class="range-wrap"><input type="range" id="p-cash" value="1000" min="100" max="10000" step="100"><span class="range-val" id="v-cash">1000</span></div></label>
           <div class="form-hint">Starting cash endowment per agent. Constrains maximum bid prices and total market liquidity</div>
-          <label><span data-i18n="p.shares">Init Shares</span><input type="number" id="p-shares" value="5" min="1" max="50"></label>
+          <label><span data-i18n="p.shares">Init Shares</span>
+            <div class="range-wrap"><input type="range" id="p-shares" value="5" min="1" max="50"><span class="range-val" id="v-shares">5</span></div></label>
           <div class="form-hint">Starting shares per agent. Total supply = n &times; shares. Shares become worthless at period T (FV(T)=0)</div>
-          <label><span data-i18n="p.seed">Seed</span><input type="number" id="p-seed" value="42" min="0" max="9999"></label>
+          <label><span data-i18n="p.seed">Seed</span>
+            <div class="range-wrap"><input type="range" id="p-seed" value="42" min="0" max="9999"><span class="range-val" id="v-seed">42</span></div></label>
           <div class="form-hint">PRNG seed for reproducibility. Controls dividend draws, risk coefficients, belief noise, and order shuffling</div>
         </div>
       </div>
@@ -220,9 +226,11 @@
         <div class="panel-body">
           <label><span>n values</span><input type="text" id="exp-n" value="6,10,20,40,80" class="text-input"></label>
           <div class="form-hint">Comma-separated market sizes. Experiment finds &alpha;* for each n. Original experiment: n=6 (DLM &sect;I p.1732)</div>
-          <label><span data-i18n="p.steps">Alpha steps</span><input type="number" id="exp-steps" value="20" min="5" max="50"></label>
+          <label><span data-i18n="p.steps">Alpha steps</span>
+            <div class="range-wrap"><input type="range" id="exp-steps" value="20" min="5" max="50"><span class="range-val" id="v-exp-steps">20</span></div></label>
           <div class="form-hint">Resolution of &alpha; sweep: tests &alpha; = 0%, 5%, 10%, ... 100%. More steps &rarr; finer &alpha;* precision, slower</div>
-          <label><span data-i18n="p.reps">Replications</span><input type="number" id="exp-reps" value="15" min="3" max="100"></label>
+          <label><span data-i18n="p.reps">Replications</span>
+            <div class="range-wrap"><input type="range" id="exp-reps" value="15" min="3" max="100"><span class="range-val" id="v-exp-reps">15</span></div></label>
           <div class="form-hint">Monte Carlo replications per &alpha; value. Each uses a different seed. More reps &rarr; smoother curves, more robust &alpha;*</div>
           <label><span data-i18n="p.threshold">Threshold</span>
             <div class="range-wrap"><input type="range" id="exp-threshold" value="15" min="1" max="50"><span class="range-val" id="v-threshold">0.15</span></div></label>

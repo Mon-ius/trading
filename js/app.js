@@ -393,12 +393,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (view === 'chart' && _floor) { _floor.stop(); _floor = null; }
   }));
 
-  // Range displays
-  [['p-alpha','v-alpha','%'],['p-bias','v-bias','%'],['p-noise','v-noise','%'],
-   ['p-anchor','v-anchor','%'],['p-momentum','v-momentum','%'],['p-cl','v-cl',''],['p-cd','v-cd',''],
-   ['exp-threshold','v-threshold','']].forEach(([iid, vid, suf]) => {
-    const inp = document.getElementById(iid), val = document.getElementById(vid);
-    if (inp && val) inp.addEventListener('input', () => { val.textContent = (iid === 'exp-threshold' ? (+inp.value / 100).toFixed(2) : inp.value) + suf; });
+  // Range displays — auto-sync all sliders
+  document.querySelectorAll('.sidebar input[type=range]').forEach(inp => {
+    const vid = inp.id.startsWith('exp-') ? 'v-' + inp.id : 'v-' + inp.id.slice(2);
+    const ve = document.getElementById(vid);
+    if (!ve) return;
+    const upd = () => {
+      if (['p-alpha','p-bias','p-noise','p-anchor','p-momentum','p-rl','p-rn','p-ra'].includes(inp.id))
+        ve.textContent = inp.value + '%';
+      else if (inp.id === 'exp-threshold')
+        ve.textContent = (+inp.value / 100).toFixed(2);
+      else if (['p-cl','p-cd'].includes(inp.id))
+        ve.textContent = parseFloat(inp.value).toFixed(1);
+      else
+        ve.textContent = inp.value;
+    };
+    inp.addEventListener('input', upd);
+    upd();
   });
 
   // Risk composition — linked sliders + comp-bar
@@ -457,4 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-experiment').addEventListener('click', runExperimentUI);
 
   fullI18N();
+
+  // Auto-run simulation on load
+  setTimeout(() => runSingleMarket(), 200);
 });
