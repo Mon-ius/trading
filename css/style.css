@@ -291,6 +291,73 @@ body {
   color: var(--fg-1);
 }
 
+/* Mode tabs */
+.mode-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-2);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  margin-bottom: 12px;
+}
+.mode-tab {
+  flex: 1;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg-2);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mode-tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Text input for experiment */
+.text-input {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-2);
+  color: var(--fg-1);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+}
+
+/* Progress bar */
+.progress-bar {
+  margin-top: 8px;
+  height: 20px;
+  background: var(--bg-2);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #5AC8FA);
+  border-radius: 10px;
+  transition: width 0.2s ease;
+  width: 0%;
+}
+.progress-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--fg-1);
+}
+
 /* Charts */
 .chart-grid {
   display: grid;
@@ -305,6 +372,46 @@ body {
   min-height: 280px;
   box-shadow: var(--shadow-sm);
 }
+.chart-wide {
+  grid-column: 1 / -1;
+}
+
+/* Results table */
+.table-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  margin: 16px 0 8px;
+}
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.68rem;
+  font-family: var(--font-sans);
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.results-table th {
+  background: var(--bg-2);
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-2);
+  border-bottom: 1px solid var(--border);
+}
+.results-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+}
+.results-table tr:last-child td { border-bottom: none; }
+.results-table tr:hover { background: var(--bg-2); }
 
 /* Game */
 .game-container {

@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Market Microstructure Simulator</title>
+  <title>Market Microstructure — Bubbles &amp; Experience</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 <body>
   <div class="app">
-    <!-- Header -->
     <header class="app-header">
       <div class="header-left">
         <h1 id="app-title">Market Microstructure</h1>
-        <span class="header-sub" id="app-subtitle">Information, Bubbles &amp; Strategic Communication</span>
+        <span class="header-sub" id="app-subtitle">Bubbles, Experience &amp; Strategic Communication</span>
       </div>
       <div class="header-right">
         <div class="lang-switch">
@@ -25,128 +24,198 @@
     </header>
 
     <div class="app-body">
-      <!-- Sidebar -->
       <aside class="sidebar" id="sidebar">
         <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
 
-        <!-- Market -->
-        <div class="param-group">
-          <h3 data-i18n="grp.market">Market</h3>
-          <label><span data-i18n="p.trueValue">True Value</span>
-            <input type="number" id="p-true-value" value="100" min="1" max="10000" step="1">
-          </label>
-          <label><span data-i18n="p.agents">Agents</span>
-            <input type="number" id="p-n" value="20" min="2" max="128" step="1">
-          </label>
-          <label><span data-i18n="p.rounds">Rounds</span>
-            <input type="number" id="p-rounds" value="20" min="1" max="200" step="1">
-          </label>
-          <label><span data-i18n="p.seed">Seed</span>
-            <input type="number" id="p-seed" value="42" min="0" max="9999" step="1">
-          </label>
+        <!-- Mode tabs -->
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="sim">Simulation</button>
+          <button class="mode-tab" data-mode="exp">Experiment</button>
         </div>
 
-        <!-- Information -->
-        <div class="param-group">
-          <h3 data-i18n="grp.info">Information</h3>
-          <label>
-            <span data-i18n="p.informed">Informed</span>
-            <div class="range-wrap">
-              <input type="range" id="p-informed" value="30" min="0" max="100" step="1" class="tri-slider" data-group="info">
-              <span class="range-val" id="v-informed">30%</span>
-            </div>
-          </label>
-          <label>
-            <span data-i18n="p.partial">Partial</span>
-            <div class="range-wrap">
-              <input type="range" id="p-partial" value="40" min="0" max="100" step="1" class="tri-slider" data-group="info">
-              <span class="range-val" id="v-partial">40%</span>
-            </div>
-          </label>
-          <label>
-            <span data-i18n="p.uninformed">Uninformed</span>
-            <div class="range-wrap">
-              <span class="range-val computed" id="v-uninformed">30%</span>
-            </div>
-          </label>
+        <!-- ===== Simulation params ===== -->
+        <div id="sim-params">
+          <div class="param-group">
+            <h3>Asset</h3>
+            <label><span>Periods (T)</span>
+              <input type="number" id="p-T" value="15" min="3" max="50" step="1">
+            </label>
+            <label><span>E[dividend]</span>
+              <input type="number" id="p-div" value="8" min="1" max="100" step="1">
+            </label>
+            <label><span>Agents (n)</span>
+              <input type="number" id="p-n" value="20" min="2" max="128" step="1">
+            </label>
+            <label><span>Initial Cash</span>
+              <input type="number" id="p-cash" value="1000" min="100" max="100000" step="100">
+            </label>
+            <label><span>Initial Shares</span>
+              <input type="number" id="p-shares" value="5" min="1" max="50" step="1">
+            </label>
+            <label><span>Seed</span>
+              <input type="number" id="p-seed" value="42" min="0" max="9999" step="1">
+            </label>
+          </div>
+
+          <div class="param-group">
+            <h3>Experience (alpha)</h3>
+            <label>
+              <span>Experienced %</span>
+              <div class="range-wrap">
+                <input type="range" id="p-alpha" value="33" min="0" max="100" step="1">
+                <span class="range-val" id="v-alpha">33%</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="param-group">
+            <h3>Inexperienced Behavior</h3>
+            <label>
+              <span>Optimism Bias</span>
+              <div class="range-wrap">
+                <input type="range" id="p-bias" value="30" min="0" max="100" step="1">
+                <span class="range-val" id="v-bias">30%</span>
+              </div>
+            </label>
+            <label>
+              <span>Noise</span>
+              <div class="range-wrap">
+                <input type="range" id="p-noise" value="25" min="0" max="80" step="1">
+                <span class="range-val" id="v-noise">25%</span>
+              </div>
+            </label>
+            <label>
+              <span>FV Anchoring</span>
+              <div class="range-wrap">
+                <input type="range" id="p-anchor" value="40" min="0" max="100" step="1">
+                <span class="range-val" id="v-anchor">40%</span>
+              </div>
+            </label>
+            <label>
+              <span>Momentum</span>
+              <div class="range-wrap">
+                <input type="range" id="p-momentum" value="20" min="0" max="100" step="1">
+                <span class="range-val" id="v-momentum">20%</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="param-group">
+            <h3>Risk Preferences</h3>
+            <label>
+              <span>Risk-Loving</span>
+              <div class="range-wrap">
+                <input type="range" id="p-rl" value="33" min="0" max="100" step="1" class="tri-slider" data-group="risk">
+                <span class="range-val" id="v-rl">33%</span>
+              </div>
+            </label>
+            <label>
+              <span>Risk-Neutral</span>
+              <div class="range-wrap">
+                <input type="range" id="p-rn" value="34" min="0" max="100" step="1" class="tri-slider" data-group="risk">
+                <span class="range-val" id="v-rn">34%</span>
+              </div>
+            </label>
+            <label>
+              <span>Risk-Averse</span>
+              <div class="range-wrap">
+                <span class="range-val computed" id="v-ra">33%</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="param-group">
+            <h3>Communication</h3>
+            <label class="checkbox-label">
+              <input type="checkbox" id="p-comm">
+              <span>Enable Strategic Talk</span>
+            </label>
+            <label>
+              <span>Lying Cost &mu;</span>
+              <div class="range-wrap">
+                <input type="range" id="p-cl" value="0" min="-3" max="3" step="0.1">
+                <span class="range-val" id="v-cl">0</span>
+              </div>
+            </label>
+            <label>
+              <span>Deception Cost &mu;</span>
+              <div class="range-wrap">
+                <input type="range" id="p-cd" value="0" min="-3" max="3" step="0.1">
+                <span class="range-val" id="v-cd">0</span>
+              </div>
+            </label>
+          </div>
+
+          <button id="btn-run" class="btn-primary">Run Market</button>
         </div>
 
-        <!-- Risk -->
-        <div class="param-group">
-          <h3 data-i18n="grp.risk">Risk Preferences</h3>
-          <label>
-            <span data-i18n="p.rl">Risk-Loving</span>
-            <div class="range-wrap">
-              <input type="range" id="p-rl" value="33" min="0" max="100" step="1" class="tri-slider" data-group="risk">
-              <span class="range-val" id="v-rl">33%</span>
-            </div>
-          </label>
-          <label>
-            <span data-i18n="p.rn">Risk-Neutral</span>
-            <div class="range-wrap">
-              <input type="range" id="p-rn" value="34" min="0" max="100" step="1" class="tri-slider" data-group="risk">
-              <span class="range-val" id="v-rn">34%</span>
-            </div>
-          </label>
-          <label>
-            <span data-i18n="p.ra">Risk-Averse</span>
-            <div class="range-wrap">
-              <span class="range-val computed" id="v-ra">33%</span>
-            </div>
-          </label>
-        </div>
+        <!-- ===== Experiment params ===== -->
+        <div id="exp-params" style="display:none">
+          <div class="param-group">
+            <h3>Experiment Grid</h3>
+            <label><span>n values</span>
+              <input type="text" id="exp-n" value="6,10,20,40,80" class="text-input">
+            </label>
+            <label><span>Alpha steps</span>
+              <input type="number" id="exp-steps" value="20" min="5" max="50">
+            </label>
+            <label><span>Replications</span>
+              <input type="number" id="exp-reps" value="15" min="3" max="100">
+            </label>
+            <label><span>Bubble threshold</span>
+              <div class="range-wrap">
+                <input type="range" id="exp-threshold" value="15" min="1" max="50" step="1">
+                <span class="range-val" id="v-threshold">0.15</span>
+              </div>
+            </label>
+          </div>
 
-        <!-- Communication -->
-        <div class="param-group">
-          <h3 data-i18n="grp.comm">Communication</h3>
-          <label class="checkbox-label">
-            <input type="checkbox" id="p-comm">
-            <span data-i18n="p.comm">Enable Strategic Talk</span>
-          </label>
-          <label>
-            <span data-i18n="p.clMean">Lying Cost &mu;</span>
-            <div class="range-wrap">
-              <input type="range" id="p-cl" value="0" min="-3" max="3" step="0.1">
-              <span class="range-val" id="v-cl">0</span>
-            </div>
-          </label>
-          <label>
-            <span data-i18n="p.cdMean">Deception Cost &mu;</span>
-            <div class="range-wrap">
-              <input type="range" id="p-cd" value="0" min="-3" max="3" step="0.1">
-              <span class="range-val" id="v-cd">0</span>
-            </div>
-          </label>
-        </div>
+          <div class="param-group">
+            <h3>Risk Configs to Sweep</h3>
+            <label class="checkbox-label"><input type="checkbox" id="exp-r1" checked>
+              <span>RL33/RN34/RA33 (balanced)</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="exp-r2" checked>
+              <span>RL60/RN20/RA20 (risk-loving)</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="exp-r3" checked>
+              <span>RL10/RN20/RA70 (risk-averse)</span></label>
+          </div>
 
-        <!-- Bubble -->
-        <div class="param-group">
-          <h3 data-i18n="grp.bubble">Bubble Dynamics</h3>
-          <label>
-            <span data-i18n="p.bias">Optimism Bias</span>
-            <div class="range-wrap">
-              <input type="range" id="p-bias" value="20" min="-50" max="50" step="1">
-              <span class="range-val" id="v-bias">20</span>
-            </div>
-          </label>
-          <label>
-            <span data-i18n="p.momentum">Momentum</span>
-            <div class="range-wrap">
-              <input type="range" id="p-momentum" value="10" min="0" max="100" step="1">
-              <span class="range-val" id="v-momentum">10</span>
-            </div>
-          </label>
-        </div>
+          <div class="param-group">
+            <h3>Knowledge Configs to Sweep</h3>
+            <label class="checkbox-label"><input type="checkbox" id="exp-k1" checked>
+              <span>Mild (bias=0.15, noise=0.15)</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="exp-k2" checked>
+              <span>Moderate (bias=0.30, noise=0.25)</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="exp-k3" checked>
+              <span>Severe (bias=0.50, noise=0.40)</span></label>
+          </div>
 
-        <button id="btn-run" class="btn-primary" data-i18n="btn.run">Run Simulation</button>
+          <div class="param-group">
+            <h3>Fixed Params</h3>
+            <label><span>Periods (T)</span>
+              <input type="number" id="exp-T" value="15" min="3" max="50">
+            </label>
+            <label><span>E[dividend]</span>
+              <input type="number" id="exp-div" value="8" min="1" max="100">
+            </label>
+            <label><span>Seed</span>
+              <input type="number" id="exp-seed" value="42" min="0" max="9999">
+            </label>
+          </div>
+
+          <button id="btn-experiment" class="btn-primary">Run Experiment</button>
+          <div id="exp-progress" class="progress-bar" style="display:none">
+            <div class="progress-fill" id="exp-fill"></div>
+            <span class="progress-text" id="exp-pct">0%</span>
+          </div>
+        </div>
       </aside>
 
-      <!-- Main -->
       <main class="main">
         <!-- View toggle -->
         <div class="view-toggle">
-          <button class="view-btn active" data-view="chart" data-i18n="btn.charts">Charts</button>
-          <button class="view-btn" data-view="game" data-i18n="btn.game">Trading Floor</button>
+          <button class="view-btn active" data-view="chart">Charts</button>
+          <button class="view-btn" data-view="game">Trading Floor</button>
         </div>
 
         <!-- Chart view -->
@@ -154,28 +223,29 @@
           <!-- Summary cards -->
           <div class="summary-row" id="summary-row" style="display:none">
             <div class="summary-card">
-              <div class="sc-label">Price Efficiency</div>
-              <div class="sc-value" id="sc-efficiency">-</div>
+              <div class="sc-label">Haessel-R&sup2;</div>
+              <div class="sc-value" id="sc-r2">-</div>
             </div>
             <div class="summary-card">
-              <div class="sc-label">Max Bubble</div>
-              <div class="sc-value" id="sc-bubble">-</div>
+              <div class="sc-label">NAPD</div>
+              <div class="sc-value" id="sc-napd">-</div>
             </div>
             <div class="summary-card">
-              <div class="sc-label">Total Trades</div>
-              <div class="sc-value" id="sc-trades">-</div>
+              <div class="sc-label">Amplitude</div>
+              <div class="sc-value" id="sc-amp">-</div>
             </div>
             <div class="summary-card">
-              <div class="sc-label">Avg P&L (Informed)</div>
-              <div class="sc-value" id="sc-pnl-inf">-</div>
+              <div class="sc-label">Avg P&amp;L (Exp)</div>
+              <div class="sc-value" id="sc-pnl-exp">-</div>
             </div>
             <div class="summary-card">
-              <div class="sc-label">Avg P&L (Uninformed)</div>
-              <div class="sc-value" id="sc-pnl-uni">-</div>
+              <div class="sc-label">Avg P&amp;L (Inexp)</div>
+              <div class="sc-value" id="sc-pnl-inexp">-</div>
             </div>
           </div>
 
-          <div class="chart-grid">
+          <!-- Single market charts -->
+          <div id="sim-charts" class="chart-grid">
             <div id="chart-price" class="chart-card"></div>
             <div id="chart-spread" class="chart-card"></div>
             <div id="chart-pnl" class="chart-card"></div>
@@ -183,23 +253,40 @@
             <div id="chart-beliefs" class="chart-card"></div>
             <div id="chart-volume" class="chart-card"></div>
           </div>
+
+          <!-- Experiment charts -->
+          <div id="exp-charts" class="chart-grid" style="display:none">
+            <div id="chart-alpha-sweep" class="chart-card chart-wide"></div>
+            <div id="chart-alpha-n" class="chart-card chart-wide"></div>
+            <div id="chart-alpha-heatmap" class="chart-card"></div>
+            <div id="chart-alpha-risk" class="chart-card"></div>
+          </div>
+
+          <!-- Alpha* results table -->
+          <div id="exp-table-wrap" style="display:none">
+            <h3 class="table-title">&alpha;* Results</h3>
+            <table id="exp-table" class="results-table">
+              <thead><tr><th>n</th><th>Risk</th><th>Knowledge</th><th>&alpha;* (%)</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Game view -->
         <div id="game-view" class="view-panel" style="display:none">
           <div class="game-container">
             <div class="game-controls">
-              <button class="g-btn" id="btn-play" data-i18n="btn.play">Play</button>
-              <button class="g-btn" id="btn-pause" data-i18n="btn.pause">Pause</button>
-              <button class="g-btn" id="btn-follow" data-i18n="btn.follow">Follow</button>
+              <button class="g-btn" id="btn-play">Play</button>
+              <button class="g-btn" id="btn-pause">Pause</button>
+              <button class="g-btn" id="btn-follow">Follow</button>
               <div class="g-zoom-wrap">
-                <span data-i18n="lbl.zoom">Zoom</span>
+                <span>Zoom</span>
                 <button class="g-btn g-btn-sm" id="btn-zoom-out">&minus;</button>
                 <span class="g-zoom-val" id="zoom-val">100%</span>
                 <button class="g-btn g-btn-sm" id="btn-zoom-in">+</button>
               </div>
               <div class="g-speed-wrap">
-                <label data-i18n="lbl.speed">Speed</label>
+                <label>Speed</label>
                 <input type="range" id="game-speed" min="0.2" max="5" step="0.1" value="1">
                 <span class="g-speed-val" id="speed-val">1.0x</span>
               </div>
@@ -212,7 +299,7 @@
 
         <!-- Log -->
         <div class="log-card" id="log-card" style="display:none">
-          <h3 class="log-title" data-i18n="log.title">Simulation Log</h3>
+          <h3 class="log-title">Simulation Log</h3>
           <div id="log" class="log-body"></div>
         </div>
       </main>

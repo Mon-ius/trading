@@ -420,22 +420,34 @@ class TradingFloor {
 
     // Price line
     const prices = this._priceHistory;
-    const tv = this.history.trueValue;
-    const minP = Math.min(tv * 0.8, ...prices);
-    const maxP = Math.max(tv * 1.2, ...prices);
+    const fvs = this.history.fvs || [];
+    const tv = fvs.length > 0 ? fvs[Math.min(this._roundNum, fvs.length - 1)] : (this.history.trueValue || 100);
+    const allVals = [...prices, ...fvs];
+    const minP = Math.min(...allVals) * 0.8;
+    const maxP = Math.max(...allVals) * 1.2;
     const range = maxP - minP || 1;
     const chartX = x + 6, chartY = y + 18, chartW = w - 12, chartH = h - 26;
 
-    // True value line
-    const tvY = chartY + chartH - ((tv - minP) / range) * chartH;
-    ctx.strokeStyle = 'rgba(52,199,89,0.4)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 2]);
-    ctx.beginPath();
-    ctx.moveTo(chartX, tvY);
-    ctx.lineTo(chartX + chartW, tvY);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    // Fundamental value curve (declining)
+    if (fvs.length > 1) {
+      ctx.strokeStyle = 'rgba(52,199,89,0.5)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 2]);
+      ctx.beginPath();
+      for (let i = 0; i < fvs.length; i++) {
+        const px = chartX + (i / Math.max(1, fvs.length - 1)) * chartW;
+        const py = chartY + chartH - ((fvs[i] - minP) / range) * chartH;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      const tvY = chartY + chartH - ((tv - minP) / range) * chartH;
+      ctx.strokeStyle = 'rgba(52,199,89,0.4)';
+      ctx.lineWidth = 1; ctx.setLineDash([3, 2]);
+      ctx.beginPath(); ctx.moveTo(chartX, tvY); ctx.lineTo(chartX + chartW, tvY);
+      ctx.stroke(); ctx.setLineDash([]);
+    }
 
     // Price line
     ctx.strokeStyle = '#007AFF';
@@ -559,9 +571,12 @@ class TradingFloor {
     this._log('phase', '2. Signal Tower', 'Agents receive private signals');
     await this._wait(1000);
 
-    // Show signal values briefly
+    // Show experience type
+    const fv0 = (history.fvs && history.fvs[0]) || history.trueValue || 100;
     for (const sp of this.sprites) {
-      sp.pnlFlash = { value: sp.agent.signal - history.trueValue, alpha: 2.0 };
+      const isExp = sp.agent.expType === 'experienced';
+      sp.pnlFlash = { value: isExp ? 0 : (sp.agent.belief - fv0), alpha: 2.0 };
+      sp.label = isExp ? 'Experienced' : 'Inexperienced';
     }
     await this._wait(2000);
 
@@ -609,9 +624,10 @@ class TradingFloor {
           this._focusStage('pit');
           await this._wait(Math.round(400 * stepScale));
 
-          // Show P&L
-          const buyPnL = history.trueValue - trade.price;
-          const sellPnL = trade.price - history.trueValue;
+          // Show P&L relative to FV
+          const fvNow = (history.fvs && history.fvs[r]) || history.trueValue || 100;
+          const buyPnL = fvNow - trade.price;
+          const sellPnL = trade.price - fvNow;
           buyer.pnlFlash = { value: buyPnL, alpha: 1.5 };
           seller.pnlFlash = { value: sellPnL, alpha: 1.5 };
           await this._wait(Math.round(300 * stepScale));
@@ -626,7 +642,8 @@ class TradingFloor {
         if (rd.vwap != null) {
           this._priceHistory.push(rd.vwap);
           this._lastPrice = rd.vwap;
-          this._bubblePct = (rd.vwap - history.trueValue) / history.trueValue;
+          const fvNow = (history.fvs && history.fvs[r]) || history.trueValue || 100;
+          this._bubblePct = fvNow > 0 ? (rd.vwap - fvNow) / fvNow : 0;
         }
 
         this._log('round', `Round ${r + 1}: ${rd.trades.length} trades @ $${(rd.vwap || 0).toFixed(2)}`);
@@ -652,11 +669,11 @@ class TradingFloor {
       sp.label = `P&L: ${sp.agent.totalPnL >= 0 ? '+' : ''}${sp.agent.totalPnL.toFixed(0)}`;
     }
 
-    const bubble = history.bubble;
+    const bubble = history.bubble || {};
     this._log('summary', 'Simulation Complete', [
-      `Efficiency: ${(history.infoAggregation * 100).toFixed(1)}%`,
-      `Max Bubble: ${(bubble.maxBubble * 100).toFixed(1)}%`,
-      `Total Trades: ${history.rounds.reduce((s, r) => s + r.volume, 0)}`,
+      `Haessel-R\u00b2: ${(bubble.haesselR2 || 0).toFixed(3)}`,
+      `NAPD: ${(bubble.napd || 0).toFixed(3)}`,
+      `Total Trades: ${history.rounds.reduce((s, r) => s + (r.volume || 0), 0)}`,
     ].join(' | '));
 
     this._phase = 'done';
