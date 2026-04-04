@@ -128,12 +128,14 @@ class Sprite {
 }
 
 /* ---- Building definitions (base sizes, positioned dynamically) ---- */
+/* All main-flow buildings share the same base width for visual alignment */
+const BASE_W = 400;
 const BUILDINGS = [
-  { id: 'hub',    label: 'gw.hub',    w: 320, h: 180, color: '#E8F5E9', darkColor: '#1a2e1a' },
-  { id: 'signal', label: 'gw.signal', w: 320, h: 180, color: '#E3F2FD', darkColor: '#1a2540' },
-  { id: 'pit',    label: 'gw.pit',    w: 400, h: 320, color: '#FFF3E0', darkColor: '#2d2614', _stageH: 80 },
+  { id: 'hub',    label: 'gw.hub',    w: BASE_W, h: 180, color: '#E8F5E9', darkColor: '#1a2e1a', phaseNum: '1' },
+  { id: 'signal', label: 'gw.signal', w: BASE_W, h: 180, color: '#E3F2FD', darkColor: '#1a2540', phaseNum: '2' },
+  { id: 'pit',    label: 'gw.pit',    w: BASE_W, h: 320, color: '#FFF3E0', darkColor: '#2d2614', _stageH: 80, phaseNum: '3' },
   { id: 'comm',   label: 'gw.comm',   w: 200, h: 180, color: '#F3E5F5', darkColor: '#231a35' },
-  { id: 'settle', label: 'gw.settle', w: 400, h: 200, color: '#FFFDE7', darkColor: '#2d2a14' },
+  { id: 'settle', label: 'gw.settle', w: BASE_W, h: 200, color: '#FFFDE7', darkColor: '#2d2a14', phaseNum: '4' },
 ];
 
 /* ---- TradingFloor (GameWorld) ---- */
@@ -181,16 +183,19 @@ class TradingFloor {
     // Check if communication data exists
     this._hasComm = this.history.rounds.some(r => r.messages && r.messages.length > 0);
 
+    // Compute uniform width for main-flow buildings
+    const uniformW = Math.max(BASE_W, cols * 42 * sc + 50);
+
     for (const b of BUILDINGS) {
-      // Skip comm building when communication is disabled
       if (b.id === 'comm' && !this._hasComm) continue;
       const copy = { ...b };
+      if (b.id !== 'comm') {
+        copy.w = uniformW; // all main buildings share the same width
+      }
       if (b.id === 'hub' || b.id === 'signal' || b.id === 'settle') {
-        copy.w = Math.max(b.w, cols * 42 * sc + 50);
         copy.h = Math.max(b.h, rows * 38 * sc + 55);
       }
       if (b.id === 'pit') {
-        copy.w = Math.max(b.w, cols * 42 * sc + 50);
         const stageH = Math.max(80, 65 * sc + 30);
         copy._stageH = stageH;
         copy.h = Math.max(b.h, rows * 38 * sc + 55 + stageH);
@@ -365,6 +370,7 @@ class TradingFloor {
     ctx.scale(this._camZoom, this._camZoom);
     ctx.translate(-this._camX, -this._camY);
 
+    this._drawConnections(ctx, isDark);
     this._drawBuildings(ctx, isDark);
 
     const sc = this._scale;
@@ -374,6 +380,90 @@ class TradingFloor {
     this._drawBubbleMeter(ctx, isDark);
 
     ctx.restore();
+  }
+
+  _drawConnections(ctx, isDark) {
+    const flow = ['hub', 'signal', 'pit', 'settle'];
+    const arrowColor = isDark ? 'rgba(37,99,235,0.5)' : 'rgba(37,99,235,0.6)';
+    const textColor = isDark ? 'rgba(37,99,235,0.4)' : 'rgba(37,99,235,0.5)';
+    const sc = this._scale;
+
+    for (let i = 0; i < flow.length - 1; i++) {
+      const from = this._buildingMap[flow[i]];
+      const to = this._buildingMap[flow[i + 1]];
+      if (!from || !to) continue;
+
+      const x = from.x;
+      const y1 = from.y + from.h / 2;
+      const y2 = to.y - to.h / 2;
+      const midY = (y1 + y2) / 2;
+
+      // Arrow shaft
+      ctx.strokeStyle = arrowColor;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x, y1 + 2);
+      ctx.lineTo(x, y2 - 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Arrowhead
+      const ah = 8;
+      ctx.fillStyle = arrowColor;
+      ctx.beginPath();
+      ctx.moveTo(x, y2 - 2);
+      ctx.lineTo(x - ah / 2, y2 - ah - 2);
+      ctx.lineTo(x + ah / 2, y2 - ah - 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Flow labels
+      const labels = ['Initialize', 'Signal', 'Trade'];
+      ctx.fillStyle = textColor;
+      ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText(labels[i] || '', x + 12, midY + 3);
+    }
+
+    // Comm lounge connection (if present)
+    if (this._hasComm && this._buildingMap.comm && this._buildingMap.pit) {
+      const pit = this._buildingMap.pit;
+      const comm = this._buildingMap.comm;
+      const y = comm.y;
+      const x1 = comm.x + comm.w / 2;
+      const x2 = pit.x - pit.w / 2;
+
+      ctx.strokeStyle = isDark ? 'rgba(124,58,237,0.4)' : 'rgba(124,58,237,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x1 + 2, y);
+      ctx.lineTo(x2 - 2, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Bidirectional arrows
+      const ah = 6;
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.beginPath();
+      ctx.moveTo(x2 - 2, y);
+      ctx.lineTo(x2 - ah - 2, y - ah / 2);
+      ctx.lineTo(x2 - ah - 2, y + ah / 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x1 + 2, y);
+      ctx.lineTo(x1 + ah + 2, y - ah / 2);
+      ctx.lineTo(x1 + ah + 2, y + ah / 2);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = isDark ? 'rgba(124,58,237,0.3)' : 'rgba(124,58,237,0.4)';
+      ctx.font = `600 ${7 * sc}px -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('Talk', (x1 + x2) / 2, y - 8);
+    }
   }
 
   _drawBuildings(ctx, isDark) {
@@ -405,7 +495,25 @@ class TradingFloor {
       ctx.fillStyle = isDark ? '#e6edf3' : '#1a1d23';
       ctx.font = `700 ${12 * sc}px -apple-system, sans-serif`;
       ctx.textAlign = 'left';
-      ctx.fillText(t(b.label), x + 12, y + 19);
+
+      // Phase number badge
+      if (b.phaseNum) {
+        const bx = x + 10, by = y + 5;
+        ctx.fillStyle = isDark ? 'rgba(37,99,235,0.3)' : 'rgba(37,99,235,0.15)';
+        ctx.beginPath();
+        ctx.arc(bx + 8, by + 9, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = isDark ? '#93c5fd' : '#2563eb';
+        ctx.font = `700 ${9 * sc}px -apple-system, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(b.phaseNum, bx + 8, by + 12);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = isDark ? '#e6edf3' : '#1a1d23';
+        ctx.font = `700 ${12 * sc}px -apple-system, sans-serif`;
+        ctx.fillText(t(b.label), bx + 22, y + 19);
+      } else {
+        ctx.fillText(t(b.label), x + 12, y + 19);
+      }
 
       // Stage zone for pit
       if (b._stageH && b.id === 'pit') {

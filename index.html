@@ -54,12 +54,17 @@
         </div>
         <div class="panel-body">
           <label><span data-i18n="p.periods">Periods (T)</span><input type="number" id="p-T" value="15" min="3" max="50"></label>
+          <div class="form-hint">Asset lifespan. Each period: agents trade, then a stochastic dividend is paid. FV declines by E[d] each period (DLM &sect;I p.1732)</div>
           <label><span data-i18n="p.div">E[dividend]</span><input type="number" id="p-div" value="8" min="1" max="100"></label>
+          <div class="form-hint">Expected per-period dividend. Each period pays 0 or 2&times;E[d] with equal probability. FV(0) = T&times;E[d] (DLM fn.5)</div>
           <label><span data-i18n="p.agents">Agents (n)</span><input type="number" id="p-n" value="20" min="2" max="128"></label>
+          <div class="form-hint">Population size. Original experiment: n=6. Larger n &rarr; more liquid market, different &alpha;* threshold</div>
           <label><span data-i18n="p.cash">Initial Cash</span><input type="number" id="p-cash" value="1000" min="100" max="100000" step="100"></label>
+          <div class="form-hint">Starting cash endowment per agent. Constrains maximum bid prices and total market liquidity</div>
           <label><span data-i18n="p.shares">Init Shares</span><input type="number" id="p-shares" value="5" min="1" max="50"></label>
+          <div class="form-hint">Starting shares per agent. Total supply = n &times; shares. Shares become worthless at period T (FV(T)=0)</div>
           <label><span data-i18n="p.seed">Seed</span><input type="number" id="p-seed" value="42" min="0" max="9999"></label>
-          <div class="form-hint" data-i18n="hint.asset">Asset life = T periods. FV(0) = T&times;E[d], declining to 0. Identical initial endowment per agent. Seed controls random draws.</div>
+          <div class="form-hint">PRNG seed for reproducibility. Controls dividend draws, risk coefficients, belief noise, and order shuffling</div>
         </div>
       </div>
 
@@ -71,7 +76,7 @@
         <div class="panel-body">
           <label><span data-i18n="p.alpha">Experienced %</span>
             <div class="range-wrap"><input type="range" id="p-alpha" value="33" min="0" max="100"><span class="range-val" id="v-alpha">33%</span></div></label>
-          <div class="form-hint" data-i18n="hint.alpha">Fraction who know FV(t). Higher &alpha; &rarr; faster bubble suppression. Experiment sweeps &alpha; from 0&ndash;100% to find &alpha;*.</div>
+          <div class="form-hint">&alpha; = fraction who know FV(t) = (T&minus;t)&times;E[d]. Higher &alpha; &rarr; faster bubble suppression. DLM found &frac13; experienced is sufficient to prevent bubbles (&sect;II Table 2 p.1735). Experiment sweeps &alpha; from 0&ndash;100% to find the critical &alpha;*.</div>
         </div>
       </div>
 
@@ -83,13 +88,16 @@
         <div class="panel-body">
           <label><span data-i18n="p.bias">Optimism Bias</span>
             <div class="range-wrap"><input type="range" id="p-bias" value="30" min="0" max="100"><span class="range-val" id="v-bias">30%</span></div></label>
+          <div class="form-hint">Upward shift in inexperienced agents' belief: belief = base &times; (1 + bias). Primary driver of bubble formation. Higher &rarr; larger price overshoot above FV</div>
           <label><span data-i18n="p.noise">Noise</span>
             <div class="range-wrap"><input type="range" id="p-noise" value="25" min="0" max="80"><span class="range-val" id="v-noise">25%</span></div></label>
+          <div class="form-hint">Random belief dispersion among inexperienced agents. Higher &rarr; wider spread of individual valuations, more volatile prices</div>
           <label><span data-i18n="p.anchor">FV Anchoring</span>
             <div class="range-wrap"><input type="range" id="p-anchor" value="40" min="0" max="100"><span class="range-val" id="v-anchor">40%</span></div></label>
+          <div class="form-hint">Weight on initial FV(0) vs current FV(t): belief = FV(t)&times;(1&minus;anchor) + FV(0)&times;anchor. High anchoring &rarr; agents slow to update, sustaining bubble longer</div>
           <label><span data-i18n="p.momentum">Momentum</span>
             <div class="range-wrap"><input type="range" id="p-momentum" value="20" min="0" max="100"><span class="range-val" id="v-momentum">20%</span></div></label>
-          <div class="form-hint" data-i18n="hint.inexp">Bias: upward belief shift (bubble source). Anchor: weight on initial FV vs current. Momentum: trend-chasing strength. Noise: belief dispersion.</div>
+          <div class="form-hint">Trend-chasing strength: adds momentum&times;(P<sub>t</sub>&minus;P<sub>t&minus;1</sub>) to belief. Creates positive feedback loops. Higher &rarr; self-reinforcing bubble/crash dynamics</div>
         </div>
       </div>
 
@@ -106,11 +114,13 @@
           </div>
           <label><span data-i18n="p.rl">Risk-Loving</span>
             <div class="range-wrap"><input type="range" id="p-rl" value="33" min="0" max="100"><span class="range-val" id="v-rl">33%</span></div></label>
+          <div class="form-hint">&rho; &approx; 0.005. Low risk aversion &rarr; narrow spreads, aggressive bidding. Willing to overpay, fuels bubbles</div>
           <label><span data-i18n="p.rn">Risk-Neutral</span>
             <div class="range-wrap"><input type="range" id="p-rn" value="34" min="0" max="100"><span class="range-val" id="v-rn">34%</span></div></label>
+          <div class="form-hint">&rho; &approx; 0.020. Moderate spreads. Prices at expected value (DLM fn.5 assumes risk-neutrality for FV derivation)</div>
           <label><span data-i18n="p.ra">Risk-Averse</span>
             <div class="range-wrap"><input type="range" id="p-ra" value="33" min="0" max="100"><span class="range-val" id="v-ra">33%</span></div></label>
-          <div class="form-hint" data-i18n="hint.risk">Linked sliders &mdash; total always = 100%. Risk type determines CARA coefficient &rho; and bid/ask spread width.</div>
+          <div class="form-hint">&rho; &approx; 0.080. Wide spreads, conservative bids. CARA utility: U(W) = &minus;exp(&minus;&rho;W). Linked sliders always sum to 100%</div>
         </div>
       </div>
 
@@ -121,11 +131,13 @@
         </div>
         <div class="panel-body">
           <label class="checkbox-label"><input type="checkbox" id="p-comm-on"><span data-i18n="p.comm">Enable Strategic Talk</span></label>
+          <div class="form-hint">Pre-trade cheap-talk phase where agents send price signals. Enables the Comm Lounge building in Trading Floor animation</div>
           <label><span data-i18n="p.clMean">Lying Cost &mu;</span>
             <div class="range-wrap"><input type="range" id="p-cl" value="0" min="-3" max="3" step="0.1"><span class="range-val" id="v-cl">0</span></div></label>
+          <div class="form-hint">c<sub>l</sub> = cost of sending m &ne; &theta; (literal lie, Sobel 2020 Def.&thinsp;3). Higher &rarr; more truthful price signals</div>
           <label><span data-i18n="p.cdMean">Deception Cost &mu;</span>
             <div class="range-wrap"><input type="range" id="p-cd" value="0" min="-3" max="3" step="0.1"><span class="range-val" id="v-cd">0</span></div></label>
-          <div class="form-hint" data-i18n="hint.comm">Pre-trade cheap talk with lying/deception costs (Choi et al. 2025). Higher costs &rarr; more truthful signals.</div>
+          <div class="form-hint">c<sub>d</sub> = cost of belief manipulation D(m,&theta;) (Sobel 2020 Def.&thinsp;4). Higher &rarr; less deceptive signals. See Choi et al. (2025) &sect;5</div>
         </div>
       </div>
 
@@ -138,6 +150,7 @@
           <!-- Administrator -->
           <div class="section-card">
             <label><span style="font-weight:600">Administrator</span></label>
+            <div class="form-hint">Orchestrator LLM that generates tailored prompts for each agent per trading period. Batches agents in groups of 5</div>
             <div class="form-row" style="display:flex;gap:4px;margin-top:4px">
               <select id="orch-provider" style="flex:1" onchange="updateOrchModels();updateSectionKey('admin')">
                 <option value="claude">Claude</option><option value="gpt">GPT</option>
@@ -206,8 +219,11 @@
         </div>
         <div class="panel-body">
           <label><span>n values</span><input type="text" id="exp-n" value="6,10,20,40,80" class="text-input"></label>
+          <div class="form-hint">Comma-separated market sizes. Experiment finds &alpha;* for each n. Original experiment: n=6 (DLM &sect;I p.1732)</div>
           <label><span data-i18n="p.steps">Alpha steps</span><input type="number" id="exp-steps" value="20" min="5" max="50"></label>
+          <div class="form-hint">Resolution of &alpha; sweep: tests &alpha; = 0%, 5%, 10%, ... 100%. More steps &rarr; finer &alpha;* precision, slower</div>
           <label><span data-i18n="p.reps">Replications</span><input type="number" id="exp-reps" value="15" min="3" max="100"></label>
+          <div class="form-hint">Monte Carlo replications per &alpha; value. Each uses a different seed. More reps &rarr; smoother curves, more robust &alpha;*</div>
           <label><span data-i18n="p.threshold">Threshold</span>
             <div class="range-wrap"><input type="range" id="exp-threshold" value="15" min="1" max="50"><span class="range-val" id="v-threshold">0.15</span></div></label>
           <div class="form-hint" data-i18n="hint.grid">Sweeps &alpha; from 0&ndash;100% for each (n, risk, knowledge) combo. Uses T, E[d], Seed from panels above.</div>
