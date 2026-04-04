@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Microstructure Simulator</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <h1 id="app-title">Market Microstructure</h1>
+        <span class="header-sub" id="app-subtitle">Information, Bubbles &amp; Strategic Communication</span>
+      </div>
+      <div class="header-right">
+        <div class="lang-switch">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="zh">ZH</button>
+          <button class="lang-btn" data-lang="ko">KO</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+
+        <!-- Market -->
+        <div class="param-group">
+          <h3 data-i18n="grp.market">Market</h3>
+          <label><span data-i18n="p.trueValue">True Value</span>
+            <input type="number" id="p-true-value" value="100" min="1" max="10000" step="1">
+          </label>
+          <label><span data-i18n="p.agents">Agents</span>
+            <input type="number" id="p-n" value="20" min="2" max="128" step="1">
+          </label>
+          <label><span data-i18n="p.rounds">Rounds</span>
+            <input type="number" id="p-rounds" value="20" min="1" max="200" step="1">
+          </label>
+          <label><span data-i18n="p.seed">Seed</span>
+            <input type="number" id="p-seed" value="42" min="0" max="9999" step="1">
+          </label>
+        </div>
+
+        <!-- Information -->
+        <div class="param-group">
+          <h3 data-i18n="grp.info">Information</h3>
+          <label>
+            <span data-i18n="p.informed">Informed</span>
+            <div class="range-wrap">
+              <input type="range" id="p-informed" value="30" min="0" max="100" step="1" class="tri-slider" data-group="info">
+              <span class="range-val" id="v-informed">30%</span>
+            </div>
+          </label>
+          <label>
+            <span data-i18n="p.partial">Partial</span>
+            <div class="range-wrap">
+              <input type="range" id="p-partial" value="40" min="0" max="100" step="1" class="tri-slider" data-group="info">
+              <span class="range-val" id="v-partial">40%</span>
+            </div>
+          </label>
+          <label>
+            <span data-i18n="p.uninformed">Uninformed</span>
+            <div class="range-wrap">
+              <span class="range-val computed" id="v-uninformed">30%</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Risk -->
+        <div class="param-group">
+          <h3 data-i18n="grp.risk">Risk Preferences</h3>
+          <label>
+            <span data-i18n="p.rl">Risk-Loving</span>
+            <div class="range-wrap">
+              <input type="range" id="p-rl" value="33" min="0" max="100" step="1" class="tri-slider" data-group="risk">
+              <span class="range-val" id="v-rl">33%</span>
+            </div>
+          </label>
+          <label>
+            <span data-i18n="p.rn">Risk-Neutral</span>
+            <div class="range-wrap">
+              <input type="range" id="p-rn" value="34" min="0" max="100" step="1" class="tri-slider" data-group="risk">
+              <span class="range-val" id="v-rn">34%</span>
+            </div>
+          </label>
+          <label>
+            <span data-i18n="p.ra">Risk-Averse</span>
+            <div class="range-wrap">
+              <span class="range-val computed" id="v-ra">33%</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Communication -->
+        <div class="param-group">
+          <h3 data-i18n="grp.comm">Communication</h3>
+          <label class="checkbox-label">
+            <input type="checkbox" id="p-comm">
+            <span data-i18n="p.comm">Enable Strategic Talk</span>
+          </label>
+          <label>
+            <span data-i18n="p.clMean">Lying Cost &mu;</span>
+            <div class="range-wrap">
+              <input type="range" id="p-cl" value="0" min="-3" max="3" step="0.1">
+              <span class="range-val" id="v-cl">0</span>
+            </div>
+          </label>
+          <label>
+            <span data-i18n="p.cdMean">Deception Cost &mu;</span>
+            <div class="range-wrap">
+              <input type="range" id="p-cd" value="0" min="-3" max="3" step="0.1">
+              <span class="range-val" id="v-cd">0</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Bubble -->
+        <div class="param-group">
+          <h3 data-i18n="grp.bubble">Bubble Dynamics</h3>
+          <label>
+            <span data-i18n="p.bias">Optimism Bias</span>
+            <div class="range-wrap">
+              <input type="range" id="p-bias" value="20" min="-50" max="50" step="1">
+              <span class="range-val" id="v-bias">20</span>
+            </div>
+          </label>
+          <label>
+            <span data-i18n="p.momentum">Momentum</span>
+            <div class="range-wrap">
+              <input type="range" id="p-momentum" value="10" min="0" max="100" step="1">
+              <span class="range-val" id="v-momentum">10</span>
+            </div>
+          </label>
+        </div>
+
+        <button id="btn-run" class="btn-primary" data-i18n="btn.run">Run Simulation</button>
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <!-- View toggle -->
+        <div class="view-toggle">
+          <button class="view-btn active" data-view="chart" data-i18n="btn.charts">Charts</button>
+          <button class="view-btn" data-view="game" data-i18n="btn.game">Trading Floor</button>
+        </div>
+
+        <!-- Chart view -->
+        <div id="chart-view" class="view-panel">
+          <!-- Summary cards -->
+          <div class="summary-row" id="summary-row" style="display:none">
+            <div class="summary-card">
+              <div class="sc-label">Price Efficiency</div>
+              <div class="sc-value" id="sc-efficiency">-</div>
+            </div>
+            <div class="summary-card">
+              <div class="sc-label">Max Bubble</div>
+              <div class="sc-value" id="sc-bubble">-</div>
+            </div>
+            <div class="summary-card">
+              <div class="sc-label">Total Trades</div>
+              <div class="sc-value" id="sc-trades">-</div>
+            </div>
+            <div class="summary-card">
+              <div class="sc-label">Avg P&L (Informed)</div>
+              <div class="sc-value" id="sc-pnl-inf">-</div>
+            </div>
+            <div class="summary-card">
+              <div class="sc-label">Avg P&L (Uninformed)</div>
+              <div class="sc-value" id="sc-pnl-uni">-</div>
+            </div>
+          </div>
+
+          <div class="chart-grid">
+            <div id="chart-price" class="chart-card"></div>
+            <div id="chart-spread" class="chart-card"></div>
+            <div id="chart-pnl" class="chart-card"></div>
+            <div id="chart-bubble" class="chart-card"></div>
+            <div id="chart-beliefs" class="chart-card"></div>
+            <div id="chart-volume" class="chart-card"></div>
+          </div>
+        </div>
+
+        <!-- Game view -->
+        <div id="game-view" class="view-panel" style="display:none">
+          <div class="game-container">
+            <div class="game-controls">
+              <button class="g-btn" id="btn-play" data-i18n="btn.play">Play</button>
+              <button class="g-btn" id="btn-pause" data-i18n="btn.pause">Pause</button>
+              <button class="g-btn" id="btn-follow" data-i18n="btn.follow">Follow</button>
+              <div class="g-zoom-wrap">
+                <span data-i18n="lbl.zoom">Zoom</span>
+                <button class="g-btn g-btn-sm" id="btn-zoom-out">&minus;</button>
+                <span class="g-zoom-val" id="zoom-val">100%</span>
+                <button class="g-btn g-btn-sm" id="btn-zoom-in">+</button>
+              </div>
+              <div class="g-speed-wrap">
+                <label data-i18n="lbl.speed">Speed</label>
+                <input type="range" id="game-speed" min="0.2" max="5" step="0.1" value="1">
+                <span class="g-speed-val" id="speed-val">1.0x</span>
+              </div>
+            </div>
+            <div class="game-canvas-wrap">
+              <canvas id="game-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log -->
+        <div class="log-card" id="log-card" style="display:none">
+          <h3 class="log-title" data-i18n="log.title">Simulation Log</h3>
+          <div id="log" class="log-body"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
