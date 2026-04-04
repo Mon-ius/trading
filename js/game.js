@@ -28,10 +28,10 @@ class Sprite {
     this.tx = x; this.ty = y;
     this._gridX = x; this._gridY = y;
     this._moveDelay = 0;
-    this.agent = null;     // reference to engine agent
+    this.agent = null;
     this.active = false;
-    this.pnlFlash = null;  // { value, alpha }
-    this.bubble = null;    // { text, alpha, isLie }
+    this.pnlFlash = null;
+    this.bubble = null;
     this.label = '';
   }
 
@@ -42,7 +42,6 @@ class Sprite {
     const sp = 4 * speed;
     this.x += (this.tx - this.x) * Math.min(1, sp * dt);
     this.y += (this.ty - this.y) * Math.min(1, sp * dt);
-    // Decay flashes
     if (this.pnlFlash) {
       this.pnlFlash.alpha -= dt * 1.5;
       if (this.pnlFlash.alpha <= 0) this.pnlFlash = null;
@@ -54,12 +53,11 @@ class Sprite {
   }
 
   draw(ctx, sc, isDark) {
-    const r = 10 * sc;
+    const r = 12 * sc;
     const { x, y } = this;
     const fgMain = isDark ? '#e6edf3' : '#1a1d23';
-    const fgSub = isDark ? '#8b949e' : '#6b7080';
 
-    // Body circle — color by experience type
+    // Body — color by experience type
     const expType = this.agent ? this.agent.expType : this.infoType;
     ctx.fillStyle = expType === 'experienced' ? '#2563eb' : '#dc2626';
     ctx.beginPath();
@@ -78,51 +76,43 @@ class Sprite {
     // Face
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.arc(x - 3 * sc, y - 2 * sc, 1.5 * sc, 0, Math.PI * 2);
-    ctx.arc(x + 3 * sc, y - 2 * sc, 1.5 * sc, 0, Math.PI * 2);
+    ctx.arc(x - 3.5 * sc, y - 2 * sc, 1.8 * sc, 0, Math.PI * 2);
+    ctx.arc(x + 3.5 * sc, y - 2 * sc, 1.8 * sc, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(x, y + 2 * sc, 3 * sc, 0, Math.PI);
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1 * sc;
+    ctx.arc(x, y + 2.5 * sc, 3.5 * sc, 0, Math.PI);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2 * sc;
     ctx.stroke();
 
-    // Name label — numbered: "1.Ada"
-    // Background pill for readability
+    // Name label — pill background for readability
     const nameText = this.displayName;
-    ctx.font = `600 ${7 * sc}px -apple-system, sans-serif`;
+    ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'center';
-    const tw = ctx.measureText(nameText).width + 6 * sc;
-    const ny = y + r + 10 * sc;
-    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.8)' : 'rgba(255,255,255,0.85)';
+    const tw = ctx.measureText(nameText).width + 8 * sc;
+    const ny = y + r + 12 * sc;
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.85)' : 'rgba(255,255,255,0.9)';
     ctx.beginPath();
-    ctx.roundRect(x - tw / 2, ny - 7 * sc, tw, 9 * sc, 3 * sc);
+    ctx.roundRect(x - tw / 2, ny - 8 * sc, tw, 11 * sc, 3 * sc);
     ctx.fill();
     ctx.fillStyle = fgMain;
     ctx.fillText(nameText, x, ny);
 
-    // Sub label (risk type or status)
-    if (this.label) {
-      ctx.fillStyle = fgSub;
-      ctx.font = `500 ${5.5 * sc}px -apple-system, sans-serif`;
-      ctx.fillText(this.label, x, ny + 8 * sc);
-    }
-
-    // P&L flash
+    // P&L flash — positioned well above head to avoid overlap
     if (this.pnlFlash) {
       const pf = this.pnlFlash;
-      ctx.globalAlpha = pf.alpha;
+      ctx.globalAlpha = Math.min(1, pf.alpha);
       ctx.fillStyle = pf.value >= 0 ? '#34C759' : '#FF3B30';
       ctx.font = `700 ${10 * sc}px monospace`;
-      ctx.fillText((pf.value >= 0 ? '+' : '') + pf.value.toFixed(1), x, y - r - 8 * sc);
+      ctx.fillText((pf.value >= 0 ? '+' : '') + pf.value.toFixed(1), x, y - r - 12 * sc);
       ctx.globalAlpha = 1;
     }
 
     // Speech bubble
     if (this.bubble) {
       const b = this.bubble;
-      ctx.globalAlpha = b.alpha;
-      const bx = x, by = y - r - 20 * sc;
-      const bw = 40 * sc, bh = 16 * sc;
+      ctx.globalAlpha = Math.min(1, b.alpha);
+      const bx = x, by = y - r - 24 * sc;
+      const bw = 44 * sc, bh = 16 * sc;
       ctx.fillStyle = b.isLie ? 'rgba(255,59,48,0.15)' : 'rgba(52,199,89,0.15)';
       ctx.strokeStyle = b.isLie ? '#FF3B30' : '#34C759';
       ctx.lineWidth = 1 * sc;
@@ -137,13 +127,13 @@ class Sprite {
   }
 }
 
-/* ---- Buildings ---- */
+/* ---- Building definitions (base sizes, positioned dynamically) ---- */
 const BUILDINGS = [
-  { id: 'hub',    label: 'gw.hub',    x: 0, y: 0, w: 280, h: 200, color: '#E8F5E9' },
-  { id: 'signal', label: 'gw.signal', x: 350, y: 0, w: 200, h: 200, color: '#E3F2FD' },
-  { id: 'pit',    label: 'gw.pit',    x: 175, y: 280, w: 350, h: 300, color: '#FFF3E0', _stageH: 100 },
-  { id: 'comm',   label: 'gw.comm',   x: -150, y: 280, w: 200, h: 200, color: '#F3E5F5' },
-  { id: 'settle', label: 'gw.settle', x: 175, y: 650, w: 350, h: 200, color: '#FFFDE7' },
+  { id: 'hub',    label: 'gw.hub',    w: 320, h: 180, color: '#E8F5E9', darkColor: '#1a2e1a' },
+  { id: 'signal', label: 'gw.signal', w: 320, h: 180, color: '#E3F2FD', darkColor: '#1a2540' },
+  { id: 'pit',    label: 'gw.pit',    w: 400, h: 320, color: '#FFF3E0', darkColor: '#2d2614', _stageH: 80 },
+  { id: 'comm',   label: 'gw.comm',   w: 200, h: 180, color: '#F3E5F5', darkColor: '#231a35' },
+  { id: 'settle', label: 'gw.settle', w: 400, h: 200, color: '#FFFDE7', darkColor: '#2d2a14' },
 ];
 
 /* ---- TradingFloor (GameWorld) ---- */
@@ -157,7 +147,7 @@ class TradingFloor {
     this.paused = false;
     this.speed = 1;
     this._scale = 1;
-    this._camX = 175; this._camY = 200;
+    this._camX = 0; this._camY = 200;
     this._camZoom = 1;
     this._camTarget = null;
     this._camFollow = true;
@@ -165,6 +155,7 @@ class TradingFloor {
     this._lastTime = 0;
     this._phase = 'idle';
     this._buildingMap = {};
+    this._hasComm = false;
 
     // In-world data displays
     this._priceHistory = [];
@@ -181,40 +172,50 @@ class TradingFloor {
   }
 
   _initBuildings() {
-    // Scale buildings based on agent count
     const n = this.history.agents.length;
     const cols = Math.ceil(Math.sqrt(n * 1.5));
     const rows = Math.ceil(n / cols);
     const sc = Math.max(0.6, Math.min(1, 10 / Math.sqrt(n)));
     this._scale = sc;
 
+    // Check if communication data exists
+    this._hasComm = this.history.rounds.some(r => r.messages && r.messages.length > 0);
+
     for (const b of BUILDINGS) {
+      // Skip comm building when communication is disabled
+      if (b.id === 'comm' && !this._hasComm) continue;
       const copy = { ...b };
-      if (b.id === 'hub' || b.id === 'settle') {
-        copy.w = Math.max(b.w, cols * 36 * sc + 40);
-        copy.h = Math.max(b.h, rows * 30 * sc + 50);
+      if (b.id === 'hub' || b.id === 'signal' || b.id === 'settle') {
+        copy.w = Math.max(b.w, cols * 42 * sc + 50);
+        copy.h = Math.max(b.h, rows * 38 * sc + 55);
       }
       if (b.id === 'pit') {
-        copy.w = Math.max(b.w, cols * 36 * sc + 40);
+        copy.w = Math.max(b.w, cols * 42 * sc + 50);
         const stageH = Math.max(80, 65 * sc + 30);
         copy._stageH = stageH;
-        copy.h = Math.max(b.h, rows * 30 * sc + 50 + stageH);
+        copy.h = Math.max(b.h, rows * 38 * sc + 55 + stageH);
       }
       this._buildingMap[copy.id] = copy;
     }
 
-    // Position buildings vertically
+    // Stack buildings vertically, all centered at x=0
+    const GAP = 30;
     let y = 0;
-    for (const id of ['hub', 'signal', 'pit', 'settle']) {
+    const flow = this._hasComm ? ['hub', 'signal', 'pit', 'settle'] : ['hub', 'signal', 'pit', 'settle'];
+    for (const id of flow) {
       const b = this._buildingMap[id];
+      if (!b) continue;
+      b.x = 0;
       b.y = y + b.h / 2;
-      y += b.h + 40;
+      y += b.h + GAP;
     }
-    // Comm lounge beside pit
-    const pit = this._buildingMap.pit;
-    const comm = this._buildingMap.comm;
-    comm.x = pit.x - pit.w / 2 - comm.w / 2 - 30;
-    comm.y = pit.y;
+    // Comm lounge beside pit (when present)
+    if (this._hasComm && this._buildingMap.comm) {
+      const pit = this._buildingMap.pit;
+      const comm = this._buildingMap.comm;
+      comm.x = pit.x - pit.w / 2 - comm.w / 2 - 20;
+      comm.y = pit.y;
+    }
   }
 
   _initSprites() {
@@ -233,7 +234,6 @@ class TradingFloor {
     const cv = this.canvas;
     let dragging = false, dragSX, dragSY, dragOX, dragOY, lastPinch = 0;
 
-    // Mouse drag
     cv.addEventListener('mousedown', e => {
       dragging = true; dragSX = e.clientX; dragSY = e.clientY;
       dragOX = this._camX; dragOY = this._camY;
@@ -246,7 +246,6 @@ class TradingFloor {
     });
     window.addEventListener('mouseup', () => { if (dragging) { dragging = false; cv.style.cursor = 'grab'; } });
 
-    // Touch: single-finger drag, two-finger pinch zoom
     cv.addEventListener('touchstart', e => {
       if (e.touches.length === 1) {
         dragging = true; dragSX = e.touches[0].clientX; dragSY = e.touches[0].clientY;
@@ -268,7 +267,6 @@ class TradingFloor {
     }, { passive: true });
     cv.addEventListener('touchend', () => { dragging = false; lastPinch = 0; }, { passive: true });
 
-    // Scroll wheel zoom (non-passive to prevent page scroll)
     cv.addEventListener('wheel', e => {
       e.preventDefault();
       this._camZoom = clamp(this._camZoom * (e.deltaY > 0 ? 0.9 : 1.1), 0.3, 5);
@@ -294,8 +292,8 @@ class TradingFloor {
     const sc = this._scale;
     const headerH = 28;
     const stageH = b._stageH || 0;
-    const padX = 18, padY = 12;
-    const cellW = 34 * sc, cellH = 28 * sc;
+    const padX = 20, padY = 14;
+    const cellW = 42 * sc, cellH = 38 * sc;
     const areaTop = b.y - b.h / 2 + headerH + stageH;
     const areaW = b.w - padX * 2;
     const cols = Math.max(1, Math.floor(areaW / cellW));
@@ -321,12 +319,14 @@ class TradingFloor {
   _focusBuilding(id) {
     if (!this._camFollow) return;
     const b = this._buildingMap[id];
+    if (!b) return;
     this._camTarget = { x: b.x, y: b.y, zoom: Math.min(1.8, this.canvas.width / ((b.w + 80) * this._scale * devicePixelRatio)) };
   }
 
   _focusStage(id) {
     if (!this._camFollow) return;
     const b = this._buildingMap[id];
+    if (!b) return;
     const stageY = b.y - b.h / 2 + 28 + (b._stageH || 80) / 2;
     this._camTarget = { x: b.x, y: stageY - 40, zoom: Math.min(2.2, this.canvas.width / (300 * this._scale * devicePixelRatio)) };
   }
@@ -347,7 +347,11 @@ class TradingFloor {
   _draw() {
     const ctx = this.ctx;
     const W = this.canvas.width, H = this.canvas.height;
-    ctx.clearRect(0, 0, W, H);
+    const isDark = typeof _isDark === 'function' && _isDark();
+
+    // Background
+    ctx.fillStyle = isDark ? '#0d1117' : '#f0f2f5';
+    ctx.fillRect(0, 0, W, H);
 
     // Camera lerp
     if (this._camTarget) {
@@ -361,64 +365,56 @@ class TradingFloor {
     ctx.scale(this._camZoom, this._camZoom);
     ctx.translate(-this._camX, -this._camY);
 
-    // Draw buildings
-    this._drawBuildings(ctx);
+    this._drawBuildings(ctx, isDark);
 
-    // Draw sprites
     const sc = this._scale;
-    const isDark = typeof _isDark === 'function' && _isDark();
     for (const sp of this.sprites) sp.draw(ctx, sc, isDark);
 
-    // Draw in-world price chart
-    this._drawPriceDisplay(ctx);
-
-    // Draw bubble meter
-    this._drawBubbleMeter(ctx);
+    this._drawPriceDisplay(ctx, isDark);
+    this._drawBubbleMeter(ctx, isDark);
 
     ctx.restore();
   }
 
-  _drawBuildings(ctx) {
+  _drawBuildings(ctx, isDark) {
     const sc = this._scale;
     for (const b of Object.values(this._buildingMap)) {
       const x = b.x - b.w / 2, y = b.y - b.h / 2;
 
       // Background
-      ctx.fillStyle = b.color || '#f0f0f0';
-      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = isDark ? (b.darkColor || '#1c2129') : (b.color || '#f0f0f0');
+      ctx.globalAlpha = isDark ? 0.6 : 0.35;
       ctx.beginPath();
       ctx.roundRect(x, y, b.w, b.h, 12);
       ctx.fill();
       ctx.globalAlpha = 1;
 
       // Border
-      ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+      ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.roundRect(x, y, b.w, b.h, 12);
       ctx.stroke();
 
-      // Header
-      ctx.fillStyle = 'rgba(0,0,0,0.05)';
+      // Header bar
+      ctx.fillStyle = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
       ctx.beginPath();
       ctx.roundRect(x, y, b.w, 28, [12, 12, 0, 0]);
       ctx.fill();
 
-      const isDk = typeof _isDark === 'function' && _isDark();
-      ctx.fillStyle = isDk ? '#e6edf3' : '#1a1d23';
-      ctx.font = `700 ${11 * sc}px -apple-system, sans-serif`;
+      ctx.fillStyle = isDark ? '#e6edf3' : '#1a1d23';
+      ctx.font = `700 ${12 * sc}px -apple-system, sans-serif`;
       ctx.textAlign = 'left';
-      ctx.fillText(t(b.label), x + 10, y + 18);
+      ctx.fillText(t(b.label), x + 12, y + 19);
 
       // Stage zone for pit
       if (b._stageH && b.id === 'pit') {
         const sy = y + 28;
-        ctx.fillStyle = 'rgba(0,122,255,0.06)';
+        ctx.fillStyle = isDark ? 'rgba(37,99,235,0.08)' : 'rgba(0,122,255,0.06)';
         ctx.fillRect(x + 2, sy, b.w - 4, b._stageH);
 
-        // Divider
         ctx.setLineDash([4, 3]);
-        ctx.strokeStyle = 'rgba(0,122,255,0.2)';
+        ctx.strokeStyle = isDark ? 'rgba(37,99,235,0.2)' : 'rgba(0,122,255,0.2)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(x + 8, sy + b._stageH);
@@ -426,39 +422,35 @@ class TradingFloor {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Labels
-        ctx.fillStyle = 'rgba(0,122,255,0.4)';
-        ctx.font = `600 ${7 * sc}px -apple-system, sans-serif`;
+        ctx.fillStyle = isDark ? 'rgba(37,99,235,0.3)' : 'rgba(0,122,255,0.4)';
+        ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
         ctx.textAlign = 'right';
-        ctx.fillText(t('gw.stage'), x + b.w - 8, sy + 12);
-        ctx.fillText(t('gw.queue'), x + b.w - 8, sy + b._stageH + 14);
+        ctx.fillText(t('gw.stage'), x + b.w - 10, sy + 13);
+        ctx.fillText(t('gw.queue'), x + b.w - 10, sy + b._stageH + 15);
       }
     }
   }
 
-  _drawPriceDisplay(ctx) {
+  _drawPriceDisplay(ctx, isDark) {
     if (this._priceHistory.length === 0) return;
     const pit = this._buildingMap.pit;
-    const x = pit.x + pit.w / 2 + 20;
-    const y = pit.y - pit.h / 2 + 30;
-    const w = 140, h = 90;
+    const x = pit.x + pit.w / 2 + 16;
+    const y = pit.y - pit.h / 2 + 8;
+    const w = 150, h = 95;
     const sc = this._scale;
 
-    // Background
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.9)' : 'rgba(255,255,255,0.92)';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 6);
+    ctx.roundRect(x, y, w, h, 8);
     ctx.fill(); ctx.stroke();
 
-    // Title
-    ctx.fillStyle = '#1d1d1f';
-    ctx.font = `700 ${8 * sc}px -apple-system, sans-serif`;
+    ctx.fillStyle = isDark ? '#e6edf3' : '#1d1d1f';
+    ctx.font = `700 ${9 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.fillText('PRICE', x + 6, y + 12);
+    ctx.fillText('PRICE', x + 8, y + 14);
 
-    // Price line
     const prices = this._priceHistory;
     const fvs = this.history.fvs || [];
     const tv = fvs.length > 0 ? fvs[Math.min(this._roundNum, fvs.length - 1)] : (this.history.trueValue || 100);
@@ -466,9 +458,8 @@ class TradingFloor {
     const minP = Math.min(...allVals) * 0.8;
     const maxP = Math.max(...allVals) * 1.2;
     const range = maxP - minP || 1;
-    const chartX = x + 6, chartY = y + 18, chartW = w - 12, chartH = h - 26;
+    const chartX = x + 8, chartY = y + 20, chartW = w - 16, chartH = h - 30;
 
-    // Fundamental value curve (declining)
     if (fvs.length > 1) {
       ctx.strokeStyle = 'rgba(52,199,89,0.5)';
       ctx.lineWidth = 1.2;
@@ -481,15 +472,8 @@ class TradingFloor {
       }
       ctx.stroke();
       ctx.setLineDash([]);
-    } else {
-      const tvY = chartY + chartH - ((tv - minP) / range) * chartH;
-      ctx.strokeStyle = 'rgba(52,199,89,0.4)';
-      ctx.lineWidth = 1; ctx.setLineDash([3, 2]);
-      ctx.beginPath(); ctx.moveTo(chartX, tvY); ctx.lineTo(chartX + chartW, tvY);
-      ctx.stroke(); ctx.setLineDash([]);
     }
 
-    // Price line
     ctx.strokeStyle = '#007AFF';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -500,37 +484,35 @@ class TradingFloor {
     }
     ctx.stroke();
 
-    // Current price text
     const last = prices[prices.length - 1];
     ctx.fillStyle = last > tv ? '#FF3B30' : '#34C759';
-    ctx.font = `700 ${9 * sc}px monospace`;
+    ctx.font = `700 ${10 * sc}px monospace`;
     ctx.textAlign = 'right';
-    ctx.fillText('$' + last.toFixed(1), x + w - 6, y + 12);
+    ctx.fillText('$' + last.toFixed(1), x + w - 8, y + 14);
   }
 
-  _drawBubbleMeter(ctx) {
+  _drawBubbleMeter(ctx, isDark) {
     if (this._priceHistory.length === 0) return;
     const pit = this._buildingMap.pit;
-    const x = pit.x + pit.w / 2 + 20;
-    const y = pit.y - pit.h / 2 + 130;
-    const w = 140, h = 50;
+    const x = pit.x + pit.w / 2 + 16;
+    const y = pit.y - pit.h / 2 + 112;
+    const w = 150, h = 50;
     const sc = this._scale;
 
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.9)' : 'rgba(255,255,255,0.92)';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 6);
+    ctx.roundRect(x, y, w, h, 8);
     ctx.fill(); ctx.stroke();
 
-    ctx.fillStyle = '#1d1d1f';
-    ctx.font = `700 ${8 * sc}px -apple-system, sans-serif`;
+    ctx.fillStyle = isDark ? '#e6edf3' : '#1d1d1f';
+    ctx.font = `700 ${9 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.fillText('BUBBLE', x + 6, y + 12);
+    ctx.fillText('BUBBLE', x + 8, y + 14);
 
-    // Meter bar
-    const barX = x + 6, barY = y + 18, barW = w - 12, barH = 10;
-    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    const barX = x + 8, barY = y + 20, barW = w - 16, barH = 10;
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
     ctx.beginPath();
     ctx.roundRect(barX, barY, barW, barH, 3);
     ctx.fill();
@@ -539,25 +521,20 @@ class TradingFloor {
     const mid = barX + barW / 2;
     const fillW = Math.abs(pct) * barW / 2;
     ctx.fillStyle = pct > 0 ? 'rgba(255,59,48,0.6)' : 'rgba(52,199,89,0.6)';
-    if (pct > 0) {
-      ctx.fillRect(mid, barY, fillW, barH);
-    } else {
-      ctx.fillRect(mid - fillW, barY, fillW, barH);
-    }
+    if (pct > 0) ctx.fillRect(mid, barY, fillW, barH);
+    else ctx.fillRect(mid - fillW, barY, fillW, barH);
 
-    // Center tick
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(mid, barY - 2);
     ctx.lineTo(mid, barY + barH + 2);
     ctx.stroke();
 
-    // Percentage
     ctx.fillStyle = pct > 0 ? '#FF3B30' : '#34C759';
     ctx.font = `700 ${9 * sc}px monospace`;
     ctx.textAlign = 'center';
-    ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', x + w / 2, y + 42);
+    ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', x + w / 2, y + 44);
   }
 
   /* ---- Animation loop ---- */
@@ -568,11 +545,23 @@ class TradingFloor {
 
     for (const sp of this.sprites) sp.update(dt, this.speed);
     this._draw();
+
+    // Stop animation loop once 'done' phase settles (P&L flashes finished)
+    if (this._phase === 'done') {
+      this._doneTimer = (this._doneTimer || 0) + dt;
+      if (this._doneTimer > 4) { // Allow 4 seconds for final P&L flashes
+        this.running = false;
+        this._draw(); // Final frame
+        return;
+      }
+    }
+
     this._animFrame = requestAnimationFrame(t => this._loop(t));
   }
 
   start() {
     this.running = true;
+    this._doneTimer = 0;
     this._lastTime = performance.now();
     this._loop(this._lastTime);
     this._playGame();
@@ -584,11 +573,7 @@ class TradingFloor {
   }
 
   togglePause() { this.paused = !this.paused; }
-
-  setFollow(f) {
-    this._camFollow = f;
-  }
-
+  setFollow(f) { this._camFollow = f; }
   setZoom(z) { this._camZoom = z; }
 
   /* ---- Game sequence ---- */
@@ -611,7 +596,6 @@ class TradingFloor {
     this._log('phase', '2. Signal Tower', 'Agents receive private signals');
     await this._wait(1000);
 
-    // Show experience type
     const fv0 = (history.fvs && history.fvs[0]) || history.trueValue || 100;
     for (const sp of this.sprites) {
       const isExp = sp.agent.expType === 'experienced';
@@ -635,14 +619,13 @@ class TradingFloor {
       this._roundNum = r + 1;
       const rd = rounds[r];
 
-      // Communication phase — agents visit Comm Lounge
-      if (rd.messages && rd.messages.length > 0) {
+      // Communication phase
+      if (this._hasComm && rd.messages && rd.messages.length > 0) {
         this._arrangeIn('comm', this.sprites, true);
         this._focusBuilding('comm');
         this._log('round', `Round ${r + 1}: Communication`);
         await this._wait(Math.round(600 * stepScale));
 
-        // Show speech bubbles with lie/truth signals
         for (const msg of rd.messages) {
           const sp = this.sprites[msg.senderId];
           const label = msg.isLie ? 'LIE' : 'TRUTH';
@@ -650,17 +633,15 @@ class TradingFloor {
         }
         await this._wait(Math.round(1200 * stepScale));
 
-        // Move back to trading pit
         this._arrangeIn('pit', this.sprites, true);
         this._focusBuilding('pit');
         await this._wait(Math.round(400 * stepScale));
       }
 
-      // Trading round
+      // Trading
       if (rd.trades.length > 0) {
-        // Animate each trade: buyer and seller briefly meet at stage center
         const stage = this._stageCenter('pit');
-        const nAnimate = Math.min(rd.trades.length, 5); // Show up to 5 trades in detail
+        const nAnimate = Math.min(rd.trades.length, 5);
 
         for (let ti = 0; ti < nAnimate; ti++) {
           const trade = rd.trades[ti];
@@ -669,12 +650,11 @@ class TradingFloor {
 
           buyer.active = true;
           seller.active = true;
-          buyer.moveTo(stage.x - 20, stage.y);
-          seller.moveTo(stage.x + 20, stage.y);
+          buyer.moveTo(stage.x - 25, stage.y);
+          seller.moveTo(stage.x + 25, stage.y);
           this._focusStage('pit');
           await this._wait(Math.round(400 * stepScale));
 
-          // Show P&L relative to FV
           const fvNow = (history.fvs && history.fvs[r]) || history.trueValue || 100;
           const buyPnL = fvNow - trade.price;
           const sellPnL = trade.price - fvNow;
@@ -688,7 +668,6 @@ class TradingFloor {
           seller.moveTo(seller._gridX, seller._gridY);
         }
 
-        // Update price display
         if (rd.vwap != null) {
           this._priceHistory.push(rd.vwap);
           this._lastPrice = rd.vwap;
@@ -712,10 +691,8 @@ class TradingFloor {
     this._log('phase', '4. Settlement', 'Final P&L calculated');
     await this._wait(1000);
 
-    // Show final P&L
     for (const sp of this.sprites) {
       sp.pnlFlash = { value: sp.agent.totalPnL, alpha: 3.0 };
-      // Color by result
       sp.label = `P&L: ${sp.agent.totalPnL >= 0 ? '+' : ''}${sp.agent.totalPnL.toFixed(0)}`;
     }
 

@@ -586,3 +586,78 @@ body {
 @media (max-width: 550px) {
   .plot-icon { width: 28px; height: 28px; font-size: .66rem; }
 }
+
+/* ================================================================
+   Paradigm Switcher (Math / AI Agent)
+   ================================================================ */
+.paradigm-switch {
+  display: flex; gap: 2px; background: var(--bg-2); border-radius: var(--radius-sm);
+  padding: 2px; margin-right: 8px;
+}
+.paradigm-btn {
+  padding: 4px 10px; border: none; border-radius: 6px; background: transparent;
+  color: var(--fg-2); font-family: var(--font-sans); font-size: .68rem; font-weight: 600;
+  cursor: pointer; transition: all .15s var(--ease); display: flex; align-items: center; gap: 4px;
+}
+.paradigm-btn:hover { color: var(--fg-0); background: var(--bg-3); }
+.paradigm-btn.active { color: #fff; background: var(--accent); }
+.paradigm-btn[data-v="ai"].active { background: linear-gradient(135deg, var(--purple), var(--accent)); }
+.paradigm-icon { font-size: .78rem; }
+
+/* ================================================================
+   AI Agent Mode
+   ================================================================ */
+body.mode-ai .navbar { border-bottom-color: var(--purple); }
+
+/* API key/endpoint inputs */
+.input-text {
+  font-family: var(--font-mono); font-size: .68rem;
+  background: var(--bg-2); color: var(--fg-0); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 8px; width: 100%; outline: none; transition: border-color .15s;
+}
+.input-text:focus { border-color: var(--accent); }
+.input-key { margin-top: 4px; }
+.input-endpoint { margin-top: 2px; opacity: .5; transition: opacity .15s; }
+.input-endpoint:focus { opacity: 1; }
+
+/* AI run button */
+.btn-ai { background: linear-gradient(135deg, var(--purple), var(--accent)); }
+.btn-ai:hover { filter: brightness(1.1); }
+
+/* AI progress */
+.ai-progress {
+  font-size: .66rem; color: var(--fg-3); margin-top: 4px; min-height: 1em;
+  font-family: var(--font-mono);
+}
+
+/* Section card */
+.section-card {
+  padding: 8px; background: var(--bg-2); border-radius: 6px;
+  border: 1px solid var(--border); margin-bottom: 8px;
+}
+.section-card select { font-size: .68rem; padding: 3px 6px; height: 26px; }
+
+/* Agent roster */
+#agent-roster { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.roster-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; align-items: center;
+  padding: 8px; background: var(--bg-2); border-radius: 6px; border: 1px solid var(--border);
+}
+.roster-group-label {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 6px;
+  font-size: .7rem; font-weight: 600; color: var(--fg-1); margin-bottom: 2px;
+}
+.roster-group-label .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.roster-auto-count {
+  margin-left: auto; width: 40px; height: 22px; padding: 2px 4px;
+  font-family: var(--font-mono); font-size: .64rem; font-weight: 500;
+  color: var(--fg-2); background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: 4px; text-align: center; cursor: default; opacity: .75;
+}
+.roster-row select { font-size: .68rem; padding: 3px 5px; height: 26px; min-width: 0; }
+.roster-row .input-key,
+.roster-row .input-endpoint { grid-column: 1 / -1; }
+
+@media (max-width: 900px) {
+  .paradigm-switch { display: none; }
+}

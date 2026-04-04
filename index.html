@@ -12,6 +12,10 @@
   <!-- ===== Navbar ===== -->
   <nav class="navbar">
     <div class="nav-brand" data-i18n="app.title">Market Microstructure</div>
+    <div class="paradigm-switch">
+      <button class="paradigm-btn active" data-v="math" onclick="switchMode('math')"><span class="paradigm-icon">&#x03A3;</span> Math</button>
+      <button class="paradigm-btn" data-v="ai" onclick="switchMode('ai')"><span class="paradigm-icon">&#x1F916;</span> AI Agent</button>
+    </div>
     <div class="nav-tabs">
       <button class="nav-tab active" data-tab="experiment" data-i18n="nav.experiment">Experiment</button>
       <button class="nav-tab" data-tab="architecture" data-i18n="nav.architecture">Architecture</button>
@@ -60,7 +64,7 @@
       </div>
 
       <!-- ===== Experience ===== -->
-      <div class="panel" id="p-exp">
+      <div class="panel math-only" id="p-exp">
         <div class="panel-header" onclick="togglePanel('p-exp')">
           <span class="icon">&#x1F9E0;</span><h3 data-i18n="grp.experience">Experience (&alpha;)</h3><span class="chevron">&#x25BC;</span>
         </div>
@@ -72,7 +76,7 @@
       </div>
 
       <!-- ===== Inexperienced Behavior ===== -->
-      <div class="panel" id="p-inexp">
+      <div class="panel math-only" id="p-inexp">
         <div class="panel-header" onclick="togglePanel('p-inexp')">
           <span class="icon">&#x1F4CA;</span><h3 data-i18n="grp.inexp">Inexperienced Behavior</h3><span class="chevron">&#x25BC;</span>
         </div>
@@ -125,7 +129,73 @@
         </div>
       </div>
 
-      <button id="btn-run" class="btn-primary" data-i18n="btn.run">Run Market</button>
+      <!-- ===== AI Agent Settings ===== -->
+      <div class="panel" id="p-ai" style="display:none">
+        <div class="panel-header" onclick="togglePanel('p-ai')">
+          <span class="icon">&#x1F916;</span><h3>AI Agent Config</h3><span class="chevron">&#x25BC;</span>
+        </div>
+        <div class="panel-body">
+          <!-- Administrator -->
+          <div class="section-card">
+            <label><span style="font-weight:600">Administrator</span></label>
+            <div class="form-row" style="display:flex;gap:4px;margin-top:4px">
+              <select id="orch-provider" style="flex:1" onchange="updateOrchModels();updateSectionKey('admin')">
+                <option value="claude">Claude</option><option value="gpt">GPT</option>
+                <option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option>
+                <option value="qwen">Qwen</option><option value="minimax">MiniMax</option>
+                <option value="kimi">Kimi</option><option value="glm">GLM</option>
+              </select>
+              <select id="orch-model" style="flex:1"></select>
+            </div>
+            <input type="password" id="pk-admin" class="input-text input-key" placeholder="sk-ant-...">
+            <input type="text" id="pe-admin" class="input-text input-endpoint" placeholder="Endpoint (optional)">
+          </div>
+          <!-- Agent Groups -->
+          <div id="agent-roster">
+            <div class="roster-row">
+              <div class="roster-group-label"><span class="dot" style="background:var(--red)"></span> Risk-Loving <input type="text" class="roster-auto-count" id="rc-rl" readonly></div>
+              <select id="grp-rl-prov" onchange="updateGroupModels('rl');updateSectionKey('rl')">
+                <option value="claude" selected>Claude</option><option value="gpt">GPT</option>
+                <option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option>
+                <option value="qwen">Qwen</option><option value="minimax">MiniMax</option>
+                <option value="kimi">Kimi</option><option value="glm">GLM</option>
+              </select>
+              <select id="grp-rl-model"></select>
+              <input type="password" id="pk-rl" class="input-text input-key" placeholder="API Key">
+              <input type="text" id="pe-rl" class="input-text input-endpoint" placeholder="Endpoint">
+            </div>
+            <div class="roster-row">
+              <div class="roster-group-label"><span class="dot" style="background:var(--amber)"></span> Risk-Neutral <input type="text" class="roster-auto-count" id="rc-rn" readonly></div>
+              <select id="grp-rn-prov" onchange="updateGroupModels('rn');updateSectionKey('rn')">
+                <option value="claude">Claude</option><option value="gpt" selected>GPT</option>
+                <option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option>
+                <option value="qwen">Qwen</option><option value="minimax">MiniMax</option>
+                <option value="kimi">Kimi</option><option value="glm">GLM</option>
+              </select>
+              <select id="grp-rn-model"></select>
+              <input type="password" id="pk-rn" class="input-text input-key" placeholder="API Key">
+              <input type="text" id="pe-rn" class="input-text input-endpoint" placeholder="Endpoint">
+            </div>
+            <div class="roster-row">
+              <div class="roster-group-label"><span class="dot" style="background:var(--blue)"></span> Risk-Averse <input type="text" class="roster-auto-count" id="rc-ra" readonly></div>
+              <select id="grp-ra-prov" onchange="updateGroupModels('ra');updateSectionKey('ra')">
+                <option value="claude">Claude</option><option value="gpt">GPT</option>
+                <option value="gemini">Gemini</option><option value="deepseek" selected>DeepSeek</option>
+                <option value="qwen">Qwen</option><option value="minimax">MiniMax</option>
+                <option value="kimi">Kimi</option><option value="glm">GLM</option>
+              </select>
+              <select id="grp-ra-model"></select>
+              <input type="password" id="pk-ra" class="input-text input-key" placeholder="API Key">
+              <input type="text" id="pe-ra" class="input-text input-endpoint" placeholder="Endpoint">
+            </div>
+          </div>
+          <div class="form-hint">Each risk group can use a different LLM provider. AI agents replace the math-based belief update with LLM-generated valuations.</div>
+        </div>
+      </div>
+
+      <button id="btn-run" class="btn-primary math-only" data-i18n="btn.run">Run Market</button>
+      <button id="btn-run-ai" class="btn-primary btn-ai" style="display:none" onclick="runAIMarket()">Run AI Market</button>
+      <div id="ai-progress" class="ai-progress" style="display:none"></div>
 
       <div class="panel-divider"></div>
 
@@ -516,6 +586,7 @@
   <script src="js/i18n.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/ai-agent.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

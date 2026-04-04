@@ -17,7 +17,7 @@ function _chartLayout() {
   return {
     font: { family: "-apple-system, 'SF Pro Text', 'Inter', sans-serif", size: 11,
       color: dark ? '#8b949e' : '#6b7080' },
-    margin: { t: 8, r: 24, b: 44, l: 54 },
+    margin: { t: 8, r: 50, b: 44, l: 58 },
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor: dark ? '#0d1117' : '#fafbfc',
     xaxis: { gridcolor: dark ? '#1e242e' : '#eef0f3', zerolinecolor: dark ? '#3d4450' : '#c0c4cc' },

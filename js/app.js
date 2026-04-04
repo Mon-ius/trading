@@ -46,16 +46,21 @@ function runSingleMarket() {
   const btn = document.getElementById('btn-run');
   btn.disabled = true; btn.textContent = t('btn.running');
   setTimeout(() => {
-    const params = readSimParams();
-    const result = runMarket(params);
-    assignDisplayNames(result.agents);
-    _history = {
-      prices: result.prices, fvs: result.fvs, volumes: result.volumes, spreads: result.spreads,
-      rounds: result.rounds, agents: result.agents, trueValue: result.fvs[0],
-      bubble: result.bubble, infoAggregation: result.bubble.haesselR2, params, _raw: result,
-    };
-    renderSimResults(_history);
-    btn.disabled = false; btn.textContent = t('btn.run');
+    try {
+      const params = readSimParams();
+      const result = runMarket(params);
+      assignDisplayNames(result.agents);
+      _history = {
+        prices: result.prices, fvs: result.fvs, volumes: result.volumes, spreads: result.spreads,
+        rounds: result.rounds, agents: result.agents, trueValue: result.fvs[0],
+        bubble: result.bubble, infoAggregation: result.bubble.haesselR2, params, _raw: result,
+      };
+      renderSimResults(_history);
+    } catch (e) {
+      console.error('Simulation error:', e);
+    } finally {
+      btn.disabled = false; btn.textContent = t('btn.run');
+    }
   }, 30);
 }
 
@@ -241,6 +246,78 @@ window._gameLog = function(type, title, detail) {
   else { d.innerHTML = title; }
   log.appendChild(d); log.scrollTop = log.scrollHeight;
 };
+
+/* ================================================================
+   AI Agent mode
+   ================================================================ */
+function switchMode(mode) {
+  document.querySelectorAll('.paradigm-btn').forEach(b => b.classList.toggle('active', b.dataset.v === mode));
+  const aiPanel = document.getElementById('p-ai');
+  const mathPanels = document.querySelectorAll('.math-only');
+  const btnRunAI = document.getElementById('btn-run-ai');
+  const aiProgress = document.getElementById('ai-progress');
+  if (mode === 'ai') {
+    aiPanel.style.display = '';
+    aiPanel.classList.remove('collapsed');
+    mathPanels.forEach(p => p.style.display = 'none');
+    btnRunAI.style.display = '';
+    aiProgress.style.display = '';
+    document.body.classList.add('mode-ai');
+    if (typeof initGroupModels === 'function') initGroupModels();
+  } else {
+    aiPanel.style.display = 'none';
+    mathPanels.forEach(p => p.style.display = '');
+    btnRunAI.style.display = 'none';
+    aiProgress.style.display = 'none';
+    document.body.classList.remove('mode-ai');
+  }
+}
+
+async function runAIMarket() {
+  if (typeof runAITradingExperiment !== 'function') return;
+  const btn = document.getElementById('btn-run-ai');
+  const progress = document.getElementById('ai-progress');
+  btn.disabled = true;
+  progress.textContent = 'Initializing...';
+  try {
+    const result = await runAITradingExperiment((step, total, msg) => {
+      progress.textContent = `[${step}/${total}] ${msg}`;
+    });
+    assignDisplayNames(result.agents);
+    _history = {
+      prices: result.prices, fvs: result.fvs, volumes: result.volumes, spreads: result.spreads,
+      rounds: result.rounds, agents: result.agents, trueValue: result.fvs[0],
+      bubble: result.bubble, infoAggregation: result.bubble.haesselR2,
+      params: result.params, _raw: result, aiLog: result.aiLog,
+    };
+    renderSimResults(_history);
+    if (result.aiLog) renderAILog(result.aiLog, result.agents);
+    progress.textContent = 'Done.';
+  } catch (e) {
+    progress.textContent = 'Error: ' + e.message;
+    console.error('AI experiment error:', e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderAILog(aiLog, agents) {
+  const log = document.getElementById('log');
+  if (!aiLog || !aiLog.length) return;
+  for (const e of aiLog) {
+    const d = document.createElement('div');
+    d.className = 'log-entry';
+    if (e.type === 'orchestrator') {
+      d.innerHTML = `<strong>ORCH</strong> Period ${e.period} — ${e.status}${e.error ? ': ' + e.error : ''}`;
+    } else if (e.type === 'agent') {
+      const a = agents[e.id];
+      const name = a ? a.displayName : `Agent ${e.id}`;
+      const tag = e.error ? '<span class="log-tag log-tag-sell">FALLBACK</span>' : '<span class="log-tag log-tag-buy">AI</span>';
+      d.innerHTML = `${name} ${tag} <strong>${e.provider}/${e.model}</strong> belief=$${(e.belief || 0).toFixed(1)}`;
+    }
+    log.appendChild(d);
+  }
+}
 
 /* ================================================================
    i18n update
