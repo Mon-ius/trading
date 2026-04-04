@@ -4,12 +4,12 @@
 
 This project is hosted on GitHub Pages at https://mon-ius.github.io/trading/
 
-**After every code change, always commit and push to `main` so the live site stays current:**
+**After every code change, always commit and push to `master` so the live site stays current:**
 
 ```
 git add <changed files>
 git commit -m "description"
-git push origin main
+git push origin master
 ```
 
 Never leave changes uncommitted or unpushed. The site must always reflect the latest code.
