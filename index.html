@@ -342,31 +342,37 @@
               <h4 data-i18n="def.fv.t">Declining Fundamental Value</h4>
               <p data-i18n="def.fv.d">FV(t) = (T &minus; t) &times; E[d]. The asset's intrinsic value declines linearly as remaining dividend periods decrease, reaching zero at period T.</p>
               <div class="formula">FV(t) = (T &minus; t) &times; E[d]</div>
+              <span class="formula-ref">DLM (2005) &sect;I p.1732, fn.5; Smith, Suchanek &amp; Williams (1988)</span>
             </div>
             <div class="arch-def-card">
               <h4 data-i18n="def.cda.t">Continuous Double Auction (CDA)</h4>
               <p data-i18n="def.cda.d">Market mechanism where agents submit limit orders (bids and asks). A trade executes whenever the highest bid meets or exceeds the lowest ask.</p>
               <div class="formula">trade iff max(bid) &ge; min(ask)</div>
+              <span class="formula-ref">DLM (2005) &sect;I p.1732, fn.6; Smith (1962); Holt (1995)</span>
             </div>
             <div class="arch-def-card">
               <h4 data-i18n="def.bubble.t">Bubble Formation</h4>
               <p data-i18n="def.bubble.d">Occurs when market price significantly and persistently exceeds fundamental value, driven by inexperienced agents' optimism bias and momentum chasing.</p>
               <div class="formula">P(t) &gt;&gt; FV(t) for sustained t</div>
+              <span class="formula-ref">DLM (2005) &sect;II Fig.1 p.1733; Table 1 p.1734</span>
             </div>
             <div class="arch-def-card">
               <h4 data-i18n="def.alpha.t">&alpha;* &mdash; Critical Experience Threshold</h4>
               <p data-i18n="def.alpha.d">The minimum fraction of experienced agents required to suppress bubble formation below a given NAPD threshold. Central result of this simulation.</p>
               <div class="formula">&alpha;* = min{&alpha; : NAPD(&alpha;) &lt; &epsilon;}</div>
+              <span class="formula-ref">DLM (2005) &sect;II Table 2 p.1735; &sect;III p.1735&ndash;1736</span>
             </div>
             <div class="arch-def-card">
               <h4 data-i18n="def.cara.t">CARA Utility</h4>
               <p data-i18n="def.cara.d">U(W) = &minus;exp(&minus;&rho;W). Constant Absolute Risk Aversion utility function. Parameter &rho; determines risk attitude: &rho; &gt; 0 risk-averse, &rho; = 0 neutral, &rho; &lt; 0 risk-loving.</p>
               <div class="formula">U(W) = &minus;exp(&minus;&rho; &middot; W)</div>
+              <span class="formula-ref">Standard CARA; cf. DLM (2005) fn.5 (risk-neutrality baseline)</span>
             </div>
             <div class="arch-def-card">
               <h4 data-i18n="def.comm.t">Strategic Communication</h4>
               <p data-i18n="def.comm.d">Agents can send cheap-talk price signals before trading. Lying and deception costs (from Choi et al. 2025) determine signal credibility.</p>
               <div class="formula">cost = c<sub>l</sub>&middot;|m&minus;&theta;| + c<sub>d</sub>&middot;&Delta;action</div>
+              <span class="formula-ref">Extension; cf. Choi et al. (2025)</span>
             </div>
           </div>
         </div>
@@ -410,14 +416,15 @@
               <thead><tr>
                 <th data-i18n="th.expr">Expression</th>
                 <th data-i18n="th.meaning">Meaning</th>
+                <th>Reference</th>
               </tr></thead>
               <tbody>
-                <tr><td class="math">FV(t) = (T&minus;t) &times; E[d]</td><td>Fundamental value at period t; declines to 0 at T</td></tr>
-                <tr><td class="math">U(W) = &minus;exp(&minus;&rho;W)</td><td>CARA utility function with risk aversion &rho;</td></tr>
-                <tr><td class="math">NAPD = &Sigma;|P(t)&minus;FV(t)| / (T&times;FV&#x2080;)</td><td>Normalized absolute price deviation (bubble magnitude)</td></tr>
-                <tr><td class="math">&alpha;* = min{&alpha; : NAPD(&alpha;) &lt; &epsilon;}</td><td>Critical experience fraction to suppress bubbles</td></tr>
-                <tr><td class="math">R&sup2; = 1 &minus; &Sigma;(P&minus;FV)&sup2; / &Sigma;(P&minus;P&#x0304;)&sup2;</td><td>Haessel R-squared: price tracking quality</td></tr>
-                <tr><td class="math">Amp = max&uarr;/FV&#x2080; + |min&darr;|/FV&#x2080;</td><td>Price amplitude: total swing measure</td></tr>
+                <tr><td class="math">FV(t) = (T&minus;t) &times; E[d]</td><td>Fundamental value at period t; declines to 0 at T</td><td class="formula-ref">DLM &sect;I p.1732, fn.5</td></tr>
+                <tr><td class="math">U(W) = &minus;exp(&minus;&rho;W)</td><td>CARA utility function with risk aversion &rho;</td><td class="formula-ref">Standard; DLM fn.5</td></tr>
+                <tr><td class="math">NAPD = &Sigma;|P(t)&minus;FV(t)| / (T&times;FV&#x2080;)</td><td>Normalized absolute price deviation (bubble magnitude)</td><td class="formula-ref">DLM &sect;II p.1733&ndash;1734</td></tr>
+                <tr><td class="math">&alpha;* = min{&alpha; : NAPD(&alpha;) &lt; &epsilon;}</td><td>Critical experience fraction to suppress bubbles</td><td class="formula-ref">DLM &sect;II Table 2 p.1735</td></tr>
+                <tr><td class="math">R&sup2; = 1 &minus; &Sigma;(P&minus;FV)&sup2; / &Sigma;(P&minus;P&#x0304;)&sup2;</td><td>Haessel R-squared: price tracking quality</td><td class="formula-ref">DLM &sect;II p.1733; Haessel (1978)</td></tr>
+                <tr><td class="math">Amp = max&uarr;/FV&#x2080; + |min&darr;|/FV&#x2080;</td><td>Price amplitude: total swing measure</td><td class="formula-ref">DLM &sect;II p.1734</td></tr>
               </tbody>
             </table>
           </div>
