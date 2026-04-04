@@ -180,10 +180,10 @@ body {
 }
 .panel-body {
   padding: 10px 12px 12px;
-  max-height: 500px;
+  max-height: 2000px;
   opacity: 1;
   overflow: hidden;
-  transition: max-height .3s var(--ease), padding .3s var(--ease), opacity .2s var(--ease);
+  transition: max-height .35s var(--ease), padding .3s var(--ease), opacity .2s var(--ease);
 }
 .panel.collapsed .panel-body {
   max-height: 0;
@@ -240,13 +240,15 @@ body {
   height: 1px; background: var(--border); margin: 10px 0;
 }
 
-/* Primary button */
+/* Primary button — sticky at bottom of sidebar scroll */
 .btn-primary {
   display: block; width: 100%; padding: 10px; margin-top: 8px;
   border: none; border-radius: var(--radius-sm);
   background: var(--accent); color: #fff; font-family: var(--font-sans);
   font-size: .74rem; font-weight: 700; cursor: pointer;
   transition: all .2s var(--ease); letter-spacing: .02em;
+  position: sticky; bottom: 0; z-index: 2;
+  box-shadow: 0 -4px 12px rgba(0,0,0,.15);
 }
 .btn-primary:hover { background: var(--accent-dark); }
 .btn-primary:disabled { opacity: .5; cursor: default; }
