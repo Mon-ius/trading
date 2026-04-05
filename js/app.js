@@ -365,13 +365,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hamburger
   const hamburger = document.getElementById('nav-hamburger');
   const navMenu = document.getElementById('nav-menu');
-  hamburger.addEventListener('click', e => { e.stopPropagation(); navMenu.classList.toggle('open'); });
+  hamburger.addEventListener('click', e => {
+    e.stopPropagation();
+    navMenu.classList.toggle('open');
+    // Close sidebar when opening nav menu
+    if (navMenu.classList.contains('open')) { sidebar.classList.remove('open'); backdrop.classList.remove('visible'); }
+  });
   document.addEventListener('click', e => { if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) navMenu.classList.remove('open'); });
 
   // Sidebar
   const sidebar = document.getElementById('sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
-  document.getElementById('sidebar-toggle').addEventListener('click', () => { sidebar.classList.toggle('open'); backdrop.classList.toggle('visible'); });
+  document.getElementById('sidebar-toggle').addEventListener('click', () => {
+    sidebar.classList.toggle('open'); backdrop.classList.toggle('visible');
+    // Close nav menu when opening sidebar
+    if (sidebar.classList.contains('open')) navMenu.classList.remove('open');
+  });
   backdrop.addEventListener('click', () => { sidebar.classList.remove('open'); backdrop.classList.remove('visible'); });
 
   // Draw.io link
