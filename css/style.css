@@ -516,15 +516,11 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
   .gloss-table th, .gloss-table td { padding: 6px 8px; font-size: .76rem; }
 }
 @media (max-width: 550px) {
-  .navbar { padding: 0 10px; gap: 8px; height: 48px; }
+  .navbar { padding: 0 10px; gap: 8px; }
   .nav-tab { padding: 14px 8px; font-size: .72rem; }
-  .nav-menu { top: 48px; }
   .sidebar {
     width: 100%; border-right: none;
-    max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px);
-    top: 48px;
   }
-  .sidebar-backdrop { top: 48px; }
   .main-area { padding: 12px 10px 24px; }
   .summary-row { grid-template-columns: repeat(2, 1fr); }
   .summary-card { padding: 8px 10px; }
