@@ -18,9 +18,10 @@ function _baseLayout() {
   const fg = dark ? '#8b949e' : '#6b7080';
   const grid = dark ? '#1e242e' : '#eef0f3';
   const zero = dark ? '#3d4450' : '#c0c4cc';
+  const narrow = window.innerWidth < 600;
   return {
-    font: { family: "-apple-system, 'SF Pro Text', 'Inter', sans-serif", size: 11, color: fg },
-    margin: { t: 8, r: 50, b: 44, l: 58 },
+    font: { family: "-apple-system, 'SF Pro Text', 'Inter', sans-serif", size: narrow ? 10 : 11, color: fg },
+    margin: { t: 8, r: narrow ? 10 : 50, b: 40, l: narrow ? 40 : 58 },
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor: dark ? '#0d1117' : '#fafbfc',
     xaxis: { gridcolor: grid, zerolinecolor: zero },
@@ -35,6 +36,8 @@ function _layout(overrides) {
   const out = { ...L, ...overrides };
   if (overrides.xaxis) out.xaxis = { ...L.xaxis, ...overrides.xaxis };
   if (overrides.yaxis) out.yaxis = { ...L.yaxis, ...overrides.yaxis };
+  // Ensure right margin for dual-axis charts
+  if (overrides.yaxis2) out.margin = { ...out.margin, r: Math.max(out.margin.r, 40) };
   return out;
 }
 
