@@ -197,9 +197,7 @@ class TradingFloor {
         copy.h = Math.max(b.h, rows * 48 * sc + 55);
       }
       if (b.id === 'pit') {
-        const stageH = Math.max(80, 65 * sc + 30);
-        copy._stageH = stageH;
-        copy.h = Math.max(b.h, rows * 48 * sc + 55 + stageH);
+        copy.h = Math.max(b.h, rows * 48 * sc + 55);
       }
       this._buildingMap[copy.id] = copy;
     }
@@ -389,10 +387,11 @@ class TradingFloor {
     const sc = this._scale;
     for (const sp of this.sprites) sp.draw(ctx, sc, isDark);
 
-    this._drawPriceDisplay(ctx, isDark);
-    this._drawBubbleMeter(ctx, isDark);
-
     ctx.restore();
+
+    // HUD overlay — fixed position, not affected by camera
+    this._drawPriceDisplay(ctx, isDark, W, H);
+    this._drawBubbleMeter(ctx, isDark, W, H);
   }
 
   _drawConnections(ctx, isDark) {
@@ -552,28 +551,26 @@ class TradingFloor {
     }
   }
 
-  _drawPriceDisplay(ctx, isDark) {
+  _drawPriceDisplay(ctx, isDark, W, H) {
     if (this._priceHistory.length === 0) return;
-    const pit = this._buildingMap.pit;
-    const sc = this._scale;
-    const stageH = pit._stageH || 80;
-    const panelW = (pit.w - 30) / 2;
-    const panelH = stageH - 14;
-    const baseY = pit.y - pit.h / 2 + 28 + 4;
+    const dpr = devicePixelRatio;
+    const gap = 8 * dpr;
+    const panelW = (W - gap * 3) / 2;
+    const panelH = 70 * dpr;
+    const px = gap;
+    const baseY = gap;
 
-    // Price panel — left half of stage
-    const px = pit.x - pit.w / 2 + 8;
-    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.9)' : 'rgba(255,255,255,0.92)';
-    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
-    ctx.lineWidth = 1;
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.88)' : 'rgba(255,255,255,0.90)';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1 * dpr;
     ctx.beginPath();
-    ctx.roundRect(px, baseY, panelW, panelH, 6);
+    ctx.roundRect(px, baseY, panelW, panelH, 8 * dpr);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = isDark ? '#e6edf3' : '#1d1d1f';
-    ctx.font = `700 ${8 * sc}px -apple-system, sans-serif`;
+    ctx.font = `700 ${11 * dpr}px -apple-system, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.fillText('PRICE', px + 6, baseY + 12);
+    ctx.fillText('PRICE', px + 8 * dpr, baseY + 16 * dpr);
 
     const prices = this._priceHistory;
     const fvs = this.history.fvs || [];
@@ -582,12 +579,13 @@ class TradingFloor {
     const minP = Math.min(...allVals) * 0.8;
     const maxP = Math.max(...allVals) * 1.2;
     const range = maxP - minP || 1;
-    const chartX = px + 6, chartY = baseY + 16, chartW = panelW - 12, chartH = panelH - 24;
+    const chartX = px + 8 * dpr, chartY = baseY + 22 * dpr;
+    const chartW = panelW - 16 * dpr, chartH = panelH - 30 * dpr;
 
     if (fvs.length > 1) {
       ctx.strokeStyle = 'rgba(52,199,89,0.5)';
-      ctx.lineWidth = 1.2;
-      ctx.setLineDash([3, 2]);
+      ctx.lineWidth = 1.5 * dpr;
+      ctx.setLineDash([4 * dpr, 3 * dpr]);
       ctx.beginPath();
       for (let i = 0; i < fvs.length; i++) {
         const cx = chartX + (i / Math.max(1, fvs.length - 1)) * chartW;
@@ -599,7 +597,7 @@ class TradingFloor {
     }
 
     ctx.strokeStyle = '#007AFF';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2 * dpr;
     ctx.beginPath();
     for (let i = 0; i < prices.length; i++) {
       const cx = chartX + (i / Math.max(1, prices.length - 1)) * chartW;
@@ -610,38 +608,37 @@ class TradingFloor {
 
     const last = prices[prices.length - 1];
     ctx.fillStyle = last > tv ? '#FF3B30' : '#34C759';
-    ctx.font = `700 ${9 * sc}px monospace`;
+    ctx.font = `700 ${12 * dpr}px monospace`;
     ctx.textAlign = 'right';
-    ctx.fillText('$' + last.toFixed(1), px + panelW - 6, baseY + 12);
+    ctx.fillText('$' + last.toFixed(1), px + panelW - 8 * dpr, baseY + 16 * dpr);
   }
 
-  _drawBubbleMeter(ctx, isDark) {
+  _drawBubbleMeter(ctx, isDark, W, H) {
     if (this._priceHistory.length === 0) return;
-    const pit = this._buildingMap.pit;
-    const sc = this._scale;
-    const stageH = pit._stageH || 80;
-    const panelW = (pit.w - 30) / 2;
-    const panelH = stageH - 14;
-    const baseY = pit.y - pit.h / 2 + 28 + 4;
+    const dpr = devicePixelRatio;
+    const gap = 8 * dpr;
+    const panelW = (W - gap * 3) / 2;
+    const panelH = 70 * dpr;
+    const bx = gap * 2 + panelW;
+    const baseY = gap;
 
-    // Bubble panel — right half of stage
-    const bx = pit.x - pit.w / 2 + 8 + panelW + 14;
-    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.9)' : 'rgba(255,255,255,0.92)';
-    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
-    ctx.lineWidth = 1;
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.88)' : 'rgba(255,255,255,0.90)';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1 * dpr;
     ctx.beginPath();
-    ctx.roundRect(bx, baseY, panelW, panelH, 6);
+    ctx.roundRect(bx, baseY, panelW, panelH, 8 * dpr);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = isDark ? '#e6edf3' : '#1d1d1f';
-    ctx.font = `700 ${8 * sc}px -apple-system, sans-serif`;
+    ctx.font = `700 ${11 * dpr}px -apple-system, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.fillText('BUBBLE', bx + 6, baseY + 12);
+    ctx.fillText('BUBBLE', bx + 8 * dpr, baseY + 16 * dpr);
 
-    const barX = bx + 6, barY = baseY + 18, barW = panelW - 12, barH = 10;
+    const barX = bx + 8 * dpr, barY = baseY + 24 * dpr;
+    const barW = panelW - 16 * dpr, barH = 14 * dpr;
     ctx.fillStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
     ctx.beginPath();
-    ctx.roundRect(barX, barY, barW, barH, 3);
+    ctx.roundRect(barX, barY, barW, barH, 4 * dpr);
     ctx.fill();
 
     const pct = clamp(this._bubblePct, -1, 1);
@@ -652,16 +649,16 @@ class TradingFloor {
     else ctx.fillRect(mid - fillW, barY, fillW, barH);
 
     ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1 * dpr;
     ctx.beginPath();
-    ctx.moveTo(mid, barY - 2);
-    ctx.lineTo(mid, barY + barH + 2);
+    ctx.moveTo(mid, barY - 3 * dpr);
+    ctx.lineTo(mid, barY + barH + 3 * dpr);
     ctx.stroke();
 
     ctx.fillStyle = pct > 0 ? '#FF3B30' : '#34C759';
-    ctx.font = `700 ${8 * sc}px monospace`;
+    ctx.font = `700 ${11 * dpr}px monospace`;
     ctx.textAlign = 'center';
-    ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', bx + panelW / 2, baseY + panelH - 4);
+    ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', bx + panelW / 2, baseY + panelH - 8 * dpr);
   }
 
   /* ---- Ensure canvas redraws on interaction (even after game ends) ---- */
