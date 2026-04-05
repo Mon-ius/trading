@@ -197,7 +197,10 @@ class TradingFloor {
         copy.h = Math.max(b.h, rows * 48 * sc + 55);
       }
       if (b.id === 'pit') {
-        copy.h = Math.max(b.h, rows * 48 * sc + 55);
+        const chartH = 70;  // height for Price/Bubble panel row
+        copy._chartH = chartH;
+        copy._stageH = Math.max(80, 65 * sc + 30);
+        copy.h = Math.max(b.h, rows * 48 * sc + 55 + chartH + copy._stageH);
       }
       this._buildingMap[copy.id] = copy;
     }
@@ -307,10 +310,11 @@ class TradingFloor {
     if (!b) return;
     const sc = this._scale;
     const headerH = 28;
+    const chartH = b._chartH || 0;
     const stageH = b._stageH || 0;
     const padX = 20, padY = 14;
     const cellW = 42 * sc, cellH = 48 * sc;
-    const areaTop = b.y - b.h / 2 + headerH + stageH;
+    const areaTop = b.y - b.h / 2 + headerH + chartH + stageH;
     const areaW = b.w - padX * 2;
     const cols = Math.max(1, Math.floor(areaW / cellW));
     const perDelay = stagger !== false ? Math.min(0.035, 0.5 / Math.max(1, list.length)) : 0;
@@ -328,8 +332,9 @@ class TradingFloor {
   _stageCenter(buildingId) {
     const b = this._buildingMap[buildingId];
     const headerH = 28;
+    const chartH = b._chartH || 0;
     const stageH = b._stageH || 80;
-    return { x: b.x, y: b.y - b.h / 2 + headerH + stageH / 2 + 5 };
+    return { x: b.x, y: b.y - b.h / 2 + headerH + chartH + stageH / 2 + 5 };
   }
 
   _focusBuilding(id) {
@@ -383,15 +388,13 @@ class TradingFloor {
 
     this._drawConnections(ctx, isDark);
     this._drawBuildings(ctx, isDark);
+    this._drawPriceDisplay(ctx, isDark);
+    this._drawBubbleMeter(ctx, isDark);
 
     const sc = this._scale;
     for (const sp of this.sprites) sp.draw(ctx, sc, isDark);
 
     ctx.restore();
-
-    // HUD overlay — fixed position, not affected by camera
-    this._drawPriceDisplay(ctx, isDark, W, H);
-    this._drawBubbleMeter(ctx, isDark, W, H);
   }
 
   _drawConnections(ctx, isDark) {
@@ -527,50 +530,59 @@ class TradingFloor {
         ctx.fillText(t(b.label), x + 12, y + 19);
       }
 
-      // Stage zone for pit
-      if (b._stageH && b.id === 'pit') {
-        const sy = y + 28;
-        ctx.fillStyle = isDark ? 'rgba(37,99,235,0.08)' : 'rgba(0,122,255,0.06)';
-        ctx.fillRect(x + 2, sy, b.w - 4, b._stageH);
+      // Chart panel zone + stage zone for pit
+      if (b.id === 'pit') {
+        const chartH = b._chartH || 0;
+        const stageH = b._stageH || 0;
 
-        ctx.setLineDash([4, 3]);
-        ctx.strokeStyle = isDark ? 'rgba(37,99,235,0.2)' : 'rgba(0,122,255,0.2)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x + 8, sy + b._stageH);
-        ctx.lineTo(x + b.w - 8, sy + b._stageH);
-        ctx.stroke();
-        ctx.setLineDash([]);
+        // Stage zone (below chart panels)
+        if (stageH) {
+          const sy = y + 28 + chartH;
+          ctx.fillStyle = isDark ? 'rgba(37,99,235,0.08)' : 'rgba(0,122,255,0.06)';
+          ctx.fillRect(x + 2, sy, b.w - 4, stageH);
 
-        ctx.fillStyle = isDark ? 'rgba(37,99,235,0.3)' : 'rgba(0,122,255,0.4)';
-        ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
-        ctx.textAlign = 'right';
-        ctx.fillText(t('gw.stage'), x + b.w - 10, sy + 13);
-        ctx.fillText(t('gw.queue'), x + b.w - 10, sy + b._stageH + 15);
+          ctx.setLineDash([4, 3]);
+          ctx.strokeStyle = isDark ? 'rgba(37,99,235,0.2)' : 'rgba(0,122,255,0.2)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x + 8, sy + stageH);
+          ctx.lineTo(x + b.w - 8, sy + stageH);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = isDark ? 'rgba(37,99,235,0.3)' : 'rgba(0,122,255,0.4)';
+          ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
+          ctx.textAlign = 'right';
+          ctx.fillText(t('gw.stage'), x + b.w - 10, sy + 13);
+          ctx.fillText(t('gw.queue'), x + b.w - 10, sy + stageH + 15);
+        }
       }
     }
   }
 
-  _drawPriceDisplay(ctx, isDark, W, H) {
+  _drawPriceDisplay(ctx, isDark) {
     if (this._priceHistory.length === 0) return;
-    const dpr = devicePixelRatio;
-    const gap = 8 * dpr;
-    const panelW = (W - gap * 3) / 2;
-    const panelH = 70 * dpr;
-    const px = gap;
-    const baseY = gap;
+    const pit = this._buildingMap.pit;
+    if (!pit || !pit._chartH) return;
+    const sc = this._scale;
+    const chartH = pit._chartH;
+    const pad = 6;
+    const panelW = (pit.w - pad * 3) / 2;
+    const panelH = chartH - pad * 2;
+    const px = pit.x - pit.w / 2 + pad;
+    const baseY = pit.y - pit.h / 2 + 28 + pad;
 
-    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.88)' : 'rgba(255,255,255,0.90)';
-    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-    ctx.lineWidth = 1 * dpr;
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.9)' : 'rgba(255,255,255,0.92)';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(px, baseY, panelW, panelH, 8 * dpr);
+    ctx.roundRect(px, baseY, panelW, panelH, 6);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = isDark ? '#e6edf3' : '#1d1d1f';
-    ctx.font = `700 ${11 * dpr}px -apple-system, sans-serif`;
+    ctx.font = `700 ${9 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.fillText('PRICE', px + 8 * dpr, baseY + 16 * dpr);
+    ctx.fillText('PRICE', px + 6, baseY + 13);
 
     const prices = this._priceHistory;
     const fvs = this.history.fvs || [];
@@ -579,17 +591,16 @@ class TradingFloor {
     const minP = Math.min(...allVals) * 0.8;
     const maxP = Math.max(...allVals) * 1.2;
     const range = maxP - minP || 1;
-    const chartX = px + 8 * dpr, chartY = baseY + 22 * dpr;
-    const chartW = panelW - 16 * dpr, chartH = panelH - 30 * dpr;
+    const cX = px + 6, cY = baseY + 18, cW = panelW - 12, cH = panelH - 26;
 
     if (fvs.length > 1) {
       ctx.strokeStyle = 'rgba(52,199,89,0.5)';
-      ctx.lineWidth = 1.5 * dpr;
-      ctx.setLineDash([4 * dpr, 3 * dpr]);
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 2]);
       ctx.beginPath();
       for (let i = 0; i < fvs.length; i++) {
-        const cx = chartX + (i / Math.max(1, fvs.length - 1)) * chartW;
-        const cy = chartY + chartH - ((fvs[i] - minP) / range) * chartH;
+        const cx = cX + (i / Math.max(1, fvs.length - 1)) * cW;
+        const cy = cY + cH - ((fvs[i] - minP) / range) * cH;
         i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
       }
       ctx.stroke();
@@ -597,48 +608,50 @@ class TradingFloor {
     }
 
     ctx.strokeStyle = '#007AFF';
-    ctx.lineWidth = 2 * dpr;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     for (let i = 0; i < prices.length; i++) {
-      const cx = chartX + (i / Math.max(1, prices.length - 1)) * chartW;
-      const cy = chartY + chartH - ((prices[i] - minP) / range) * chartH;
+      const cx = cX + (i / Math.max(1, prices.length - 1)) * cW;
+      const cy = cY + cH - ((prices[i] - minP) / range) * cH;
       i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
     }
     ctx.stroke();
 
     const last = prices[prices.length - 1];
     ctx.fillStyle = last > tv ? '#FF3B30' : '#34C759';
-    ctx.font = `700 ${12 * dpr}px monospace`;
+    ctx.font = `700 ${10 * sc}px monospace`;
     ctx.textAlign = 'right';
-    ctx.fillText('$' + last.toFixed(1), px + panelW - 8 * dpr, baseY + 16 * dpr);
+    ctx.fillText('$' + last.toFixed(1), px + panelW - 6, baseY + 13);
   }
 
-  _drawBubbleMeter(ctx, isDark, W, H) {
+  _drawBubbleMeter(ctx, isDark) {
     if (this._priceHistory.length === 0) return;
-    const dpr = devicePixelRatio;
-    const gap = 8 * dpr;
-    const panelW = (W - gap * 3) / 2;
-    const panelH = 70 * dpr;
-    const bx = gap * 2 + panelW;
-    const baseY = gap;
+    const pit = this._buildingMap.pit;
+    if (!pit || !pit._chartH) return;
+    const sc = this._scale;
+    const chartH = pit._chartH;
+    const pad = 6;
+    const panelW = (pit.w - pad * 3) / 2;
+    const panelH = chartH - pad * 2;
+    const bx = pit.x - pit.w / 2 + pad * 2 + panelW;
+    const baseY = pit.y - pit.h / 2 + 28 + pad;
 
-    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.88)' : 'rgba(255,255,255,0.90)';
-    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-    ctx.lineWidth = 1 * dpr;
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.9)' : 'rgba(255,255,255,0.92)';
+    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(bx, baseY, panelW, panelH, 8 * dpr);
+    ctx.roundRect(bx, baseY, panelW, panelH, 6);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = isDark ? '#e6edf3' : '#1d1d1f';
-    ctx.font = `700 ${11 * dpr}px -apple-system, sans-serif`;
+    ctx.font = `700 ${9 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.fillText('BUBBLE', bx + 8 * dpr, baseY + 16 * dpr);
+    ctx.fillText('BUBBLE', bx + 6, baseY + 13);
 
-    const barX = bx + 8 * dpr, barY = baseY + 24 * dpr;
-    const barW = panelW - 16 * dpr, barH = 14 * dpr;
+    const barX = bx + 6, barY = baseY + 20, barW = panelW - 12, barH = 12;
     ctx.fillStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
     ctx.beginPath();
-    ctx.roundRect(barX, barY, barW, barH, 4 * dpr);
+    ctx.roundRect(barX, barY, barW, barH, 3);
     ctx.fill();
 
     const pct = clamp(this._bubblePct, -1, 1);
@@ -649,16 +662,16 @@ class TradingFloor {
     else ctx.fillRect(mid - fillW, barY, fillW, barH);
 
     ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)';
-    ctx.lineWidth = 1 * dpr;
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(mid, barY - 3 * dpr);
-    ctx.lineTo(mid, barY + barH + 3 * dpr);
+    ctx.moveTo(mid, barY - 2);
+    ctx.lineTo(mid, barY + barH + 2);
     ctx.stroke();
 
     ctx.fillStyle = pct > 0 ? '#FF3B30' : '#34C759';
-    ctx.font = `700 ${11 * dpr}px monospace`;
+    ctx.font = `700 ${9 * sc}px monospace`;
     ctx.textAlign = 'center';
-    ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', bx + panelW / 2, baseY + panelH - 8 * dpr);
+    ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', bx + panelW / 2, baseY + panelH - 5);
   }
 
   /* ---- Ensure canvas redraws on interaction (even after game ends) ---- */
