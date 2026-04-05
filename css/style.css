@@ -529,7 +529,7 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
   .chart-title { font-size: .7rem; }
   .chart-note { font-size: .6rem; padding: 6px 6px 0; }
   .view-btn { padding: 5px 10px; font-size: .68rem; }
-  .game-canvas-wrap canvas { min-height: 360px; }
+  .game-canvas-wrap canvas { min-height: 420px; }
   .game-controls { gap: 4px; padding: 6px 8px; }
   .g-btn { padding: 4px 8px; font-size: .62rem; }
   .log-body { max-height: 200px; font-size: .6rem; }

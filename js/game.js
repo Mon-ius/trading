@@ -153,6 +153,7 @@ class TradingFloor {
     this._camZoom = 1;
     this._camTarget = null;
     this._camFollow = true;
+    this._initialZoomSet = false;
     this._animFrame = null;
     this._lastTime = 0;
     this._phase = 'idle';
@@ -293,6 +294,12 @@ class TradingFloor {
     cv.height = h * devicePixelRatio;
     cv.style.width = w + 'px';
     cv.style.height = h + 'px';
+    // Fit buildings to viewport width on first layout
+    if (!this._initialZoomSet) {
+      this._initialZoomSet = true;
+      const bw = this._buildingMap.hub ? this._buildingMap.hub.w : BASE_W;
+      this._camZoom = clamp(w / (bw + 60), 0.7, 1.6);
+    }
   }
 
   /* ---- Arrangement helpers ---- */
