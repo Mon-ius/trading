@@ -12,20 +12,15 @@
   <!-- ===== Navbar ===== -->
   <nav class="navbar">
     <div class="nav-brand" data-i18n="app.title">Market Microstructure</div>
-    <div class="paradigm-switch">
-      <button class="paradigm-btn active" data-v="math" onclick="switchMode('math')"><span class="paradigm-icon">&#x03A3;</span> Math</button>
-      <button class="paradigm-btn" data-v="ai" onclick="switchMode('ai')"><span class="paradigm-icon">&#x1F916;</span> AI Agent</button>
-    </div>
     <div class="nav-tabs">
       <button class="nav-tab active" data-tab="experiment" data-i18n="nav.experiment">Experiment</button>
       <button class="nav-tab" data-tab="architecture" data-i18n="nav.architecture">Architecture</button>
       <button class="nav-tab" data-tab="glossary" data-i18n="nav.glossary">Glossary</button>
     </div>
     <div class="nav-menu" id="nav-menu">
-      <div class="nav-tabs-mobile">
-        <button class="nav-tab active" data-tab="experiment" data-i18n="nav.experiment">Experiment</button>
-        <button class="nav-tab" data-tab="architecture" data-i18n="nav.architecture">Architecture</button>
-        <button class="nav-tab" data-tab="glossary" data-i18n="nav.glossary">Glossary</button>
+      <div class="paradigm-switch">
+        <button class="paradigm-btn active" data-v="math" onclick="switchMode('math')"><span class="paradigm-icon">&#x03A3;</span> <span class="paradigm-label">Math</span></button>
+        <button class="paradigm-btn" data-v="ai" onclick="switchMode('ai')"><span class="paradigm-icon">&#x1F916;</span> <span class="paradigm-label">AI Agent</span></button>
       </div>
       <div class="nav-tools">
         <button class="mobile-toggle" id="sidebar-toggle" title="Parameters">

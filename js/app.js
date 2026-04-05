@@ -362,26 +362,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nav-menu').classList.remove('open');
   }));
 
-  // Hamburger
-  const hamburger = document.getElementById('nav-hamburger');
-  const navMenu = document.getElementById('nav-menu');
-  hamburger.addEventListener('click', e => {
-    e.stopPropagation();
-    navMenu.classList.toggle('open');
-    // Close sidebar when opening nav menu
-    if (navMenu.classList.contains('open')) { sidebar.classList.remove('open'); backdrop.classList.remove('visible'); }
-  });
-  document.addEventListener('click', e => { if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) navMenu.classList.remove('open'); });
-
   // Sidebar
   const sidebar = document.getElementById('sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
+  function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('visible'); }
+  function openSidebar() { sidebar.classList.add('open'); backdrop.classList.add('visible'); }
   document.getElementById('sidebar-toggle').addEventListener('click', () => {
-    sidebar.classList.toggle('open'); backdrop.classList.toggle('visible');
-    // Close nav menu when opening sidebar
-    if (sidebar.classList.contains('open')) navMenu.classList.remove('open');
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
   });
-  backdrop.addEventListener('click', () => { sidebar.classList.remove('open'); backdrop.classList.remove('visible'); });
+  backdrop.addEventListener('click', closeSidebar);
+
+  // Hamburger
+  const hamburger = document.getElementById('nav-hamburger');
+  const navMenu = document.getElementById('nav-menu');
+  hamburger.addEventListener('click', e => { e.stopPropagation(); navMenu.classList.toggle('open'); });
+  document.addEventListener('click', e => { if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) navMenu.classList.remove('open'); });
+  navMenu.addEventListener('click', e => { if (e.target.closest('.mobile-toggle, .theme-btn, .paradigm-btn')) navMenu.classList.remove('open'); });
+  const ls = document.getElementById('lang-select');
+  if (ls) ls.addEventListener('change', () => navMenu.classList.remove('open'));
 
   // Draw.io link
   (function setupDrawio() {
