@@ -353,13 +353,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_history) { renderAllCharts(_history); renderLog(_history); }
   });
 
-  // Nav tabs (Experiment / Architecture / Glossary)
+  // Nav tabs (Experiment / Architecture / Glossary) — syncs desktop + mobile sets
   document.querySelectorAll('.nav-tab').forEach(tab => tab.addEventListener('click', () => {
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab.dataset.tab));
     document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
     const target = document.getElementById('tab-' + tab.dataset.tab);
     if (target) target.classList.add('active');
+    document.getElementById('nav-menu').classList.remove('open');
   }));
 
   // Hamburger
