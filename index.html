@@ -289,6 +289,11 @@
 
       <!-- Chart view -->
       <div id="chart-view" class="view-panel">
+        <!-- Log -->
+        <div class="log-card" id="log-card" style="display:none">
+          <h3 class="log-title" data-i18n="log.title">Simulation Log</h3>
+          <div id="log" class="log-body"></div>
+        </div>
         <div class="summary-row" id="summary-row" style="display:none">
           <div class="summary-card"><div class="sc-label">Haessel-R&sup2;</div><div class="sc-value" id="sc-r2">-</div></div>
           <div class="summary-card"><div class="sc-label">NAPD</div><div class="sc-value" id="sc-napd">-</div></div>
@@ -375,11 +380,6 @@
         </div>
       </div>
 
-      <!-- Log -->
-      <div class="log-card" id="log-card" style="display:none">
-        <h3 class="log-title" data-i18n="log.title">Simulation Log</h3>
-        <div id="log" class="log-body"></div>
-      </div>
       </div><!-- /tab-experiment -->
 
       <!-- ===== Tab: Architecture ===== -->
