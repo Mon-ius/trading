@@ -92,6 +92,7 @@ const I18N = {
     'gw.queue': 'Queue',
     // Log
     'log.title': 'Simulation Log',
+    'log.toggle': 'click to expand',
     'log.period': 'Period',
     'log.trades': 'trades',
     'log.buy': 'BUY',
@@ -262,6 +263,7 @@ const I18N = {
     'gw.stage': '\u884c\u52a8\u533a',
     'gw.queue': '\u7b49\u5019\u533a',
     'log.title': '\u6a21\u62df\u65e5\u5fd7',
+    'log.toggle': '\u70b9\u51fb\u5c55\u5f00',
     'log.period': '\u671f',
     'log.trades': '\u7b14\u4ea4\u6613',
     'log.buy': '\u4e70\u5165',

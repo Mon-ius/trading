@@ -409,16 +409,30 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
 /* Log */
 .log-card {
   background: var(--bg-1); border: 1px solid var(--border);
-  border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm);
-  margin-bottom: 14px;
+  border-radius: var(--radius-md); padding: 14px 16px;
+  margin-bottom: 16px;
 }
-.log-title {
-  font-size: .72rem; font-weight: 700; padding: 8px 12px;
-  background: var(--bg-2); border-bottom: 1px solid var(--border); color: var(--fg-0);
+.log-card > summary {
+  display: flex; align-items: center; cursor: pointer;
+  list-style: none; user-select: none;
 }
+.log-card > summary::-webkit-details-marker { display: none; }
+.log-card > summary::before {
+  content: '\25B6'; font-size: .6rem; color: var(--fg-3);
+  margin-right: 8px; transition: transform .2s;
+}
+.log-card[open] > summary::before { transform: rotate(90deg); }
+.log-card > summary h4 {
+  font-size: .78rem; font-weight: 700; color: var(--fg-0); margin: 0;
+}
+.log-toggle-hint {
+  font-size: .65rem; color: var(--fg-3); margin-left: auto; font-weight: 400;
+}
+.log-card[open] .log-toggle-hint { display: none; }
 .log-body {
-  max-height: 300px; overflow-y: auto; padding: 6px 10px;
-  font-size: .64rem; font-family: var(--font-mono); line-height: 1.6; color: var(--fg-1);
+  max-height: 600px; overflow-y: auto; padding-top: 10px;
+  border-top: 1px solid var(--border); margin-top: 10px;
+  font-size: .72rem; font-family: var(--font-mono); line-height: 1.7; color: var(--fg-2);
 }
 .log-round {
   border: 1px solid var(--border); border-radius: 6px; margin-bottom: 4px; overflow: hidden;
