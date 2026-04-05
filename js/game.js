@@ -193,12 +193,12 @@ class TradingFloor {
         copy.w = uniformW; // all main buildings share the same width
       }
       if (b.id === 'hub' || b.id === 'signal' || b.id === 'settle') {
-        copy.h = Math.max(b.h, rows * 38 * sc + 55);
+        copy.h = Math.max(b.h, rows * 48 * sc + 55);
       }
       if (b.id === 'pit') {
         const stageH = Math.max(80, 65 * sc + 30);
         copy._stageH = stageH;
-        copy.h = Math.max(b.h, rows * 38 * sc + 55 + stageH);
+        copy.h = Math.max(b.h, rows * 48 * sc + 55 + stageH);
       }
       this._buildingMap[copy.id] = copy;
     }
@@ -303,7 +303,7 @@ class TradingFloor {
     const headerH = 28;
     const stageH = b._stageH || 0;
     const padX = 20, padY = 14;
-    const cellW = 42 * sc, cellH = 38 * sc;
+    const cellW = 42 * sc, cellH = 48 * sc;
     const areaTop = b.y - b.h / 2 + headerH + stageH;
     const areaW = b.w - padX * 2;
     const cols = Math.max(1, Math.floor(areaW / cellW));
@@ -547,22 +547,25 @@ class TradingFloor {
   _drawPriceDisplay(ctx, isDark) {
     if (this._priceHistory.length === 0) return;
     const pit = this._buildingMap.pit;
-    const x = pit.x + pit.w / 2 + 16;
-    const y = pit.y - pit.h / 2 + 8;
-    const w = 150, h = 95;
     const sc = this._scale;
+    const stageH = pit._stageH || 80;
+    const panelW = (pit.w - 30) / 2;
+    const panelH = stageH - 14;
+    const baseY = pit.y - pit.h / 2 + 28 + 4;
 
+    // Price panel — left half of stage
+    const px = pit.x - pit.w / 2 + 8;
     ctx.fillStyle = isDark ? 'rgba(22,27,34,0.9)' : 'rgba(255,255,255,0.92)';
     ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 8);
+    ctx.roundRect(px, baseY, panelW, panelH, 6);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = isDark ? '#e6edf3' : '#1d1d1f';
-    ctx.font = `700 ${9 * sc}px -apple-system, sans-serif`;
+    ctx.font = `700 ${8 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.fillText('PRICE', x + 8, y + 14);
+    ctx.fillText('PRICE', px + 6, baseY + 12);
 
     const prices = this._priceHistory;
     const fvs = this.history.fvs || [];
@@ -571,7 +574,7 @@ class TradingFloor {
     const minP = Math.min(...allVals) * 0.8;
     const maxP = Math.max(...allVals) * 1.2;
     const range = maxP - minP || 1;
-    const chartX = x + 8, chartY = y + 20, chartW = w - 16, chartH = h - 30;
+    const chartX = px + 6, chartY = baseY + 16, chartW = panelW - 12, chartH = panelH - 24;
 
     if (fvs.length > 1) {
       ctx.strokeStyle = 'rgba(52,199,89,0.5)';
@@ -579,9 +582,9 @@ class TradingFloor {
       ctx.setLineDash([3, 2]);
       ctx.beginPath();
       for (let i = 0; i < fvs.length; i++) {
-        const px = chartX + (i / Math.max(1, fvs.length - 1)) * chartW;
-        const py = chartY + chartH - ((fvs[i] - minP) / range) * chartH;
-        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        const cx = chartX + (i / Math.max(1, fvs.length - 1)) * chartW;
+        const cy = chartY + chartH - ((fvs[i] - minP) / range) * chartH;
+        i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
       }
       ctx.stroke();
       ctx.setLineDash([]);
@@ -591,40 +594,43 @@ class TradingFloor {
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     for (let i = 0; i < prices.length; i++) {
-      const px = chartX + (i / Math.max(1, prices.length - 1)) * chartW;
-      const py = chartY + chartH - ((prices[i] - minP) / range) * chartH;
-      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      const cx = chartX + (i / Math.max(1, prices.length - 1)) * chartW;
+      const cy = chartY + chartH - ((prices[i] - minP) / range) * chartH;
+      i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
     }
     ctx.stroke();
 
     const last = prices[prices.length - 1];
     ctx.fillStyle = last > tv ? '#FF3B30' : '#34C759';
-    ctx.font = `700 ${10 * sc}px monospace`;
+    ctx.font = `700 ${9 * sc}px monospace`;
     ctx.textAlign = 'right';
-    ctx.fillText('$' + last.toFixed(1), x + w - 8, y + 14);
+    ctx.fillText('$' + last.toFixed(1), px + panelW - 6, baseY + 12);
   }
 
   _drawBubbleMeter(ctx, isDark) {
     if (this._priceHistory.length === 0) return;
     const pit = this._buildingMap.pit;
-    const x = pit.x + pit.w / 2 + 16;
-    const y = pit.y - pit.h / 2 + 112;
-    const w = 150, h = 50;
     const sc = this._scale;
+    const stageH = pit._stageH || 80;
+    const panelW = (pit.w - 30) / 2;
+    const panelH = stageH - 14;
+    const baseY = pit.y - pit.h / 2 + 28 + 4;
 
+    // Bubble panel — right half of stage
+    const bx = pit.x - pit.w / 2 + 8 + panelW + 14;
     ctx.fillStyle = isDark ? 'rgba(22,27,34,0.9)' : 'rgba(255,255,255,0.92)';
     ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 8);
+    ctx.roundRect(bx, baseY, panelW, panelH, 6);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = isDark ? '#e6edf3' : '#1d1d1f';
-    ctx.font = `700 ${9 * sc}px -apple-system, sans-serif`;
+    ctx.font = `700 ${8 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.fillText('BUBBLE', x + 8, y + 14);
+    ctx.fillText('BUBBLE', bx + 6, baseY + 12);
 
-    const barX = x + 8, barY = y + 20, barW = w - 16, barH = 10;
+    const barX = bx + 6, barY = baseY + 18, barW = panelW - 12, barH = 10;
     ctx.fillStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
     ctx.beginPath();
     ctx.roundRect(barX, barY, barW, barH, 3);
@@ -645,9 +651,9 @@ class TradingFloor {
     ctx.stroke();
 
     ctx.fillStyle = pct > 0 ? '#FF3B30' : '#34C759';
-    ctx.font = `700 ${9 * sc}px monospace`;
+    ctx.font = `700 ${8 * sc}px monospace`;
     ctx.textAlign = 'center';
-    ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', x + w / 2, y + 44);
+    ctx.fillText((pct > 0 ? '+' : '') + (pct * 100).toFixed(1) + '%', bx + panelW / 2, baseY + panelH - 4);
   }
 
   /* ---- Ensure canvas redraws on interaction (even after game ends) ---- */
