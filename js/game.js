@@ -298,7 +298,8 @@ class TradingFloor {
     if (!this._initialZoomSet) {
       this._initialZoomSet = true;
       const bw = this._buildingMap.hub ? this._buildingMap.hub.w : BASE_W;
-      this._camZoom = clamp(w / (bw + 60), 0.7, 1.6);
+      const fitZoom = (w * devicePixelRatio) / (bw + 40);
+      this._camZoom = clamp(fitZoom, 0.8, 3);
     }
   }
 
