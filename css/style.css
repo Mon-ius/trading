@@ -323,7 +323,7 @@ body {
 }
 
 /* Charts */
-.chart-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.chart-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 14px; }
 .chart-card {
   background: var(--bg-1); border: 1px solid var(--border);
   border-radius: var(--radius-md); padding: 8px; min-height: 280px;
@@ -347,6 +347,7 @@ body {
 .game-container {
   background: var(--bg-1); border: 1px solid var(--border);
   border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md);
+  margin-bottom: 14px;
 }
 .game-controls {
   display: flex; align-items: center; gap: 8px; padding: 8px 14px;
@@ -377,8 +378,9 @@ body {
 
 /* Log */
 .log-card {
-  margin-top: 14px; background: var(--bg-1); border: 1px solid var(--border);
+  background: var(--bg-1); border: 1px solid var(--border);
   border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm);
+  margin-bottom: 14px;
 }
 .log-title {
   font-size: .72rem; font-weight: 700; padding: 8px 12px;
@@ -418,7 +420,7 @@ body {
 .log-tag-truth { background: var(--green-bg); color: var(--green); }
 
 /* Results table */
-.table-title { font-size: .76rem; font-weight: 700; margin: 16px 0 8px; color: var(--fg-0); }
+.table-title { font-size: .76rem; font-weight: 700; margin: 0 0 8px; color: var(--fg-0); }
 .results-table {
   width: 100%; border-collapse: collapse; font-size: .66rem; font-family: var(--font-sans);
   background: var(--bg-1); border: 1px solid var(--border);
