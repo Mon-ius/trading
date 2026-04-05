@@ -88,22 +88,41 @@ class Sprite {
     const nameText = this.displayName;
     ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'center';
-    const tw = ctx.measureText(nameText).width + 8 * sc;
-    const ny = y + r + 12 * sc;
-    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.85)' : 'rgba(255,255,255,0.9)';
-    ctx.beginPath();
-    ctx.roundRect(x - tw / 2, ny - 8 * sc, tw, 11 * sc, 3 * sc);
-    ctx.fill();
-    ctx.fillStyle = fgMain;
-    ctx.fillText(nameText, x, ny);
 
-    // P&L flash — positioned well above head to avoid overlap
+    // Measure combined width: name + optional P&L badge
+    let pnlText = '';
+    let pnlColor = '';
     if (this.pnlFlash) {
       const pf = this.pnlFlash;
+      pnlText = (pf.value >= 0 ? '+' : '') + pf.value.toFixed(0);
+      pnlColor = pf.value >= 0 ? '#34C759' : '#FF3B30';
+    }
+
+    const nameW = ctx.measureText(nameText).width;
+    ctx.font = `700 ${7 * sc}px monospace`;
+    const pnlW = pnlText ? ctx.measureText(pnlText).width : 0;
+    const totalW = nameW + (pnlText ? pnlW + 6 * sc : 0) + 8 * sc;
+    const ny = y + r + 12 * sc;
+
+    // Pill background
+    ctx.fillStyle = isDark ? 'rgba(22,27,34,0.85)' : 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    ctx.roundRect(x - totalW / 2, ny - 8 * sc, totalW, 11 * sc, 3 * sc);
+    ctx.fill();
+
+    // Name text
+    const nameX = pnlText ? x - (pnlW + 6 * sc) / 2 : x;
+    ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
+    ctx.fillStyle = fgMain;
+    ctx.fillText(nameText, nameX, ny);
+
+    // P&L badge inline after name
+    if (pnlText) {
+      const pf = this.pnlFlash;
       ctx.globalAlpha = Math.min(1, pf.alpha);
-      ctx.fillStyle = pf.value >= 0 ? '#34C759' : '#FF3B30';
-      ctx.font = `700 ${10 * sc}px monospace`;
-      ctx.fillText((pf.value >= 0 ? '+' : '') + pf.value.toFixed(1), x, y - r - 12 * sc);
+      ctx.font = `700 ${7 * sc}px monospace`;
+      ctx.fillStyle = pnlColor;
+      ctx.fillText(pnlText, nameX + nameW / 2 + 4 * sc + pnlW / 2, ny);
       ctx.globalAlpha = 1;
     }
 
