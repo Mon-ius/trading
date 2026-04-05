@@ -318,8 +318,10 @@ class TradingFloor {
     if (!this._initialZoomSet) {
       this._initialZoomSet = true;
       const bw = this._buildingMap.hub ? this._buildingMap.hub.w : BASE_W;
-      const fitZoom = (w * devicePixelRatio) / (bw + 40);
-      this._camZoom = clamp(fitZoom, 0.8, 3);
+      // On mobile (<600px CSS), zoom in tighter so buildings are clearly readable
+      const margin = w < 600 ? 10 : 40;
+      const fitZoom = (w * devicePixelRatio) / (bw + margin);
+      this._camZoom = clamp(fitZoom, 0.8, 5);
     }
   }
 
