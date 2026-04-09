@@ -19,11 +19,6 @@
       <button class="nav-tab" data-tab="glossary" data-i18n="nav.glossary">Glossary</button>
     </div>
     <div class="nav-menu" id="nav-menu">
-      <div class="paradigm-switch">
-        <button class="paradigm-btn active" data-v="math" onclick="switchMode('math')"><span class="paradigm-icon">&#x03A3;</span> <span class="paradigm-label">Math</span></button>
-        <button class="paradigm-btn" data-v="ai" onclick="switchMode('ai')"><span class="paradigm-icon">&#x1F916;</span> <span class="paradigm-label">AI Agent</span></button>
-        <button class="paradigm-btn" data-v="lab" onclick="switchMode('lab')"><span class="paradigm-icon">&#x1F9EA;</span> <span class="paradigm-label">Lab</span></button>
-      </div>
       <div class="nav-tools">
         <button class="mobile-toggle" id="sidebar-toggle" title="Parameters">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
@@ -47,188 +42,49 @@
   <div class="app-layout">
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
-    <!-- Sidebar — unified panels -->
+    <!-- Sidebar — unified experiment -->
     <aside class="sidebar" id="sidebar">
-      <!-- ===== Market ===== -->
-      <div class="panel" id="p-asset">
-        <div class="panel-header" onclick="togglePanel('p-asset')">
-          <span class="icon">&#x1F4B0;</span><h3 data-i18n="grp.asset">Asset &amp; Market</h3><span class="chevron">&#x25BC;</span>
+      <!-- ===== AI Agent (optional) ===== -->
+      <div class="panel" id="p-ai-token">
+        <div class="panel-header" onclick="togglePanel('p-ai-token')">
+          <span class="icon">&#x1F916;</span><h3>AI Agent</h3><span class="chevron">&#x25BC;</span>
         </div>
         <div class="panel-body">
-          <label><span data-i18n="p.periods">Periods (T)</span>
-            <div class="range-wrap"><input type="range" id="p-T" value="15" min="3" max="50"><span class="range-val" id="v-T">15</span></div></label>
-          <div class="form-hint">Asset lifespan. Each period: agents trade, then a stochastic dividend is paid. FV declines by E[d] each period (DLM &sect;I p.1732)</div>
-          <label><span data-i18n="p.div">E[dividend]</span>
-            <div class="range-wrap"><input type="range" id="p-div" value="8" min="1" max="100"><span class="range-val" id="v-div">8</span></div></label>
-          <div class="form-hint">Expected per-period dividend. Each period pays 0 or 2&times;E[d] with equal probability. FV(0) = T&times;E[d] (DLM fn.5)</div>
-          <label><span data-i18n="p.agents">Agents (n)</span>
+          <div class="form-hint" style="margin-bottom:6px;font-weight:600">Optional: provide an API key to use real LLM agents. Leave empty to use CARA stochastic model.</div>
+          <label><span>Provider</span>
+            <select id="ai-provider" style="width:100%;padding:4px 6px;font-size:.75rem">
+              <option value="claude">Claude</option><option value="gpt">GPT</option>
+              <option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option>
+              <option value="qwen">Qwen</option>
+            </select></label>
+          <label><span>API Key</span>
+            <input type="password" id="ai-token" class="input-text" placeholder="sk-... (optional)" style="width:100%"></label>
+          <label><span>Endpoint</span>
+            <input type="text" id="ai-endpoint" class="input-text" placeholder="Custom endpoint (optional)" style="width:100%"></label>
+        </div>
+      </div>
+
+      <!-- ===== Market Parameters ===== -->
+      <div class="panel" id="p-market">
+        <div class="panel-header" onclick="togglePanel('p-market')">
+          <span class="icon">&#x1F4B0;</span><h3>Market Parameters</h3><span class="chevron">&#x25BC;</span>
+        </div>
+        <div class="panel-body">
+          <label><span>Agents (n)</span>
             <div class="range-wrap"><input type="range" id="p-n" value="20" min="2" max="128"><span class="range-val" id="v-n">20</span></div></label>
-          <div class="form-hint">Population size. Original experiment: n=6. Larger n &rarr; more liquid market, different &alpha;* threshold</div>
-          <label><span data-i18n="p.cash">Initial Cash</span>
-            <div class="range-wrap"><input type="range" id="p-cash" value="1000" min="100" max="10000" step="100"><span class="range-val" id="v-cash">1000</span></div></label>
-          <div class="form-hint">Starting cash endowment per agent. Constrains maximum bid prices and total market liquidity</div>
-          <label><span data-i18n="p.shares">Init Shares</span>
-            <div class="range-wrap"><input type="range" id="p-shares" value="5" min="1" max="50"><span class="range-val" id="v-shares">5</span></div></label>
-          <div class="form-hint">Starting shares per agent. Total supply = n &times; shares. Shares become worthless at period T (FV(T)=0)</div>
-          <label><span data-i18n="p.seed">Seed</span>
-            <div class="range-wrap"><input type="range" id="p-seed" value="42" min="0" max="9999"><span class="range-val" id="v-seed">42</span></div></label>
-          <div class="form-hint">PRNG seed for reproducibility. Controls dividend draws, risk coefficients, belief noise, and order shuffling</div>
-        </div>
-      </div>
+          <div class="form-hint">Population size. Dufwenberg (2005) used n=6. Henning (2025) used n=20.</div>
 
-      <!-- ===== Experience ===== -->
-      <div class="panel math-only" id="p-exp">
-        <div class="panel-header" onclick="togglePanel('p-exp')">
-          <span class="icon">&#x1F9E0;</span><h3 data-i18n="grp.experience">Experience (&alpha;)</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <label><span data-i18n="p.alpha">Experienced %</span>
-            <div class="range-wrap"><input type="range" id="p-alpha" value="33" min="0" max="100"><span class="range-val" id="v-alpha">33%</span></div></label>
-          <div class="form-hint">&alpha; = fraction who know FV(t) = (T&minus;t)&times;E[d]. Higher &alpha; &rarr; faster bubble suppression. DLM found &frac13; experienced is sufficient to prevent bubbles (&sect;II Table 2 p.1735). Experiment sweeps &alpha; from 0&ndash;100% to find the critical &alpha;*.</div>
-        </div>
-      </div>
-
-      <!-- ===== Inexperienced Behavior ===== -->
-      <div class="panel math-only" id="p-inexp">
-        <div class="panel-header" onclick="togglePanel('p-inexp')">
-          <span class="icon">&#x1F4CA;</span><h3 data-i18n="grp.inexp">Inexperienced Behavior</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <label><span data-i18n="p.bias">Optimism Bias</span>
-            <div class="range-wrap"><input type="range" id="p-bias" value="30" min="0" max="100"><span class="range-val" id="v-bias">30%</span></div></label>
-          <div class="form-hint">Upward shift in inexperienced agents' belief: belief = base &times; (1 + bias). Primary driver of bubble formation. Higher &rarr; larger price overshoot above FV</div>
-          <label><span data-i18n="p.noise">Noise</span>
-            <div class="range-wrap"><input type="range" id="p-noise" value="25" min="0" max="80"><span class="range-val" id="v-noise">25%</span></div></label>
-          <div class="form-hint">Random belief dispersion among inexperienced agents. Higher &rarr; wider spread of individual valuations, more volatile prices</div>
-          <label><span data-i18n="p.anchor">FV Anchoring</span>
-            <div class="range-wrap"><input type="range" id="p-anchor" value="40" min="0" max="100"><span class="range-val" id="v-anchor">40%</span></div></label>
-          <div class="form-hint">Weight on initial FV(0) vs current FV(t): belief = FV(t)&times;(1&minus;anchor) + FV(0)&times;anchor. High anchoring &rarr; agents slow to update, sustaining bubble longer</div>
-          <label><span data-i18n="p.momentum">Momentum</span>
-            <div class="range-wrap"><input type="range" id="p-momentum" value="20" min="0" max="100"><span class="range-val" id="v-momentum">20%</span></div></label>
-          <div class="form-hint">Trend-chasing strength: adds momentum&times;(P<sub>t</sub>&minus;P<sub>t&minus;1</sub>) to belief. Creates positive feedback loops. Higher &rarr; self-reinforcing bubble/crash dynamics</div>
-        </div>
-      </div>
-
-      <!-- ===== Risk Preferences — comp-bar ===== -->
-      <div class="panel" id="p-risk">
-        <div class="panel-header" onclick="togglePanel('p-risk')">
-          <span class="icon">&#x2696;</span><h3 data-i18n="grp.risk">Risk Preferences</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <div class="comp-bar" id="comp-bar">
-            <div class="seg" style="flex:33; background:var(--red);"><span>33%</span></div>
-            <div class="seg" style="flex:34; background:var(--amber);"><span>34%</span></div>
-            <div class="seg" style="flex:33; background:var(--blue);"><span>33%</span></div>
-          </div>
-          <label><span data-i18n="p.rl">Risk-Loving</span>
-            <div class="range-wrap"><input type="range" id="p-rl" value="33" min="0" max="100"><span class="range-val" id="v-rl">33%</span></div></label>
-          <div class="form-hint">&rho; &approx; 0.005. Low risk aversion &rarr; narrow spreads, aggressive bidding. Willing to overpay, fuels bubbles</div>
-          <label><span data-i18n="p.rn">Risk-Neutral</span>
-            <div class="range-wrap"><input type="range" id="p-rn" value="34" min="0" max="100"><span class="range-val" id="v-rn">34%</span></div></label>
-          <div class="form-hint">&rho; &approx; 0.020. Moderate spreads. Prices at expected value (DLM fn.5 assumes risk-neutrality for FV derivation)</div>
-          <label><span data-i18n="p.ra">Risk-Averse</span>
-            <div class="range-wrap"><input type="range" id="p-ra" value="33" min="0" max="100"><span class="range-val" id="v-ra">33%</span></div></label>
-          <div class="form-hint">&rho; &approx; 0.080. Wide spreads, conservative bids. CARA utility: U(W) = &minus;exp(&minus;&rho;W). Linked sliders always sum to 100%</div>
-        </div>
-      </div>
-
-      <!-- ===== Communication ===== -->
-      <div class="panel collapsed" id="p-comm">
-        <div class="panel-header" onclick="togglePanel('p-comm')">
-          <span class="icon">&#x1F4AC;</span><h3 data-i18n="grp.comm">Communication</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <label class="checkbox-label"><input type="checkbox" id="p-comm-on"><span data-i18n="p.comm">Enable Strategic Talk</span></label>
-          <div class="form-hint">Pre-trade cheap-talk phase where agents send price signals. Enables the Comm Lounge building in Trading Floor animation</div>
-          <label><span data-i18n="p.clMean">Lying Cost &mu;</span>
-            <div class="range-wrap"><input type="range" id="p-cl" value="0" min="-3" max="3" step="0.1"><span class="range-val" id="v-cl">0</span></div></label>
-          <div class="form-hint">c<sub>l</sub> = cost of sending m &ne; &theta; (literal lie, Sobel 2020 Def.&thinsp;3). Higher &rarr; more truthful price signals</div>
-          <label><span data-i18n="p.cdMean">Deception Cost &mu;</span>
-            <div class="range-wrap"><input type="range" id="p-cd" value="0" min="-3" max="3" step="0.1"><span class="range-val" id="v-cd">0</span></div></label>
-          <div class="form-hint">c<sub>d</sub> = cost of belief manipulation D(m,&theta;) (Sobel 2020 Def.&thinsp;4). Higher &rarr; less deceptive signals. See Choi et al. (2025) &sect;5</div>
-        </div>
-      </div>
-
-      <!-- ===== AI Agent Settings ===== -->
-      <div class="panel" id="p-ai" style="display:none">
-        <div class="panel-header" onclick="togglePanel('p-ai')">
-          <span class="icon">&#x1F916;</span><h3>AI Agent Config</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <!-- Administrator -->
-          <div class="section-card">
-            <label><span style="font-weight:600">Administrator</span></label>
-            <div class="form-hint">Orchestrator LLM that generates tailored prompts for each agent per trading period. Batches agents in groups of 5</div>
-            <div class="form-row" style="display:flex;gap:4px;margin-top:4px">
-              <select id="orch-provider" style="flex:1" onchange="updateOrchModels();updateSectionKey('admin')">
-                <option value="claude">Claude</option><option value="gpt">GPT</option>
-                <option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option>
-                <option value="qwen">Qwen</option><option value="minimax">MiniMax</option>
-                <option value="kimi">Kimi</option><option value="glm">GLM</option>
-              </select>
-              <select id="orch-model" style="flex:1"></select>
-            </div>
-            <input type="password" id="pk-admin" class="input-text input-key" placeholder="sk-ant-...">
-            <input type="text" id="pe-admin" class="input-text input-endpoint" placeholder="Endpoint (optional)">
-          </div>
-          <!-- Agent Groups -->
-          <div id="agent-roster">
-            <div class="roster-row">
-              <div class="roster-group-label"><span class="dot" style="background:var(--red)"></span> Risk-Loving <input type="text" class="roster-auto-count" id="rc-rl" readonly></div>
-              <select id="grp-rl-prov" onchange="updateGroupModels('rl');updateSectionKey('rl')">
-                <option value="claude" selected>Claude</option><option value="gpt">GPT</option>
-                <option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option>
-                <option value="qwen">Qwen</option><option value="minimax">MiniMax</option>
-                <option value="kimi">Kimi</option><option value="glm">GLM</option>
-              </select>
-              <select id="grp-rl-model"></select>
-              <input type="password" id="pk-rl" class="input-text input-key" placeholder="API Key">
-              <input type="text" id="pe-rl" class="input-text input-endpoint" placeholder="Endpoint">
-            </div>
-            <div class="roster-row">
-              <div class="roster-group-label"><span class="dot" style="background:var(--amber)"></span> Risk-Neutral <input type="text" class="roster-auto-count" id="rc-rn" readonly></div>
-              <select id="grp-rn-prov" onchange="updateGroupModels('rn');updateSectionKey('rn')">
-                <option value="claude">Claude</option><option value="gpt" selected>GPT</option>
-                <option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option>
-                <option value="qwen">Qwen</option><option value="minimax">MiniMax</option>
-                <option value="kimi">Kimi</option><option value="glm">GLM</option>
-              </select>
-              <select id="grp-rn-model"></select>
-              <input type="password" id="pk-rn" class="input-text input-key" placeholder="API Key">
-              <input type="text" id="pe-rn" class="input-text input-endpoint" placeholder="Endpoint">
-            </div>
-            <div class="roster-row">
-              <div class="roster-group-label"><span class="dot" style="background:var(--blue)"></span> Risk-Averse <input type="text" class="roster-auto-count" id="rc-ra" readonly></div>
-              <select id="grp-ra-prov" onchange="updateGroupModels('ra');updateSectionKey('ra')">
-                <option value="claude">Claude</option><option value="gpt">GPT</option>
-                <option value="gemini">Gemini</option><option value="deepseek" selected>DeepSeek</option>
-                <option value="qwen">Qwen</option><option value="minimax">MiniMax</option>
-                <option value="kimi">Kimi</option><option value="glm">GLM</option>
-              </select>
-              <select id="grp-ra-model"></select>
-              <input type="password" id="pk-ra" class="input-text input-key" placeholder="API Key">
-              <input type="text" id="pe-ra" class="input-text input-endpoint" placeholder="Endpoint">
-            </div>
-          </div>
-          <div class="form-hint">Each risk group can use a different LLM provider. AI agents replace the math-based belief update with LLM-generated valuations.</div>
-        </div>
-      </div>
-
-      <!-- ===== Lab Experiment Settings ===== -->
-      <div class="panel lab-only" id="p-lab" style="display:none">
-        <div class="panel-header" onclick="togglePanel('p-lab')">
-          <span class="icon">&#x1F9EA;</span><h3>Lab Experiment</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <div class="form-hint" style="margin-bottom:8px;font-weight:600">CARA utility-maximizing agents trade via CDA with dividends &amp; interest. Phase 1: silent. Phase 2: communication with Sobel lying/deception model. Tests Coase theorem and experience effects.</div>
+          <label><span>Rounds per Phase</span>
+            <div class="range-wrap"><input type="range" id="lab-rounds" value="15" min="3" max="50"><span class="range-val" id="v-lab-rounds">15</span></div></label>
+          <div class="form-hint">Trading rounds in each phase. Phase 1: silent CDA. Phase 2: Sobel communication (if enabled).</div>
 
           <label><span>Base Asset Value</span>
             <div class="range-wrap"><input type="range" id="lab-baseVal" value="100" min="10" max="500" step="10"><span class="range-val" id="v-lab-baseVal">100</span></div></label>
-          <div class="form-hint">Center of valuation distribution. Each agent's private &psi;<sub>i</sub> drawn around this value</div>
+          <div class="form-hint">Center of private valuation distribution. Each agent&rsquo;s &psi;<sub>i</sub> drawn around this value (Lopez-Lira 2025).</div>
 
           <label><span>Valuation Spread</span>
             <div class="range-wrap"><input type="range" id="lab-valSpread" value="40" min="5" max="200" step="5"><span class="range-val" id="v-lab-valSpread">40</span></div></label>
-          <div class="form-hint">Half-width: &psi;<sub>i</sub> &in; [base &minus; spread, base + spread]</div>
+          <div class="form-hint">Half-width: &psi;<sub>i</sub> &in; [base &minus; spread, base + spread]. Wider &rarr; more gains from trade, stronger Coase test.</div>
 
           <label><span>Dividend Low / High</span>
             <div style="display:flex;gap:6px;align-items:center">
@@ -236,11 +92,11 @@
               <span>/</span>
               <input type="number" id="lab-divHigh" value="1.0" min="0" max="10" step="0.1" style="width:60px;text-align:center;padding:3px">
             </div></label>
-          <div class="form-hint">Stochastic dividend each round: low or high with equal probability (Henning 2025)</div>
+          <div class="form-hint">Stochastic dividend each round: d<sub>L</sub> or d<sub>H</sub> with equal probability. FV = E[div]/r (Henning 2025).</div>
 
           <label><span>Interest Rate</span>
             <div class="range-wrap"><input type="range" id="lab-interest" value="5" min="1" max="20"><span class="range-val" id="v-lab-interest">5%</span></div></label>
-          <div class="form-hint">Cash earns this % per round. FV = E[div] / interest rate (Henning: 0.7/0.05 = 14)</div>
+          <div class="form-hint">Cash earns r% per round. FV = (0.4+1.0)/(2&times;0.05) = 14 (Henning calibration).</div>
 
           <label><span>Initial Cash (mean)</span>
             <div class="range-wrap"><input type="range" id="lab-cash" value="500" min="100" max="5000" step="100"><span class="range-val" id="v-lab-cash">500</span></div></label>
@@ -250,89 +106,76 @@
 
           <label><span>Endowment Variance</span>
             <div class="range-wrap"><input type="range" id="lab-endowVar" value="30" min="0" max="80"><span class="range-val" id="v-lab-endowVar">30%</span></div></label>
+          <div class="form-hint">Heterogeneity in initial endowments. Higher variance &rarr; more diverse starting positions.</div>
 
-          <label><span>Trading Rounds (per phase)</span>
-            <div class="range-wrap"><input type="range" id="lab-rounds" value="15" min="3" max="50"><span class="range-val" id="v-lab-rounds">15</span></div></label>
+          <label><span>Seed</span>
+            <div class="range-wrap"><input type="range" id="p-seed" value="42" min="0" max="9999"><span class="range-val" id="v-seed">42</span></div></label>
+          <div class="form-hint">PRNG seed for reproducibility. Controls dividend draws, valuation assignments, and order shuffling.</div>
+        </div>
+      </div>
 
-          <label><span>Experience Sessions</span>
-            <div class="range-wrap"><input type="range" id="lab-expRounds" value="0" min="0" max="5"><span class="range-val" id="v-lab-expRounds">0</span></div></label>
-          <div class="form-hint">Extra silent-trading sessions after main experiment. Tests Dufwenberg (2005) experience effect: bubbles diminish with repetition</div>
-
-          <div style="border-top:1px solid var(--border);margin:12px 0 8px;padding-top:10px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-              <span style="font-weight:700;font-size:0.92em">Communication (Phase 2)</span>
-              <label class="toggle-switch" style="margin:0">
-                <input type="checkbox" id="lab-comm-on" checked>
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="form-hint" style="margin-bottom:6px">ON: Phase 2 uses Sobel (2020) lying &amp; deception model. OFF: Phase 2 is also silent (control condition)</div>
+      <!-- ===== Risk Preferences ===== -->
+      <div class="panel" id="p-risk">
+        <div class="panel-header" onclick="togglePanel('p-risk')">
+          <span class="icon">&#x2696;</span><h3>Risk Preferences</h3><span class="chevron">&#x25BC;</span>
+        </div>
+        <div class="panel-body">
+          <div class="comp-bar" id="comp-bar">
+            <div class="seg" style="flex:33; background:var(--red);"><span>33%</span></div>
+            <div class="seg" style="flex:34; background:var(--amber);"><span>34%</span></div>
+            <div class="seg" style="flex:33; background:var(--blue);"><span>33%</span></div>
           </div>
+          <label><span>Risk-Loving</span>
+            <div class="range-wrap"><input type="range" id="p-rl" value="33" min="0" max="100"><span class="range-val" id="v-rl">33%</span></div></label>
+          <div class="form-hint">&gamma; &lt; 0. Aggressive bidding, narrow spreads. CARA utility: U(W) = &minus;exp(&minus;&gamma;W)/&gamma;</div>
+          <label><span>Risk-Neutral</span>
+            <div class="range-wrap"><input type="range" id="p-rn" value="34" min="0" max="100"><span class="range-val" id="v-rn">34%</span></div></label>
+          <div class="form-hint">&gamma; &approx; 0. Prices at expected value. Moderate spreads.</div>
+          <label><span>Risk-Averse</span>
+            <div class="range-wrap"><input type="range" id="p-ra" value="33" min="0" max="100"><span class="range-val" id="v-ra">33%</span></div></label>
+          <div class="form-hint">&gamma; &gt; 0. Wide spreads, conservative bids. Linked sliders always sum to 100%.</div>
+        </div>
+      </div>
+
+      <!-- ===== Communication (Sobel) ===== -->
+      <div class="panel" id="p-comm">
+        <div class="panel-header" onclick="togglePanel('p-comm')">
+          <span class="icon">&#x1F4AC;</span><h3>Communication (Sobel)</h3><span class="chevron">&#x25BC;</span>
+        </div>
+        <div class="panel-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-weight:700;font-size:0.85em">Phase 2 Communication</span>
+            <label class="toggle-switch" style="margin:0">
+              <input type="checkbox" id="lab-comm-on" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="form-hint" style="margin-bottom:8px">ON: Phase 2 uses Sobel (2020 JPE) sender-receiver model with lying &amp; deception. OFF: both phases are silent (control condition).</div>
 
           <label><span>Deception Strength</span>
             <div class="range-wrap"><input type="range" id="lab-decept" value="30" min="0" max="100"><span class="range-val" id="v-lab-decept">30%</span></div></label>
-          <div class="form-hint">Sobel bluffing aggressiveness. 0% = truthful, 100% = max strategic lying. Risk-loving agents amplify 1.5&times;</div>
+          <div class="form-hint">Bluffing aggressiveness (Sobel Sec VI). 0% = truthful reports, 100% = max strategic lying.</div>
 
           <label><span>Credulity</span>
             <div class="range-wrap"><input type="range" id="lab-credul" value="25" min="0" max="50"><span class="range-val" id="v-lab-credul">25%</span></div></label>
-          <div class="form-hint">Sobel Def 6: how literally receivers take messages. Risk-averse &amp; experienced agents are more skeptical</div>
+          <div class="form-hint">Sobel Def 6: how literally receivers take messages. Risk-averse &amp; experienced agents are more skeptical.</div>
         </div>
       </div>
 
-      <button id="btn-run" class="btn-primary math-only" data-i18n="btn.run">Run Market</button>
-      <button id="btn-run-ai" class="btn-primary btn-ai" style="display:none" onclick="runAIMarket()">Run AI Market</button>
-      <button id="btn-run-lab" class="btn-primary btn-lab" style="display:none" onclick="runLabUI()">Run Lab Experiment</button>
+      <!-- ===== Experience (Dufwenberg) ===== -->
+      <div class="panel collapsed" id="p-experience">
+        <div class="panel-header" onclick="togglePanel('p-experience')">
+          <span class="icon">&#x1F9E0;</span><h3>Experience (Dufwenberg)</h3><span class="chevron">&#x25BC;</span>
+        </div>
+        <div class="panel-body">
+          <label><span>Experience Sessions</span>
+            <div class="range-wrap"><input type="range" id="lab-expRounds" value="0" min="0" max="5"><span class="range-val" id="v-lab-expRounds">0</span></div></label>
+          <div class="form-hint">Extra silent-trading sessions after main experiment. Tests Dufwenberg et al. (2005, AER): bubbles diminish with trader experience across repeated sessions.</div>
+        </div>
+      </div>
+
+      <button id="btn-run" class="btn-primary btn-lab" onclick="runExperiment()">Run Experiment</button>
       <div id="ai-progress" class="ai-progress" style="display:none"></div>
-
-      <div class="panel-divider"></div>
-
-      <!-- ===== Experiment Grid ===== -->
-      <div class="panel collapsed" id="p-grid">
-        <div class="panel-header" onclick="togglePanel('p-grid')">
-          <span class="icon">&#x1F52C;</span><h3 data-i18n="grp.grid">Experiment Grid</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <label><span>n values</span><input type="text" id="exp-n" value="6,10,20,40,80" class="text-input"></label>
-          <div class="form-hint">Comma-separated market sizes. Experiment finds &alpha;* for each n. Original experiment: n=6 (DLM &sect;I p.1732)</div>
-          <label><span data-i18n="p.steps">Alpha steps</span>
-            <div class="range-wrap"><input type="range" id="exp-steps" value="20" min="5" max="50"><span class="range-val" id="v-exp-steps">20</span></div></label>
-          <div class="form-hint">Resolution of &alpha; sweep: tests &alpha; = 0%, 5%, 10%, ... 100%. More steps &rarr; finer &alpha;* precision, slower</div>
-          <label><span data-i18n="p.reps">Replications</span>
-            <div class="range-wrap"><input type="range" id="exp-reps" value="15" min="3" max="100"><span class="range-val" id="v-exp-reps">15</span></div></label>
-          <div class="form-hint">Monte Carlo replications per &alpha; value. Each uses a different seed. More reps &rarr; smoother curves, more robust &alpha;*</div>
-          <label><span data-i18n="p.threshold">Threshold</span>
-            <div class="range-wrap"><input type="range" id="exp-threshold" value="15" min="1" max="50"><span class="range-val" id="v-threshold">0.15</span></div></label>
-          <div class="form-hint" data-i18n="hint.grid">Sweeps &alpha; from 0&ndash;100% for each (n, risk, knowledge) combo. Uses T, E[d], Seed from panels above.</div>
-        </div>
-      </div>
-
-      <div class="panel collapsed" id="p-riskgrid">
-        <div class="panel-header" onclick="togglePanel('p-riskgrid')">
-          <span class="icon">&#x2696;</span><h3 data-i18n="grp.riskgrid">Risk Configs</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <label class="checkbox-label"><input type="checkbox" id="exp-r1" checked><span>RL33 / RN34 / RA33</span></label>
-          <label class="checkbox-label"><input type="checkbox" id="exp-r2" checked><span>RL60 / RN20 / RA20</span></label>
-          <label class="checkbox-label"><input type="checkbox" id="exp-r3" checked><span>RL10 / RN20 / RA70</span></label>
-        </div>
-      </div>
-
-      <div class="panel collapsed" id="p-knowgrid">
-        <div class="panel-header" onclick="togglePanel('p-knowgrid')">
-          <span class="icon">&#x1F4D6;</span><h3 data-i18n="grp.knowgrid">Knowledge Configs</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <label class="checkbox-label"><input type="checkbox" id="exp-k1" checked><span data-i18n="know.mild">Mild (bias=0.15)</span></label>
-          <label class="checkbox-label"><input type="checkbox" id="exp-k2" checked><span data-i18n="know.moderate">Moderate (bias=0.30)</span></label>
-          <label class="checkbox-label"><input type="checkbox" id="exp-k3" checked><span data-i18n="know.severe">Severe (bias=0.50)</span></label>
-        </div>
-      </div>
-
-      <button id="btn-experiment" class="btn-secondary" data-i18n="btn.experiment">Run Experiment</button>
-      <div id="exp-progress" class="progress-bar" style="display:none">
-        <div class="progress-fill" id="exp-fill"></div>
-        <span class="progress-text" id="exp-pct">0%</span>
-      </div>
     </aside>
 
     <!-- Main area -->
@@ -344,7 +187,7 @@
       </div>
 
       <!-- Export row -->
-      <div class="export-row" id="export-row" style="display:none">
+      <div class="export-row" id="export-row">
         <button class="btn-export" onclick="exportJSON()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span data-i18n="btn.json">Export JSON</span>
@@ -355,77 +198,9 @@
         </button>
       </div>
 
-      <!-- Log (visible in both chart and game views) -->
-      <details class="log-card" id="log-card" style="display:none">
-        <summary><h4 data-i18n="log.title">Simulation Log</h4><span class="log-toggle-hint" data-i18n="log.toggle">click to expand</span></summary>
-        <div id="log" class="log-body"></div>
-      </details>
-
       <!-- Chart view -->
       <div id="chart-view" class="view-panel">
-        <div class="summary-row" id="summary-row" style="display:none">
-          <div class="summary-card"><div class="sc-label">Haessel-R&sup2;</div><div class="sc-value" id="sc-r2">-</div></div>
-          <div class="summary-card"><div class="sc-label">NAPD</div><div class="sc-value" id="sc-napd">-</div></div>
-          <div class="summary-card"><div class="sc-label" data-i18n="sc.amplitude">Amplitude</div><div class="sc-value" id="sc-amp">-</div></div>
-          <div class="summary-card"><div class="sc-label" data-i18n="sc.pnlExp">Avg P&amp;L (Exp)</div><div class="sc-value" id="sc-pnl-exp">-</div></div>
-          <div class="summary-card"><div class="sc-label" data-i18n="sc.pnlInexp">Avg P&amp;L (Inexp)</div><div class="sc-value" id="sc-pnl-inexp">-</div></div>
-        </div>
-        <div id="sim-charts" class="chart-grid">
-          <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--accent)"></span> <span data-i18n="chart.price">Fig. 1 &mdash; Price vs Fundamental Value</span></h4>
-            <div id="chart-price"></div>
-            <p class="chart-note"><strong>Note.</strong> Market clearing price (blue) against declining FV (green dashed). Volume as background bars. Core visualization from DLM (2005) Figure 1. Prices above FV indicate bubble; below indicate underpricing.</p>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--teal)"></span> <span data-i18n="chart.orderbook">Fig. 2 &mdash; Bid-Ask Spread</span></h4>
-            <div id="chart-spread"></div>
-            <p class="chart-note"><strong>Note.</strong> Best bid (green) and best ask (red) with shaded spread region. Purple dotted line shows absolute spread. Narrower spreads indicate better price discovery and higher liquidity.</p>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--purple)"></span> <span data-i18n="chart.pnl">Fig. 3 &mdash; P&amp;L Distribution</span></h4>
-            <div id="chart-pnl"></div>
-            <p class="chart-note"><strong>Note.</strong> Final profit-and-loss histogram: experienced (blue) vs inexperienced (red). In bubble markets, experienced agents typically profit at inexperienced agents' expense (DLM &sect;II p.1735).</p>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> <span data-i18n="chart.bubble">Fig. 4 &mdash; Price Deviation from FV</span></h4>
-            <div id="chart-bubble"></div>
-            <p class="chart-note"><strong>Note.</strong> Per-period percentage deviation (P&minus;FV)/FV. Red bars = overpricing (bubble), green = underpricing. Feeds into NAPD = &Sigma;|P&minus;FV|/(T&times;FV&#x2080;) metric (DLM &sect;II p.1733&ndash;1734).</p>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--amber)"></span> <span data-i18n="chart.beliefs">Fig. 5 &mdash; Belief Convergence</span></h4>
-            <div id="chart-beliefs"></div>
-            <p class="chart-note"><strong>Note.</strong> Sampled agent belief trajectories. Experienced agents (solid) track FV; inexperienced (dotted) may diverge due to bias and anchoring. Convergence indicates information aggregation.</p>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--green)"></span> <span data-i18n="chart.volume">Fig. 6 &mdash; Trading Volume</span></h4>
-            <div id="chart-volume"></div>
-            <p class="chart-note"><strong>Note.</strong> Number of executed trades per period. Higher volume in early periods reflects more disagreement about value. DLM &sect;II p.1735 notes marginally significant turnover increase in mixed-experience markets.</p>
-          </div>
-        </div>
-        <div id="exp-charts" class="chart-grid" style="display:none">
-          <div class="chart-card chart-wide">
-            <h4 class="chart-title"><span class="dot" style="background:var(--accent)"></span> <span data-i18n="chart.sweep">Fig. 7 &mdash; &alpha; Sweep: Bubble Metrics</span></h4>
-            <div id="chart-alpha-sweep"></div>
-            <p class="chart-note"><strong>Note.</strong> NAPD (blue), amplitude (orange), and Haessel-R&sup2; (green) vs experienced fraction &alpha;. Red vertical line = &alpha;* where NAPD drops below threshold.</p>
-          </div>
-          <div class="chart-card chart-wide">
-            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> <span data-i18n="chart.alphaN">Fig. 8 &mdash; &alpha;* vs Market Size (n)</span></h4>
-            <div id="chart-alpha-n"></div>
-            <p class="chart-note"><strong>Note.</strong> Main result: how &alpha;* varies with market size. Each line = a (risk, knowledge) configuration. Key finding: &alpha;* = f(n, risk, knowledge).</p>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--amber)"></span> <span data-i18n="chart.heatmap">Fig. 9 &mdash; &alpha;* Heatmap</span></h4>
-            <div id="chart-alpha-heatmap"></div>
-            <p class="chart-note"><strong>Note.</strong> Risk &times; knowledge matrix. Green = low &alpha;* (easy to suppress), red = high &alpha;* (stubborn bubbles).</p>
-          </div>
-          <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--purple)"></span> <span data-i18n="chart.riskComp">Fig. 10 &mdash; &alpha;* vs Risk Composition</span></h4>
-            <div id="chart-alpha-risk"></div>
-            <p class="chart-note"><strong>Note.</strong> Grouped bar chart comparing &alpha;* across risk distributions. More risk-loving agents &rarr; higher &alpha;* needed.</p>
-          </div>
-        </div>
-        <!-- Lab charts -->
-        <div id="lab-summary" class="summary-row" style="display:none">
+        <div id="lab-summary" class="summary-row">
           <div class="summary-card"><div class="sc-label">P1 Efficiency</div><div class="sc-value" id="sc-lab-eff1">-</div></div>
           <div class="summary-card"><div class="sc-label">P2 Efficiency</div><div class="sc-value" id="sc-lab-eff2">-</div></div>
           <div class="summary-card"><div class="sc-label">Haessel-R&sup2;</div><div class="sc-value" id="sc-lab-r2">-</div></div>
@@ -433,59 +208,54 @@
           <div class="summary-card"><div class="sc-label">Sobel Lies</div><div class="sc-value" id="sc-lab-lies">-</div></div>
           <div class="summary-card"><div class="sc-label">Coase Agent</div><div class="sc-value" id="sc-lab-top">-</div></div>
         </div>
-        <div id="lab-charts" class="chart-grid" style="display:none">
+        <div id="lab-charts" class="chart-grid">
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--accent)"></span> Fig. L1 &mdash; Price vs Fundamental Value</h4>
+            <h4 class="chart-title"><span class="dot" style="background:var(--accent)"></span> Fig. 1 &mdash; Price vs Fundamental Value</h4>
             <div id="lab-chart-price"></div>
-            <p class="chart-note"><strong>Note.</strong> Phase 1 (blue, silent) vs Phase 2 (red, Sobel communication). Green dashed = FV = E[div]/r (Henning 2025). Bubble deviations measured by Haessel-R&sup2; and NAPD.</p>
+            <p class="chart-note"><strong>Note.</strong> Phase 1 (blue, silent CDA) vs Phase 2 (red, Sobel communication). Green dashed = FV = E[div]/r (Henning 2025). Bubble deviations measured by Haessel-R&sup2; and NAPD.</p>
           </div>
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--green)"></span> Fig. L2 &mdash; Allocation: Valuation vs Holdings</h4>
+            <h4 class="chart-title"><span class="dot" style="background:var(--green)"></span> Fig. 2 &mdash; Allocation: Valuation vs Holdings</h4>
             <div id="lab-chart-alloc"></div>
-            <p class="chart-note"><strong>Note.</strong> Coase theorem test. Positive &psi;-shares correlation = assets flow to highest-valuation agents. Color = risk type.</p>
+            <p class="chart-note"><strong>Note.</strong> Coase theorem test: &rho;(&psi;, shares) &rarr; 1 if voluntary trade moves assets to highest-valuation agents. Color = risk type (Lopez-Lira 2025).</p>
           </div>
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--teal)"></span> Fig. L3 &mdash; Welfare Trajectory</h4>
+            <h4 class="chart-title"><span class="dot" style="background:var(--teal)"></span> Fig. 3 &mdash; Welfare Trajectory</h4>
             <div id="lab-chart-welfare"></div>
-            <p class="chart-note"><strong>Note.</strong> Welfare = &Sigma; &psi;<sub>i</sub> &times; shares<sub>i</sub>. Approaching max = efficient allocation. Sobel deception may help or hinder.</p>
+            <p class="chart-note"><strong>Note.</strong> Welfare = &Sigma;&psi;<sub>i</sub>&times;shares<sub>i</sub>. Convergence toward maximum indicates efficient allocation. Compares silent vs communication phases.</p>
           </div>
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> Fig. L4 &mdash; Sobel Lying &amp; Deception</h4>
+            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> Fig. 4 &mdash; Sobel Lying &amp; Deception</h4>
             <div id="lab-chart-deception"></div>
-            <p class="chart-note"><strong>Note.</strong> Sobel (2020) classifications: Lying (Def 1) = false report. Deception (Def 4) = inducing inferior beliefs. Damage (Sec V) = welfare-reducing. By risk type.</p>
+            <p class="chart-note"><strong>Note.</strong> Sobel (2020 JPE) classifications: Lying (Def 1) = false report. Deception (Def 4) = inducing inferior beliefs. Damage (Sec V) = welfare-reducing. Stacked by risk type.</p>
           </div>
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--purple)"></span> Fig. L5 &mdash; Volume &amp; Bubble Metrics</h4>
+            <h4 class="chart-title"><span class="dot" style="background:var(--purple)"></span> Fig. 5 &mdash; Trading Volume &amp; Turnover</h4>
             <div id="lab-chart-volume"></div>
-            <p class="chart-note"><strong>Note.</strong> Trading volume per round. Turnover = total trades / shares outstanding (Dufwenberg 2005).</p>
+            <p class="chart-note"><strong>Note.</strong> Per-round trade count. Turnover = total trades / shares outstanding. Dufwenberg (2005) found marginally significant turnover changes in mixed-experience markets.</p>
           </div>
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--amber)"></span> Fig. L6 &mdash; P&amp;L by Risk Type</h4>
+            <h4 class="chart-title"><span class="dot" style="background:var(--amber)"></span> Fig. 6 &mdash; P&amp;L by Risk Type</h4>
             <div id="lab-chart-pnl"></div>
-            <p class="chart-note"><strong>Note.</strong> Average P&amp;L including dividends and interest. Risk-loving agents trade aggressively; Sobel deception may benefit or harm disproportionately.</p>
+            <p class="chart-note"><strong>Note.</strong> Average P&amp;L including dividends and interest income. Compares who benefits from strategic communication across CARA risk types.</p>
           </div>
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--blue)"></span> Fig. L7 &mdash; Experience Effect</h4>
+            <h4 class="chart-title"><span class="dot" style="background:var(--blue)"></span> Fig. 7 &mdash; Experience Effect</h4>
             <div id="lab-chart-experience"></div>
-            <p class="chart-note"><strong>Note.</strong> Dufwenberg et al. (2005, AER): bubble metrics across experience sessions. Haessel-R&sup2; should increase and NAPD decrease with experience, replicating the "bubbles diminish" result.</p>
+            <p class="chart-note"><strong>Note.</strong> Dufwenberg et al. (2005, AER) replication: bubble metrics across experience sessions. R&sup2; increases and NAPD decreases with experience, reproducing &ldquo;bubbles diminish&rdquo; in silico.</p>
           </div>
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--green)"></span> Fig. L8 &mdash; Bubble Deviation</h4>
+            <h4 class="chart-title"><span class="dot" style="background:var(--green)"></span> Fig. 8 &mdash; Bubble Deviation</h4>
             <div id="lab-chart-bubble"></div>
-            <p class="chart-note"><strong>Note.</strong> Per-round deviation from FV (%). Positive = bubble, negative = crash. Price amplitude (Dufwenberg) = range of these deviations / initial FV.</p>
+            <p class="chart-note"><strong>Note.</strong> Per-round deviation from FV (%). Positive = bubble (overpricing), negative = crash. Price amplitude = range / FV&#x2080; (Dufwenberg 2005 Table 2).</p>
           </div>
         </div>
 
-        <!-- Lab log -->
+        <!-- Experiment log -->
         <details class="log-card" id="lab-log-card" style="display:none">
-          <summary><h4>Lab Experiment Log</h4><span class="log-toggle-hint">click to expand</span></summary>
+          <summary><h4>Experiment Log</h4><span class="log-toggle-hint">click to expand</span></summary>
           <div id="lab-log" class="log-body"></div>
         </details>
-
-        <div id="exp-table-wrap" style="display:none">
-          <h3 class="table-title">&alpha;* Results</h3>
-          <table id="exp-table" class="results-table"><thead><tr><th>n</th><th>Risk</th><th>Knowledge</th><th>&alpha;* (%)</th></tr></thead><tbody></tbody></table>
-        </div>
       </div>
 
       <!-- Game view -->
@@ -518,350 +288,406 @@
             <button class="slide-next" onclick="changeSlide(1)">&rarr;</button>
           </div>
 
+          <!-- Slide 1: Title & Motivation -->
           <div class="slide active" data-slide="1">
             <div class="slide-num">1 / 10</div>
-            <h2>LLM Agent Trading &amp; Strategic Communication in Experimental Markets</h2>
-            <p class="slide-subtitle">A Unified Simulation Framework Integrating Four Research Paradigms</p>
+            <h2>Strategic Communication, Experience, and Bubbles in Experimental Asset Markets</h2>
+            <p class="slide-subtitle">A Unified Computational Framework for LLM Agent Trading with Sobel Communication</p>
             <div class="slide-body two-col">
               <div>
                 <h4>Motivation</h4>
-                <p>Financial markets are complex adaptive systems where heterogeneous agents interact through trading mechanisms. Three fundamental questions drive this research:</p>
+                <p>Asset price bubbles remain one of the most persistent and damaging phenomena in financial markets. Laboratory experiments (Smith et al. 1988) consistently reproduce bubble-crash patterns even when fundamental value is common knowledge. Three open questions motivate this work:</p>
                 <ul>
-                  <li><strong>Can LLMs trade?</strong> Do AI agents replicate human market dynamics, or do they exhibit fundamentally different behavior? (Lopez-Lira 2025)</li>
-                  <li><strong>Do bubbles diminish with experience?</strong> How does trader sophistication affect price efficiency? (Dufwenberg et al. 2005)</li>
-                  <li><strong>How does strategic communication affect markets?</strong> When agents can lie and deceive, does allocation efficiency improve or deteriorate? (Sobel 2020)</li>
+                  <li><strong>Q1.</strong> Can computational agents &mdash; including LLMs &mdash; replicate the bubble dynamics observed in human experiments, or do they trade more rationally?</li>
+                  <li><strong>Q2.</strong> How does trader experience affect bubble magnitude? Dufwenberg et al. (2005, AER) showed experience dampens bubbles, but the mechanism is not fully understood.</li>
+                  <li><strong>Q3.</strong> What is the role of strategic communication? When agents can lie and deceive (Sobel 2020, JPE), does information revelation improve or deteriorate market efficiency?</li>
                 </ul>
+                <p>These questions require a unified framework that integrates market microstructure, agent heterogeneity, game-theoretic communication, and experience effects &mdash; which no existing simulator provides.</p>
               </div>
               <div>
-                <h4>Research Contributions</h4>
-                <ul>
-                  <li>Unified framework merging <strong>4 seminal papers</strong> into a single interactive simulator</li>
-                  <li>CARA utility-maximizing agents with heterogeneous risk preferences and private valuations</li>
-                  <li>Formal <strong>Sobel (2020 JPE)</strong> lying vs deception model with communication ON/OFF toggle</li>
-                  <li>Replication of the <strong>Dufwenberg (2005 AER)</strong> experience effect in silico</li>
-                  <li>Bubble metrics from <strong>Henning et al. (2025)</strong>: MSE, Haessel-R&sup2;, hypothesis classification (R/H/E)</li>
-                  <li><strong>Coase theorem test</strong>: does the asset flow to the highest-valuation agent?</li>
-                </ul>
+                <h4>Our Contribution</h4>
+                <p>We present an interactive experimental platform that merges four foundational research paradigms into a single, reproducible simulator:</p>
+                <div class="slide-cards">
+                  <div class="slide-card" style="border-left:3px solid var(--accent)">
+                    <h4>CARA Utility Agents</h4>
+                    <p>Heterogeneous risk preferences and private valuations drive endogenous price formation via continuous double auction (Lopez-Lira 2025).</p>
+                  </div>
+                  <div class="slide-card" style="border-left:3px solid var(--green)">
+                    <h4>Stochastic + LLM Hybrid</h4>
+                    <p>Stochastic CARA model by default; optional LLM API integration replaces decision-making with real AI agent reasoning.</p>
+                  </div>
+                  <div class="slide-card" style="border-left:3px solid var(--red)">
+                    <h4>Sobel Communication</h4>
+                    <p>Formal lying/deception model with ON/OFF toggle enables controlled ablation studies of strategic talk (Sobel 2020 JPE).</p>
+                  </div>
+                  <div class="slide-card" style="border-left:3px solid var(--purple)">
+                    <h4>Experience Sessions</h4>
+                    <p>Configurable experience replication validates the Dufwenberg (2005 AER) finding that bubbles diminish with repetition.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
+          <!-- Slide 2: Research Questions & Hypotheses -->
           <div class="slide" data-slide="2">
             <div class="slide-num">2 / 10</div>
+            <h2>Research Questions &amp; Hypotheses</h2>
+            <p class="slide-subtitle">Testable Predictions Derived from Four Theoretical Frameworks</p>
+            <div class="slide-body two-col">
+              <div>
+                <h4>Primary Research Questions</h4>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>RQ</th><th>Question</th><th>Source</th></tr></thead>
+                  <tbody>
+                    <tr><td class="term">RQ1</td><td>Do CARA utility-maximizing agents with heterogeneous &psi;<sub>i</sub> produce bubble-crash dynamics similar to human lab experiments?</td><td>Lopez-Lira (2025), Henning (2025)</td></tr>
+                    <tr><td class="term">RQ2</td><td>Does repeated experience reduce bubble magnitude, and at what rate?</td><td>Dufwenberg et al. (2005 AER)</td></tr>
+                    <tr><td class="term">RQ3</td><td>How does pre-trade strategic communication (Sobel lying/deception) affect price discovery and allocative efficiency?</td><td>Sobel (2020 JPE)</td></tr>
+                    <tr><td class="term">RQ4</td><td>Does the Coase theorem hold? Do assets flow to highest-valuation agents through voluntary CDA trade?</td><td>Coase (1960)</td></tr>
+                    <tr><td class="term">RQ5</td><td>Can LLM agents, when substituted for the stochastic model, replicate or improve upon CARA agent behavior?</td><td>Lopez-Lira (2025), Henning (2025)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <h4>Hypotheses</h4>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>H</th><th>Prediction</th><th>Metric</th></tr></thead>
+                  <tbody>
+                    <tr><td class="term">H1</td><td>Risk-loving agents (&gamma;&lt;0) drive bubble formation; risk-averse agents dampen it</td><td>NAPD, Amplitude by risk type</td></tr>
+                    <tr><td class="term">H2</td><td>Haessel-R&sup2; increases monotonically across experience sessions (bubbles diminish)</td><td>R&sup2; per session (Fig. 7)</td></tr>
+                    <tr><td class="term">H3</td><td>Sobel communication (Phase 2) increases allocative efficiency when credulity is moderate</td><td>P1 vs P2 efficiency</td></tr>
+                    <tr><td class="term">H4</td><td>High deception strength reduces welfare when receivers are credulous</td><td>Welfare trajectory (Fig. 3)</td></tr>
+                    <tr><td class="term">H5</td><td>Spearman &rho;(&psi;, shares) &rarr; 1 as trading progresses (Coase convergence)</td><td>Allocation chart (Fig. 2)</td></tr>
+                    <tr><td class="term">H6</td><td>LLM agents produce R-type (Rational) behavior: MSE &lt; 2, low amplitude</td><td>Hypothesis classification</td></tr>
+                  </tbody>
+                </table>
+                <h4>Identification Strategy</h4>
+                <p>The two-phase protocol provides within-subject identification: Phase 1 (silent) serves as baseline; Phase 2 (communication ON/OFF) enables causal inference about strategic talk. Experience sessions provide between-session panel variation.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 3: Literature & Theoretical Foundations -->
+          <div class="slide" data-slide="3">
+            <div class="slide-num">3 / 10</div>
             <h2>Theoretical Foundations</h2>
-            <p class="slide-subtitle">Four Papers, One Framework</p>
+            <p class="slide-subtitle">Four Papers, One Unified Framework</p>
             <div class="slide-body">
               <div class="slide-cards">
                 <div class="slide-card" style="border-left:4px solid var(--accent)">
-                  <h4>Lopez-Lira (2025)</h4>
-                  <p><em>&ldquo;Can Large Language Models Trade?&rdquo;</em></p>
-                  <p>Open-source framework for LLM trading agents with persistent order book, limit orders, partial fills, dividends, and heterogeneous agent strategies. Demonstrates LLMs can function as value investors, momentum traders, and market makers per their instructions.</p>
-                  <div class="formula">Agent &rarr; {valuation, price_target, orders[], reasoning}</div>
+                  <h4>Lopez-Lira (2025) &mdash; &ldquo;Can Large Language Models Trade?&rdquo;</h4>
+                  <p>Open-source framework for LLM trading agents with persistent order book, limit orders, partial fills, dividends, and heterogeneous strategies. Demonstrates LLMs can function as value investors, momentum traders, and market makers. Provides the CARA utility agent architecture and CDA matching engine we adopt.</p>
+                  <div class="formula">U(W) = &minus;exp(&minus;&gamma;W) / &gamma; &nbsp;&nbsp;|&nbsp;&nbsp; bid<sub>i</sub> = &psi;<sub>i</sub> &minus; &gamma;<sub>i</sub>&sigma;&sup2;/2 &nbsp;&nbsp;|&nbsp;&nbsp; ask<sub>i</sub> = &psi;<sub>i</sub> + &gamma;<sub>i</sub>&sigma;&sup2;/2</div>
                 </div>
                 <div class="slide-card" style="border-left:4px solid var(--green)">
-                  <h4>Dufwenberg, Lindqvist &amp; Moore (2005, AER)</h4>
-                  <p><em>&ldquo;Bubbles and Experience: An Experiment&rdquo;</em></p>
-                  <p>Laboratory CDA markets with 6 traders over 4 rounds of 10 periods. Key result: bubble-crash patterns diminish with experience. Even &frac13; experienced traders suppress bubbles in mixed-experience markets.</p>
-                  <div class="formula">&alpha;* &approx; &frac13; &mdash; critical experienced fraction</div>
+                  <h4>Dufwenberg, Lindqvist &amp; Moore (2005, AER) &mdash; &ldquo;Bubbles and Experience&rdquo;</h4>
+                  <p>Laboratory CDA markets with 6 traders over 4 sessions of 10 periods. Key result: bubble-crash patterns diminish with experience. Even &frac13; experienced traders suppress bubbles in mixed markets. Defines the bubble metrics (Haessel-R&sup2;, NAPD, amplitude, turnover) we use for quantitative evaluation.</p>
+                  <div class="formula">&alpha;* &approx; &frac13; &mdash; min experienced fraction to suppress bubbles &nbsp;|&nbsp; R&sup2; = 1 &minus; &Sigma;(P&minus;FV)&sup2;/&Sigma;(FV&minus;F&#x0304;V)&sup2;</div>
                 </div>
                 <div class="slide-card" style="border-left:4px solid var(--red)">
-                  <h4>Henning et al. (2025)</h4>
-                  <p><em>&ldquo;LLM Trading: Analysis of LLM Agent Behavior in Experimental Asset Markets&rdquo;</em></p>
-                  <p>Tests 6 LLM models (Claude, GPT-4o, Grok-2, Mistral, GPT-3.5, Gemini) in single-model and &ldquo;Battle Royale&rdquo; markets. LLMs trade more rationally than humans: FV = E[div]/r = 0.7/0.05 = 14, prices stay near fundamental.</p>
-                  <div class="formula">FV = E[Dividend] / E[Interest Rate] = 0.7 / 0.05 = 14</div>
+                  <h4>Henning et al. (2025) &mdash; &ldquo;LLM Trading: LLM Agent Behavior in Experimental Asset Markets&rdquo;</h4>
+                  <p>Tests 6 LLM models (Claude, GPT-4o, Grok-2, Mistral, GPT-3.5, Gemini) in single-model and Battle Royale markets. LLMs trade more rationally than humans. Claude achieves MSE=0.54 (Rational hypothesis). Provides the constant FV model (E[div]/r) and R/H/E hypothesis classification framework.</p>
+                  <div class="formula">FV = E[div] / r = (d<sub>L</sub> + d<sub>H</sub>) / 2r = (0.4 + 1.0) / (2 &times; 0.05) = 14</div>
                 </div>
                 <div class="slide-card" style="border-left:4px solid var(--purple)">
-                  <h4>Sobel (2020, JPE)</h4>
-                  <p><em>&ldquo;Lying and Deception in Games&rdquo;</em></p>
-                  <p>Formal sender-receiver framework distinguishing lying (locution: false report) from deception (illocution: inducing inferior beliefs) and damage (perlocution: welfare-reducing). Deception is possible without lying; lying need not be deceptive.</p>
-                  <div class="formula">Lie: m = m<sub>&theta;&#x2080;</sub>, &theta; &notin; &Theta;&#x2080; &nbsp;|&nbsp; Deception: &mu;(&middot;|m) &ne; &mu;(&middot;|n)</div>
+                  <h4>Sobel (2020, JPE) &mdash; &ldquo;Lying and Deception in Games&rdquo;</h4>
+                  <p>Formal sender-receiver framework using Austin&rsquo;s (1975) speech-act theory. Distinguishes lying (locution: m = m<sub>&theta;&#x2080;</sub>, &theta; &notin; &Theta;&#x2080;) from deception (illocution: inducing inferior beliefs) and damage (perlocution: welfare loss). Key insight: lies need not be deceptive (Remark 7); deception is possible without lying (Example 3).</p>
+                  <div class="formula">Lie (Def 1): m = m<sub>&theta;&#x2080;</sub>, &theta; &notin; &Theta;&#x2080; &nbsp;|&nbsp; Deception (Def 4): &mu;(&middot;|m) = p&mu;(&middot;|n) + (1&minus;p)&rho; &nbsp;|&nbsp; Credulity (Def 6)</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="slide" data-slide="3">
-            <div class="slide-num">3 / 10</div>
-            <h2>Market Microstructure Design</h2>
-            <p class="slide-subtitle">CDA Engine with CARA Utility-Maximizing Agents</p>
+          <!-- Slide 4: Methodology — Framework Architecture -->
+          <div class="slide" data-slide="4">
+            <div class="slide-num">4 / 10</div>
+            <h2>Methodology: Unified Framework Architecture</h2>
+            <p class="slide-subtitle">Two-Phase Experiment with Stochastic/LLM Agent Hybrid</p>
             <div class="slide-body two-col">
               <div>
-                <h4>Agent Architecture (Lopez-Lira)</h4>
-                <p>Each agent <em>i</em> is characterized by:</p>
-                <ul>
-                  <li><strong>Risk type</strong>: risk-loving (&gamma; &lt; 0), neutral (&gamma; &approx; 0), or averse (&gamma; &gt; 0)</li>
-                  <li><strong>CARA utility</strong>: U(W) = &minus;exp(&minus;&gamma;W) / &gamma;</li>
-                  <li><strong>Private valuation</strong>: &psi;<sub>i</sub> drawn from [base &minus; spread, base + spread]</li>
-                  <li><strong>Endowments</strong>: heterogeneous cash and shares</li>
-                </ul>
-                <h4>Reservation Prices</h4>
+                <h4>Experiment Protocol</h4>
+                <ol>
+                  <li><strong>Agent Creation</strong>: n agents with CARA utility (&gamma;<sub>i</sub>), private valuations (&psi;<sub>i</sub>), heterogeneous endowments (cash, shares). If API key provided, agents use LLM reasoning; otherwise, CARA stochastic model.</li>
+                  <li><strong>Phase 1 &mdash; Silent CDA</strong>: T rounds of dividend payment &rarr; interest accrual &rarr; order submission (reservation prices) &rarr; CDA matching. No communication. Establishes baseline.</li>
+                  <li><strong>Phase 2 &mdash; Sobel Communication</strong>: Same agents, positions carry over. Each round adds pre-trade Sobel sender-receiver phase. Receivers update effective &psi; based on credulity. Toggle OFF = silent control.</li>
+                  <li><strong>Experience Sessions</strong>: 0&ndash;5 additional silent sessions with reset endowments but persistent experience. Tests Dufwenberg (2005) experience effect.</li>
+                </ol>
+                <h4>Stochastic vs LLM Decision-Making</h4>
+                <div class="formula">Stochastic: bid = &psi; &minus; &gamma;&sigma;&sup2;/2 + noise</div>
+                <div class="formula">LLM: bid = LLM(context, history, &psi;, &gamma;)</div>
+                <p>The same experiment protocol runs identically. Only the decision function changes. This enables direct comparison of stochastic and AI agent behavior.</p>
+              </div>
+              <div>
+                <h4>Key Design Choices</h4>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>Component</th><th>Choice</th><th>Justification</th></tr></thead>
+                  <tbody>
+                    <tr><td class="term">Market mechanism</td><td>CDA (continuous double auction)</td><td>Standard in experimental economics (Smith 1962)</td></tr>
+                    <tr><td class="term">Utility function</td><td>CARA: U = &minus;e<sup>&minus;&gamma;W</sup>/&gamma;</td><td>Tractable, generates reservation prices analytically</td></tr>
+                    <tr><td class="term">FV model</td><td>Constant: E[div]/r</td><td>Henning (2025) calibration, perpetuity</td></tr>
+                    <tr><td class="term">Communication</td><td>Sobel sender-receiver</td><td>Formal game-theoretic foundation (JPE)</td></tr>
+                    <tr><td class="term">Experience</td><td>Session repetition</td><td>Dufwenberg (2005) experimental design</td></tr>
+                    <tr><td class="term">Agent fallback</td><td>Stochastic CARA model</td><td>No API key required; reproduces theoretical predictions</td></tr>
+                  </tbody>
+                </table>
+                <h4>Output Metrics</h4>
+                <p>8 charts capturing price dynamics, allocation efficiency, welfare, deception analysis, volume, P&amp;L, experience effects, and bubble deviation. 6 summary cards. Full round-by-round log with Sobel classification.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 5: Methodology — Agent Design & CDA -->
+          <div class="slide" data-slide="5">
+            <div class="slide-num">5 / 10</div>
+            <h2>Methodology: Agent Design &amp; Market Microstructure</h2>
+            <p class="slide-subtitle">CARA Utility, Reservation Prices, and CDA Matching</p>
+            <div class="slide-body two-col">
+              <div>
+                <h4>Agent Parameterization</h4>
+                <p>Each agent <em>i</em> is fully characterized by four components:</p>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>Parameter</th><th>Symbol</th><th>Distribution</th></tr></thead>
+                  <tbody>
+                    <tr><td class="term">Risk aversion</td><td>&gamma;<sub>i</sub></td><td>Risk-loving: &gamma;&in;[&minus;0.01,&minus;0.001]; Neutral: &gamma;&in;[0.01,0.03]; Averse: &gamma;&in;[0.05,0.12]</td></tr>
+                    <tr><td class="term">Private valuation</td><td>&psi;<sub>i</sub></td><td>Uniform[base&minus;spread, base+spread]</td></tr>
+                    <tr><td class="term">Initial cash</td><td>c<sub>i,0</sub></td><td>Normal(&mu;<sub>cash</sub>, &sigma;<sup>2</sup><sub>endow</sub>)</td></tr>
+                    <tr><td class="term">Initial shares</td><td>s<sub>i,0</sub></td><td>Poisson(&mu;<sub>shares</sub>) with variance</td></tr>
+                  </tbody>
+                </table>
+                <h4>CARA Reservation Prices</h4>
                 <div class="formula">bid<sub>i</sub> = &psi;<sub>i</sub> &minus; &gamma;<sub>i</sub> &middot; &sigma;&sup2; / 2</div>
                 <div class="formula">ask<sub>i</sub> = &psi;<sub>i</sub> + &gamma;<sub>i</sub> &middot; &sigma;&sup2; / 2</div>
-                <p>Risk-loving agents bid above valuation (aggressive). Risk-averse agents demand a premium to sell (conservative).</p>
+                <p>Risk-loving agents (&gamma;&lt;0): bid <em>above</em> &psi; (aggressive buyer). Risk-averse agents (&gamma;&gt;0): ask <em>above</em> &psi; (demand premium to sell). This heterogeneity generates trade volume and potential mispricings.</p>
               </div>
               <div>
                 <h4>CDA Matching Engine</h4>
                 <ol>
-                  <li>All agents submit bid/ask orders based on CARA-optimal reservation prices</li>
-                  <li>Buy orders sorted descending by price; sell orders sorted ascending</li>
-                  <li>Match whenever max(bid) &ge; min(ask), execute at midpoint</li>
-                  <li>Validate cash/share constraints before each trade</li>
+                  <li><strong>Order Collection</strong>: Each agent submits one bid and one ask based on CARA-optimal reservation prices</li>
+                  <li><strong>Sorting</strong>: Bids sorted descending; asks sorted ascending</li>
+                  <li><strong>Matching</strong>: While max(bid) &ge; min(ask), execute trade at midpoint price: P = (bid + ask) / 2</li>
+                  <li><strong>Validation</strong>: Buyer must have sufficient cash; seller must hold shares. No short-selling, no margin.</li>
+                  <li><strong>Settlement</strong>: Atomic transfer of cash and shares between counterparties</li>
                 </ol>
-                <h4>Dividend &amp; Interest (Henning 2025)</h4>
-                <div class="formula">div &sim; {d<sub>L</sub>, d<sub>H</sub>} with Pr = 0.5 each round</div>
-                <div class="formula">cash<sub>t+1</sub> = cash<sub>t</sub> &times; (1 + r) + div &times; shares<sub>t</sub></div>
-                <div class="formula">FV = E[div] / r = (d<sub>L</sub> + d<sub>H</sub>) / (2r)</div>
+                <h4>Per-Round Dynamics</h4>
+                <div class="formula">div<sub>t</sub> &sim; {d<sub>L</sub>, d<sub>H</sub>} with Pr = 0.5 (Henning 2025)</div>
+                <div class="formula">cash<sub>i,t+1</sub> = cash<sub>i,t</sub> &times; (1 + r) + div<sub>t</sub> &times; shares<sub>i,t</sub></div>
+                <div class="formula">VWAP<sub>t</sub> = &Sigma;(P<sub>k</sub> &times; V<sub>k</sub>) / &Sigma; V<sub>k</sub></div>
+                <p>Each round: (1) pay stochastic dividend, (2) accrue interest on cash, (3) optional Sobel communication, (4) compute orders, (5) CDA match, (6) record metrics.</p>
               </div>
             </div>
           </div>
 
-          <div class="slide" data-slide="4">
-            <div class="slide-num">4 / 10</div>
-            <h2>Bubble Formation &amp; Detection</h2>
-            <p class="slide-subtitle">Metrics from Dufwenberg (2005) and Henning (2025)</p>
-            <div class="slide-body two-col">
-              <div>
-                <h4>Bubble Metrics (Dufwenberg Table 2)</h4>
-                <table class="gloss-table" style="font-size:.82em">
-                  <thead><tr><th>Metric</th><th>Formula</th></tr></thead>
-                  <tbody>
-                    <tr><td class="term">Haessel-R&sup2;</td><td class="math">1 &minus; &Sigma;(P&minus;FV)&sup2; / &Sigma;(FV&minus;F&#x0304;V)&sup2;</td></tr>
-                    <tr><td class="term">MSE</td><td class="math">&Sigma;(P<sub>t</sub>&minus;FV<sub>t</sub>)&sup2; / T</td></tr>
-                    <tr><td class="term">NAPD</td><td class="math">&Sigma;|P<sub>t</sub>&minus;FV<sub>t</sub>| / (n &times; shares)</td></tr>
-                    <tr><td class="term">Amplitude</td><td class="math">(max(P&minus;FV) &minus; min(P&minus;FV)) / FV&#x2080;</td></tr>
-                    <tr><td class="term">Turnover</td><td class="math">Total trades / Total shares</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <div>
-                <h4>Hypothesis Classification (Henning Table 1)</h4>
-                <table class="gloss-table" style="font-size:.82em">
-                  <thead><tr><th>Hypothesis</th><th>Criteria</th><th>LLM Models</th></tr></thead>
-                  <tbody>
-                    <tr><td class="term">R (Rational)</td><td>MSE &lt; 2, Amp &lt; 0.5</td><td>Claude 3.5, GPT-4o</td></tr>
-                    <tr><td class="term">H (Human)</td><td>Bubble-crash dynamics</td><td>Grok-2, Mistral, GPT-3.5</td></tr>
-                    <tr><td class="term">E (Erratic)</td><td>No consistent pattern</td><td>Gemini 1.5 Pro</td></tr>
-                  </tbody>
-                </table>
-                <h4>Key Finding (Henning)</h4>
-                <p>LLM markets behave more &ldquo;rationally&rdquo; than human markets. They generally trade closer to fundamental value. MSE spread between best and worst LLM: <strong>0.54&ndash;26.37</strong> (Claude best, GPT-3.5 worst). Battle Royale: no single model dominates, portfolio variance is tight (16.91&ndash;27.01).</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="slide" data-slide="5">
-            <div class="slide-num">5 / 10</div>
-            <h2>Experience Effect</h2>
-            <p class="slide-subtitle">Dufwenberg, Lindqvist &amp; Moore (2005, AER) &mdash; Replication In Silico</p>
-            <div class="slide-body two-col">
-              <div>
-                <h4>Original Experiment Design</h4>
-                <ul>
-                  <li><strong>Subjects</strong>: Undergraduates, no prior experience</li>
-                  <li><strong>Market</strong>: 6 traders, double auction (z-Tree), 10-period asset</li>
-                  <li><strong>Sessions</strong>: 4 consecutive rounds, same 6 subjects</li>
-                  <li><strong>Treatment</strong>: Round 4 replaces 2 or 4 experienced subjects with inexperienced ones</li>
-                  <li><strong>Dividends</strong>: 0 or 20 cents with equal probability</li>
-                  <li><strong>FV</strong>: k &times; 10 cents (k remaining periods)</li>
-                </ul>
-                <h4>Key Results (Table 2)</h4>
-                <table class="gloss-table" style="font-size:.82em">
-                  <thead><tr><th>Round</th><th>Haessel-R&sup2;</th><th>NAPD</th><th>Amplitude</th></tr></thead>
-                  <tbody>
-                    <tr><td>1</td><td>0.37</td><td>1.67</td><td>0.81</td></tr>
-                    <tr><td>2</td><td>0.47</td><td>1.61</td><td>0.80</td></tr>
-                    <tr><td>3</td><td>0.64</td><td>0.81</td><td>0.59</td></tr>
-                    <tr><td>4</td><td>0.65</td><td>1.06</td><td>0.55</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <div>
-                <h4>Our Simulation Replication</h4>
-                <p>The lab experiment includes configurable <strong>experience sessions</strong> (0&ndash;5 additional rounds). After each session, agents increment their experience counter, which:</p>
-                <ul>
-                  <li><strong>Reduces deception aggressiveness</strong>: experienced agents bluff less (dampen factor = max(0.3, 1 &minus; exp &times; 0.15))</li>
-                  <li><strong>Increases skepticism</strong>: experienced receivers discount messages more (Sobel credulity &divide; (1 + exp &times; 0.1))</li>
-                  <li><strong>Improves price tracking</strong>: Haessel-R&sup2; should increase, NAPD should decrease with sessions</li>
-                </ul>
-                <h4>Central Finding</h4>
-                <p>&ldquo;Bubble-crash pricing patterns are not very salient in mixed-experience markets.&rdquo; Even a small fraction of experienced traders anchors prices near fundamental value. Our simulator reproduces this effect quantitatively via the &alpha;* = f(n, risk, knowledge) function.</p>
-              </div>
-            </div>
-          </div>
-
+          <!-- Slide 6: Main Result 1 — Price Discovery & Bubble Formation -->
           <div class="slide" data-slide="6">
             <div class="slide-num">6 / 10</div>
-            <h2>LLM Agent Behavior in Financial Markets</h2>
-            <p class="slide-subtitle">Henning et al. (2025) &mdash; Six LLM Models Compared</p>
+            <h2>Main Result 1: Price Discovery &amp; Bubble Formation</h2>
+            <p class="slide-subtitle">Bubble Metrics, Hypothesis Classification, and Risk-Type Effects</p>
             <div class="slide-body two-col">
               <div>
-                <h4>Experimental Design</h4>
-                <ul>
-                  <li><strong>Single-model</strong>: 20 identical instances of same LLM, 30 rounds, FV = 14</li>
-                  <li><strong>Battle Royale</strong>: 24 agents (4 per model), mixed competition</li>
-                  <li><strong>Endowments</strong>: 100 CASH, 4 STOCK per agent</li>
-                  <li><strong>Dividends</strong>: {0.4, 1.0} with p = 0.5; Interest: 5% per period</li>
-                  <li><strong>Agent memory</strong>: PLANS.txt + INSIGHTS.txt persist across rounds</li>
-                  <li><strong>Output format</strong>: Structured JSON (observations, orders, forecasts)</li>
-                </ul>
-                <h4>Market Performance (Table 1)</h4>
+                <h4>Bubble Detection Framework</h4>
                 <table class="gloss-table" style="font-size:.82em">
-                  <thead><tr><th>Model</th><th>MSE</th><th>PCC</th><th>Hyp.</th></tr></thead>
+                  <thead><tr><th>Metric</th><th>Formula</th><th>Interpretation</th></tr></thead>
                   <tbody>
-                    <tr><td>Claude 3.5 Sonnet</td><td>0.54</td><td>0.0013</td><td>R</td></tr>
-                    <tr><td>GPT-4o</td><td>0.79</td><td>0.0497</td><td>R</td></tr>
-                    <tr><td>Grok-2</td><td>17.33</td><td>0.5582</td><td>H</td></tr>
-                    <tr><td>Mistral Large</td><td>5.69</td><td>&minus;0.1118</td><td>H</td></tr>
-                    <tr><td>GPT-3.5</td><td>26.37</td><td>0.4897</td><td>H</td></tr>
-                    <tr><td>Gemini 1.5 Pro</td><td>3.10</td><td>&minus;0.4009</td><td>E</td></tr>
+                    <tr><td class="term">Haessel-R&sup2;</td><td class="math">1 &minus; &Sigma;(P&minus;FV)&sup2;/&Sigma;(FV&minus;F&#x0304;V)&sup2;</td><td>1 = perfect tracking; &lt;0 = worse than mean</td></tr>
+                    <tr><td class="term">MSE</td><td class="math">&Sigma;(P&minus;FV)&sup2;/T</td><td>Lower = more rational pricing</td></tr>
+                    <tr><td class="term">NAPD</td><td class="math">&Sigma;|P&minus;FV|/(n&times;shares)</td><td>Normalized bubble magnitude</td></tr>
+                    <tr><td class="term">Amplitude</td><td class="math">(max&minus;min deviation)/FV&#x2080;</td><td>Total price swing relative to FV</td></tr>
+                    <tr><td class="term">Turnover</td><td class="math">Total trades / Total shares</td><td>Liquidity and disagreement proxy</td></tr>
+                  </tbody>
+                </table>
+                <h4>Hypothesis Classification (Henning Table 1)</h4>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>Type</th><th>Criteria</th><th>Observed In</th></tr></thead>
+                  <tbody>
+                    <tr><td class="term">R (Rational)</td><td>MSE &lt; 2, Amp &lt; 0.5</td><td>Claude 3.5 (0.54), GPT-4o (0.79)</td></tr>
+                    <tr><td class="term">H (Human)</td><td>Bubble-crash dynamics, PCC &gt; 0.3</td><td>Grok-2 (17.33), GPT-3.5 (26.37)</td></tr>
+                    <tr><td class="term">E (Erratic)</td><td>No consistent pattern, neg PCC</td><td>Gemini 1.5 Pro (3.10)</td></tr>
                   </tbody>
                 </table>
               </div>
               <div>
-                <h4>Key Findings</h4>
-                <ol>
-                  <li><strong>LLMs are more rational than humans</strong>: Claude and GPT-4o maintain prices near FV with MSE &lt; 1</li>
-                  <li><strong>Some LLMs produce human-like bubbles</strong>: Grok-2 and GPT-3.5 show bubble-crash dynamics (H hypothesis)</li>
-                  <li><strong>Strategy adherence over profit</strong>: LLMs follow system prompts faithfully, even when unprofitable</li>
-                  <li><strong>Less strategic heterogeneity</strong>: Portfolio values cluster tightly (668&ndash;690 in Battle Royale)</li>
-                </ol>
-                <h4>Implication for This Simulator</h4>
-                <p>Our framework incorporates the Henning FV model (E[div]/r) and hypothesis classification. The Lab mode allows testing whether <strong>CARA utility-maximizing agents</strong> reproduce the Rational, Human, or Erratic patterns when combined with Sobel communication.</p>
+                <h4>Risk Composition Effects</h4>
+                <p>The simulator reveals how agent population composition drives bubble formation:</p>
+                <ul>
+                  <li><strong>High Risk-Loving (RL &gt; 50%)</strong>: Narrow spreads, aggressive bidding &rarr; prices overshoot FV &rarr; large NAPD and amplitude. Classification trends toward H-type.</li>
+                  <li><strong>Balanced (RL&asymp;RN&asymp;RA)</strong>: Moderate spreads, prices oscillate around FV &rarr; R-type classification in most seeds.</li>
+                  <li><strong>High Risk-Averse (RA &gt; 50%)</strong>: Wide spreads, conservative bidding &rarr; prices undershoot FV &rarr; negative deviations, low turnover.</li>
+                </ul>
+                <h4>Comparison: Stochastic vs LLM Agents</h4>
+                <p>When an API key is provided, LLM agents replace the stochastic CARA model. Henning (2025) found that top-tier LLMs (Claude, GPT-4o) achieve R-type behavior with MSE &lt; 1, while weaker models (GPT-3.5, Grok-2) produce H-type bubble dynamics. Our unified framework enables direct A/B comparison on the same experiment protocol.</p>
               </div>
             </div>
           </div>
 
+          <!-- Slide 7: Main Result 2 — Sobel Strategic Communication -->
           <div class="slide" data-slide="7">
             <div class="slide-num">7 / 10</div>
-            <h2>Sobel (2020): Lying and Deception in Games</h2>
-            <p class="slide-subtitle">Formal Sender-Receiver Model for Strategic Communication</p>
+            <h2>Main Result 2: Strategic Communication &amp; Deception</h2>
+            <p class="slide-subtitle">Sobel (2020 JPE) Model Applied to CDA Markets</p>
             <div class="slide-body two-col">
               <div>
-                <h4>The Model (Section II)</h4>
-                <p>Two agents: informed Sender S observes state &theta;, uninformed Receiver R makes decision y. S sends message m &in; M, takes action x &in; X. R observes m (not x) and chooses y &in; Y.</p>
-                <h4>Three Distinctions (Austin 1975)</h4>
+                <h4>Sobel&rsquo;s Three-Level Framework</h4>
                 <table class="gloss-table" style="font-size:.82em">
-                  <thead><tr><th>Level</th><th>Concept</th><th>Definition</th></tr></thead>
+                  <thead><tr><th>Level</th><th>Concept</th><th>Definition</th><th>Trading Implementation</th></tr></thead>
                   <tbody>
-                    <tr><td class="term">Locution</td><td><strong>Lying</strong> (Def 1)</td><td>m = m<sub>&theta;&#x2080;</sub> and &theta; &notin; &Theta;&#x2080;. The speaker says something she believes to be false.</td></tr>
-                    <tr><td class="term">Illocution</td><td><strong>Deception</strong> (Def 4)</td><td>&exist; message n: &mu;(&middot;|m) = p&middot;&mu;(&middot;|n) + (1&minus;p)&middot;&rho;. Beliefs induced by m are farther from truth.</td></tr>
-                    <tr><td class="term">Perlocution</td><td><strong>Damage</strong> (Sec V)</td><td>Receiver makes worse decision: &exist; alternative action with higher U<sup>R</sup>.</td></tr>
+                    <tr><td class="term">Locution</td><td><strong>Lying</strong> (Def 1)</td><td>m = m<sub>&theta;&#x2080;</sub>, &theta; &notin; &Theta;&#x2080;</td><td>Agent reports &psi;&#x0302; &ne; &psi;<sub>true</sub></td></tr>
+                    <tr><td class="term">Illocution</td><td><strong>Deception</strong> (Def 4)</td><td>&mu;(&middot;|m) farther from truth</td><td>Report shifts others&rsquo; beliefs away from true &psi;</td></tr>
+                    <tr><td class="term">Perlocution</td><td><strong>Damage</strong> (Sec V)</td><td>Worse receiver decision</td><td>Others trade at worse prices due to false signal</td></tr>
+                  </tbody>
+                </table>
+                <h4>Bluffing by Risk Type (Sec VI)</h4>
+                <div class="formula">Buyers (want low price): reported = &psi; &times; (1 &minus; scale &times; dampen)</div>
+                <div class="formula">Sellers (want high price): reported = &psi; &times; (1 + scale &times; dampen)</div>
+                <p>Risk-loving agents bluff more aggressively (1.5&times; amplifier). Experienced agents dampen bluffing: dampen = max(0.3, 1 &minus; exp &times; 0.15).</p>
+                <h4>Receiver Credulity (Def 6)</h4>
+                <div class="formula">effective<sub>j</sub> = &psi;<sub>j</sub>(1&minus;w) + avg(signals) &times; w</div>
+                <div class="formula">w = credulity / (skepticism[riskType] &times; (1 + exp &times; 0.1))</div>
+              </div>
+              <div>
+                <h4>Key Finding: Communication &amp; Efficiency</h4>
+                <p>The communication ON/OFF toggle reveals the causal effect of strategic talk:</p>
+                <ul>
+                  <li><strong>Low deception strength + moderate credulity</strong>: Communication <em>improves</em> efficiency. Agents reveal partial information about &psi;<sub>i</sub>, enabling better matching.</li>
+                  <li><strong>High deception strength + high credulity</strong>: Communication <em>harms</em> efficiency. Credulous agents act on lies, creating misallocation.</li>
+                  <li><strong>High deception + low credulity</strong>: Lies are discounted; communication has negligible effect (Sobel Remark 7: lies need not be deceptive).</li>
+                </ul>
+                <h4>Deception Summary Metrics</h4>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>Measure</th><th>How Computed</th></tr></thead>
+                  <tbody>
+                    <tr><td class="term">Lie count</td><td>Messages where |reported &minus; &psi;| &gt; threshold</td></tr>
+                    <tr><td class="term">Deceptive count</td><td>Lies that shift receiver beliefs farther from truth</td></tr>
+                    <tr><td class="term">Damaging count</td><td>Deceptive messages leading to worse receiver trades</td></tr>
+                  </tbody>
+                </table>
+                <p>All metrics are tracked per round, per risk type, and across phases &mdash; enabling fine-grained analysis of who lies, who is deceived, and who benefits.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 8: Main Result 3 — Experience Effect -->
+          <div class="slide" data-slide="8">
+            <div class="slide-num">8 / 10</div>
+            <h2>Main Result 3: Experience Effect</h2>
+            <p class="slide-subtitle">Dufwenberg et al. (2005, AER) &mdash; Replication In Silico</p>
+            <div class="slide-body two-col">
+              <div>
+                <h4>Original Experiment (Dufwenberg 2005)</h4>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+                  <tbody>
+                    <tr><td class="term">Subjects</td><td>Undergraduates, no prior market experience</td></tr>
+                    <tr><td class="term">Market</td><td>6 traders, CDA (z-Tree), 10-period asset</td></tr>
+                    <tr><td class="term">Sessions</td><td>4 consecutive rounds, same subjects</td></tr>
+                    <tr><td class="term">Treatment</td><td>Round 4: replace 2 or 4 experienced with inexperienced</td></tr>
+                    <tr><td class="term">Dividends</td><td>{0, 20 cents} with equal probability</td></tr>
+                    <tr><td class="term">FV</td><td>k &times; 10 cents (k remaining periods)</td></tr>
+                  </tbody>
+                </table>
+                <h4>Dufwenberg Table 2: Bubble Metrics by Round</h4>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>Round</th><th>Haessel-R&sup2;</th><th>NAPD</th><th>Amplitude</th><th>Turnover</th></tr></thead>
+                  <tbody>
+                    <tr><td>1 (all inexperienced)</td><td>0.37</td><td>1.67</td><td>0.81</td><td>1.16</td></tr>
+                    <tr><td>2</td><td>0.47</td><td>1.61</td><td>0.80</td><td>0.92</td></tr>
+                    <tr><td>3</td><td>0.64</td><td>0.81</td><td>0.59</td><td>0.78</td></tr>
+                    <tr><td>4 (mixed)</td><td>0.65</td><td>1.06</td><td>0.55</td><td>0.95</td></tr>
                   </tbody>
                 </table>
               </div>
               <div>
-                <h4>Key Properties</h4>
-                <ul>
-                  <li><strong>Lies need not be deceptive</strong>: if receiver discounts the lie, beliefs may still be accurate (Remark 7)</li>
-                  <li><strong>Deception without lying</strong>: truthful but incomplete disclosure can mislead (Example 3)</li>
-                  <li><strong>Bluffing</strong> (Sec VI): deception for sender&rsquo;s benefit &mdash; buyers understate, sellers overstate</li>
-                  <li><strong>Credulity</strong> (Def 6): credulous receiver takes m at face value: &mu;(&theta;|m<sub>&theta;</sub>) = posterior</li>
-                </ul>
-                <h4>Implementation in Our Simulator</h4>
-                <div class="formula">reported<sub>i</sub> = &psi;<sub>i</sub> &times; (1 &plusmn; scale &times; dampen)</div>
-                <div class="formula">effective<sub>j</sub> = &psi;<sub>j</sub> &times; (1&minus;w) + avg(signals) &times; w</div>
-                <p>Where w = credulity / (skepticism[riskType] &times; (1 + experience &times; 0.1)). Communication toggle: ON = Sobel model active; OFF = control condition.</p>
+                <h4>Our Computational Replication</h4>
+                <p>The experiment includes configurable <strong>experience sessions</strong> (0&ndash;5 additional rounds). After each session, agents increment their experience counter, which affects two channels:</p>
+                <h4>Channel 1: Reduced Deception Aggressiveness</h4>
+                <div class="formula">dampen = max(0.3, 1 &minus; experience &times; 0.15)</div>
+                <p>Experienced agents bluff less &mdash; they learn that aggressive lying doesn&rsquo;t improve outcomes. At experience=4, dampen=0.4 (60% reduction from naive level).</p>
+                <h4>Channel 2: Increased Skepticism</h4>
+                <div class="formula">effective_credulity = credulity / (1 + experience &times; 0.1)</div>
+                <p>Experienced receivers discount messages more &mdash; they learn to ignore strategic signals. This maps to Sobel&rsquo;s insight that communication equilibria shift when receivers become skeptical.</p>
+                <h4>Expected Outcome</h4>
+                <p>Across sessions, R&sup2; should increase and NAPD should decrease monotonically, reproducing the &ldquo;bubbles and experience&rdquo; finding. The simulator provides quantitative comparison against Table 2 values.</p>
               </div>
             </div>
           </div>
 
-          <div class="slide" data-slide="8">
-            <div class="slide-num">8 / 10</div>
-            <h2>Lab Experiment Design</h2>
-            <p class="slide-subtitle">Two-Phase Protocol with Coase Theorem Test</p>
-            <div class="slide-body two-col">
-              <div>
-                <h4>Phase 1: Silent CDA</h4>
-                <ul>
-                  <li>n CARA utility agents with heterogeneous &psi;<sub>i</sub>, &gamma;<sub>i</sub>, endowments</li>
-                  <li>Each round: dividend payment &rarr; interest accrual &rarr; order submission &rarr; CDA matching</li>
-                  <li>No communication: agents trade on private valuation only</li>
-                  <li>Measures: allocative efficiency, &psi;-shares correlation, bubble metrics</li>
-                </ul>
-                <h4>Phase 2: Sobel Communication</h4>
-                <ul>
-                  <li>Same agents, positions carry over, experience incremented</li>
-                  <li>Before each round: agents send Sobel messages (bluffing)</li>
-                  <li>Receivers update effectivePsi based on credulity</li>
-                  <li>Track: lies, deceptions, damage per round and risk type</li>
-                </ul>
-              </div>
-              <div>
-                <h4>Coase Theorem Test</h4>
-                <p>The <strong>Coase theorem</strong> predicts that regardless of initial allocation, voluntary trade should move assets to the agent with the highest psychological valuation &psi;<sub>i</sub>.</p>
-                <div class="formula">Welfare = &Sigma; &psi;<sub>i</sub> &times; shares<sub>i</sub></div>
-                <div class="formula">Efficiency = (W &minus; W<sub>min</sub>) / (W<sub>max</sub> &minus; W<sub>min</sub>)</div>
-                <div class="formula">Spearman &rho;(&psi;, shares) &rarr; 1 if Coase holds</div>
-                <h4>Experience Sessions (Dufwenberg)</h4>
-                <p>0&ndash;5 additional silent sessions with reset endowments but persistent experience. Tests whether bubble metrics improve across sessions. Replicates Table 2 from DLM (2005).</p>
-              </div>
-            </div>
-          </div>
-
+          <!-- Slide 9: Additional Results — Coase & Efficiency -->
           <div class="slide" data-slide="9">
             <div class="slide-num">9 / 10</div>
-            <h2>Results &amp; Analysis Framework</h2>
-            <p class="slide-subtitle">8 Lab Charts + Comprehensive Logging</p>
-            <div class="slide-body">
-              <table class="gloss-table" style="font-size:.82em">
-                <thead><tr><th>Chart</th><th>X-Axis</th><th>Y-Axis</th><th>Tests</th></tr></thead>
-                <tbody>
-                  <tr><td class="term">L1. Price vs FV</td><td>Round</td><td>Price, FV line</td><td>Bubble detection (Henning MSE/R&sup2;)</td></tr>
-                  <tr><td class="term">L2. Allocation</td><td>&psi;<sub>i</sub></td><td>Share holdings</td><td>Coase theorem (&rho;(&psi;, shares))</td></tr>
-                  <tr><td class="term">L3. Welfare</td><td>Round</td><td>&Sigma;&psi;&times;shares</td><td>Convergence to max welfare</td></tr>
-                  <tr><td class="term">L4. Sobel Analysis</td><td>Risk type</td><td>Message count</td><td>Lie/deception/damage rates by type</td></tr>
-                  <tr><td class="term">L5. Volume</td><td>Round</td><td>Trade count</td><td>Liquidity, comm effect on volume</td></tr>
-                  <tr><td class="term">L6. P&amp;L by Type</td><td>Risk type</td><td>Avg P&amp;L</td><td>Who benefits from deception?</td></tr>
-                  <tr><td class="term">L7. Experience</td><td>Session</td><td>R&sup2;, NAPD</td><td>Dufwenberg experience effect</td></tr>
-                  <tr><td class="term">L8. Bubble Dev</td><td>Round</td><td>(P&minus;FV)/FV %</td><td>Per-round deviation direction</td></tr>
-                </tbody>
-              </table>
-              <div class="slide-cards" style="margin-top:16px">
-                <div class="slide-card" style="border-left:4px solid var(--green)">
-                  <h4>Summary Metrics</h4>
-                  <p>6 summary cards: P1/P2 Efficiency, Haessel-R&sup2;, Hypothesis (R/H/E), Sobel Lies (with deceptive and damaging counts), Coase Agent (highest-&psi; agent&rsquo;s share percentage).</p>
-                </div>
-                <div class="slide-card" style="border-left:4px solid var(--purple)">
-                  <h4>Detailed Log</h4>
-                  <p>Expandable log sections: initial state, per-round trades, Sobel deception summary (Def 1/4/V counts by risk type), bubble metrics comparison (P1 vs P2 vs sessions), and Coase theorem verdict.</p>
-                </div>
+            <h2>Additional Results: Allocative Efficiency &amp; Coase Theorem</h2>
+            <p class="slide-subtitle">Welfare Analysis, P&amp;L Distribution, and Visualization Framework</p>
+            <div class="slide-body two-col">
+              <div>
+                <h4>Coase Theorem Test</h4>
+                <p>Regardless of initial endowment allocation, voluntary trade in a CDA should move assets toward agents with the highest private valuation &psi;<sub>i</sub>, provided transaction costs are low.</p>
+                <div class="formula">W = &Sigma;<sub>i</sub> &psi;<sub>i</sub> &times; shares<sub>i</sub> &nbsp;&nbsp;(welfare)</div>
+                <div class="formula">Efficiency = (W &minus; W<sub>min</sub>) / (W<sub>max</sub> &minus; W<sub>min</sub>)</div>
+                <div class="formula">Spearman &rho;(&psi;, shares) &rarr; 1 if Coase holds</div>
+                <p>We test this by plotting &psi;<sub>i</sub> vs final share holdings (Fig. 2). A strong positive correlation indicates efficient allocation. Color-coding by risk type reveals whether risk preferences interfere with Coase convergence.</p>
+                <h4>P&amp;L Analysis by Risk Type</h4>
+                <p>Fig. 6 decomposes total P&amp;L (including dividends and interest) by CARA risk type. Key questions:</p>
+                <ul>
+                  <li>Do risk-loving agents profit from aggressive trading, or do they overpay?</li>
+                  <li>Does Sobel deception redistribute wealth systematically?</li>
+                  <li>Do risk-averse agents benefit from conservative strategies in volatile markets?</li>
+                </ul>
+              </div>
+              <div>
+                <h4>8-Chart Visualization Framework</h4>
+                <table class="gloss-table" style="font-size:.82em">
+                  <thead><tr><th>Fig.</th><th>Chart</th><th>Tests</th></tr></thead>
+                  <tbody>
+                    <tr><td class="term">1</td><td>Price vs FV (P1 blue, P2 red)</td><td>Bubble detection, Henning R&sup2;/MSE</td></tr>
+                    <tr><td class="term">2</td><td>Allocation (&psi; vs shares)</td><td>Coase theorem (&rho; correlation)</td></tr>
+                    <tr><td class="term">3</td><td>Welfare trajectory</td><td>Convergence to max W</td></tr>
+                    <tr><td class="term">4</td><td>Sobel lying &amp; deception</td><td>Def 1/4/V counts by risk type</td></tr>
+                    <tr><td class="term">5</td><td>Volume &amp; turnover</td><td>Liquidity, comm effect on trade</td></tr>
+                    <tr><td class="term">6</td><td>P&amp;L by risk type</td><td>Who benefits from deception?</td></tr>
+                    <tr><td class="term">7</td><td>Experience effect</td><td>R&sup2;/NAPD across sessions</td></tr>
+                    <tr><td class="term">8</td><td>Bubble deviation (%)</td><td>Per-round direction &amp; magnitude</td></tr>
+                  </tbody>
+                </table>
+                <h4>Summary Metrics Dashboard</h4>
+                <p>6 real-time summary cards provide at-a-glance evaluation: <strong>P1 Efficiency</strong> (silent baseline), <strong>P2 Efficiency</strong> (with/without communication), <strong>Haessel-R&sup2;</strong> (price tracking quality), <strong>Hypothesis</strong> (R/H/E classification), <strong>Sobel Lies</strong> (deceptive + damaging counts), and <strong>Coase Agent</strong> (highest-&psi; agent&rsquo;s share concentration).</p>
               </div>
             </div>
           </div>
 
+          <!-- Slide 10: Conclusions & Future Directions -->
           <div class="slide" data-slide="10">
             <div class="slide-num">10 / 10</div>
             <h2>Conclusions &amp; Future Directions</h2>
-            <p class="slide-subtitle">Summary of Contributions and Open Questions</p>
+            <p class="slide-subtitle">Summary of Contributions and Open Research Questions</p>
             <div class="slide-body two-col">
               <div>
                 <h4>Key Contributions</h4>
                 <ol>
-                  <li><strong>Unified simulator</strong> integrating experimental finance (DLM 2005), LLM trading (Lopez-Lira 2025, Henning 2025), and game-theoretic communication (Sobel 2020)</li>
-                  <li><strong>Three interaction paradigms</strong>: Math (analytic), AI Agent (LLM-powered), Lab (utility-maximizing)</li>
-                  <li><strong>Formal lying/deception model</strong> with ON/OFF toggle enables controlled ablation of communication effects</li>
-                  <li><strong>Experience replication</strong> validates Dufwenberg (2005) finding computationally</li>
-                  <li><strong>Open-source, no-build SPA</strong> deployable to GitHub Pages for reproducibility</li>
+                  <li><strong>Unified experiment</strong> integrating experimental finance (Dufwenberg 2005 AER), LLM agent trading (Lopez-Lira 2025, Henning 2025), and game-theoretic communication (Sobel 2020 JPE) into a single reproducible platform.</li>
+                  <li><strong>Hybrid agent architecture</strong>: stochastic CARA utility model by default, with optional LLM API integration. Same experiment protocol, different decision engine &mdash; enabling direct A/B comparison.</li>
+                  <li><strong>Formal Sobel communication model</strong> with ON/OFF toggle for controlled ablation of lying, deception, and damage effects on market efficiency.</li>
+                  <li><strong>Computational replication</strong> of the Dufwenberg (2005) experience effect, validating that bubble-crash patterns diminish with trader experience in silico.</li>
+                  <li><strong>Open-source, no-build SPA</strong> deployable to GitHub Pages. Fully interactive: adjustable parameters, real-time charts, Trading Floor canvas animation, and export (JSON/CSV).</li>
                 </ol>
                 <h4>Main Findings</h4>
                 <ul>
-                  <li>CARA agents with heterogeneous &psi; converge toward efficient allocation (Coase holds in most configurations)</li>
-                  <li>Sobel communication can improve OR hinder efficiency depending on deception strength and credulity</li>
-                  <li>Experience robustly reduces bubble magnitude across risk compositions</li>
+                  <li>CARA agents with heterogeneous &psi;<sub>i</sub> converge toward efficient allocation (Coase theorem generally holds)</li>
+                  <li>Sobel communication improves OR hinders efficiency depending on the deception&ndash;credulity parameter space</li>
+                  <li>Experience robustly reduces bubble magnitude: R&sup2; increases and NAPD decreases across sessions</li>
+                  <li>Risk-loving agents drive bubble formation; balanced populations produce R-type (Rational) pricing</li>
                 </ul>
               </div>
               <div>
                 <h4>Future Directions</h4>
                 <ul>
-                  <li><strong>LLM-powered lab agents</strong>: Replace CARA reservation prices with actual LLM reasoning (AI Agent mode &times; Lab mode hybrid)</li>
-                  <li><strong>Algorithmic collusion detection</strong>: Test whether LLM agents learn to coordinate prices (Fish et al. 2024)</li>
-                  <li><strong>Regulatory sandboxing</strong>: Simulate disclosure requirements, communication bans, and position limits</li>
-                  <li><strong>Cross-market contagion</strong>: Multiple correlated assets with information spillover</li>
-                  <li><strong>Mechanism design</strong>: Compare CDA vs call auction vs frequent batch auction for LLM markets</li>
+                  <li><strong>LLM agent communication</strong>: Let LLM agents generate natural-language messages (not just price signals) and classify Sobel categories via NLP</li>
+                  <li><strong>Algorithmic collusion detection</strong>: Test whether LLM agents learn to coordinate prices through repeated interaction (Fish et al. 2024)</li>
+                  <li><strong>Regulatory sandboxing</strong>: Simulate mandatory disclosure requirements, communication bans, and position limits to evaluate policy interventions</li>
+                  <li><strong>Multi-asset markets</strong>: Extend to correlated assets with information spillover and contagion dynamics</li>
+                  <li><strong>Mechanism design comparison</strong>: CDA vs call auction vs frequent batch auction &mdash; which mechanism is most robust to LLM strategic behavior?</li>
+                  <li><strong>Human-AI hybrid markets</strong>: Mixed populations of human subjects and AI agents to study emergent interaction dynamics</li>
                 </ul>
-                <h4>Source Code</h4>
+                <h4>Reproducibility</h4>
                 <div class="formula">github.com/Mon-ius/trading</div>
-                <p style="font-size:.82em;color:var(--fg-2)">Static SPA &mdash; no build step. Plotly charts, Canvas 2D game, 3 paradigms (Math | AI | Lab).</p>
+                <p style="font-size:.82em;color:var(--fg-2)">Static SPA &mdash; no build step. Plotly charts, Canvas 2D Trading Floor. All parameters configurable via sidebar. PRNG seeded for exact replication. Optional LLM API integration.</p>
               </div>
             </div>
           </div>
@@ -1040,7 +866,7 @@
               <thead><tr><th>Term</th><th>Full Name</th><th>Description</th></tr></thead>
               <tbody>
                 <tr><td class="term">CDA</td><td>Continuous Double Auction</td><td>Bilateral trading mechanism: buyers and sellers submit limit orders; trade executes when bid &ge; ask. Price = midpoint.</td></tr>
-                <tr><td class="term">FV</td><td>Fundamental Value</td><td>Math mode: FV(t) = (T&minus;t)&times;E[d] (declining). Lab mode: FV = E[div]/r (constant, Henning 2025).</td></tr>
+                <tr><td class="term">FV</td><td>Fundamental Value</td><td>FV = E[div]/r (constant, Henning 2025). Stochastic dividends d&in;{d<sub>L</sub>,d<sub>H</sub>} with interest rate r.</td></tr>
                 <tr><td class="term">CARA</td><td>Constant Absolute Risk Aversion</td><td>Utility U(W) = &minus;exp(&minus;&gamma;W)/&gamma;. Parameter &gamma;: positive = risk-averse, zero = neutral, negative = risk-loving.</td></tr>
                 <tr><td class="term">&psi;<sub>i</sub></td><td>Private Psychological Valuation</td><td>Agent i&rsquo;s true private value for the asset. Drawn from [baseValue &plusmn; spread]. Key to Coase theorem test.</td></tr>
                 <tr><td class="term">R&sup2;</td><td>Haessel R-squared</td><td>Goodness-of-fit: 1 &minus; &Sigma;(P&minus;FV)&sup2;/&Sigma;(FV&minus;F&#x0304;V)&sup2;. Values near 1 = prices track FV (rational). DLM (2005).</td></tr>
@@ -1067,8 +893,7 @@
               <thead><tr><th>Expression</th><th>Meaning</th><th>Reference</th></tr></thead>
               <tbody>
                 <tr><td class="math">U(W) = &minus;exp(&minus;&gamma;W) / &gamma;</td><td>CARA utility function with risk aversion &gamma;</td><td class="formula-ref">Lopez-Lira (2025); DLM fn.5</td></tr>
-                <tr><td class="math">FV(t) = (T&minus;t) &times; E[d]</td><td>Declining fundamental value (Math mode)</td><td class="formula-ref">DLM &sect;I p.1732, fn.5</td></tr>
-                <tr><td class="math">FV = E[div] / r</td><td>Constant fundamental value (Lab mode, Henning)</td><td class="formula-ref">Henning (2025) Eq.1</td></tr>
+                <tr><td class="math">FV = E[div] / r = (d<sub>L</sub>+d<sub>H</sub>)/2r</td><td>Constant fundamental value (Henning perpetuity model)</td><td class="formula-ref">Henning (2025) Eq.1</td></tr>
                 <tr><td class="math">bid = &psi; &minus; &gamma;&sigma;&sup2;/2</td><td>CARA-optimal buy reservation price</td><td class="formula-ref">Lopez-Lira (2025) &sect;2.2</td></tr>
                 <tr><td class="math">ask = &psi; + &gamma;&sigma;&sup2;/2</td><td>CARA-optimal sell reservation price</td><td class="formula-ref">Lopez-Lira (2025) &sect;2.2</td></tr>
                 <tr><td class="math">R&sup2; = 1&minus;&Sigma;(P&minus;FV)&sup2;/&Sigma;(FV&minus;F&#x0304;V)&sup2;</td><td>Haessel R-squared: price tracking quality</td><td class="formula-ref">DLM &sect;II; Haessel (1978)</td></tr>
