@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btn-drawio');
     if (btn) {
       const base = window.location.href.replace(/\/[^/]*$/, '/');
-      btn.href = 'https://app.diagrams.net/#U' + encodeURIComponent(base + 'architecture.drawio');
+      btn.href = 'https://app.diagrams.net/#U' + encodeURIComponent(base + 'architecture.svg');
     }
   })();
 

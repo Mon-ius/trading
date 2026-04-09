@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .section-label { font-family: -apple-system, 'SF Pro Text', sans-serif; font-size: 11px; font-weight: 600; fill: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; }
+    .box-title { font-family: -apple-system, 'SF Pro Text', sans-serif; font-size: 13px; font-weight: 700; fill: #e2e8f0; }
+    .box-sub { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 10px; fill: #94a3b8; }
+    .box-detail { font-family: -apple-system, 'SF Pro Text', sans-serif; font-size: 9px; fill: #64748b; }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <!-- Row 1: AGENTS -->
+  <text x="40" y="16" class="section-label">AGENT CREATION (Lopez-Lira + DLM)</text>
+  <rect x="30" y="24" width="200" height="90" rx="10" fill="#2563eb" opacity=".08" stroke="#2563eb" stroke-opacity=".3" stroke-width="1.5"/>
+  <text x="130" y="48" class="box-title" text-anchor="middle">CARA Utility</text>
+  <text x="130" y="64" class="box-sub" text-anchor="middle">U(W)=&#x2212;exp(&#x2212;&#x3B3;W)/&#x3B3;</text>
+  <text x="130" y="80" class="box-detail" text-anchor="middle">&#x3B3; &lt; 0: risk-loving</text>
+  <text x="130" y="94" class="box-detail" text-anchor="middle">&#x3B3; &gt; 0: risk-averse</text>
+  <line x1="230" y1="69" x2="270" y2="69" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <rect x="280" y="24" width="220" height="90" rx="10" fill="#2563eb" opacity=".08" stroke="#2563eb" stroke-opacity=".3" stroke-width="1.5"/>
+  <text x="390" y="48" class="box-title" text-anchor="middle">Private Valuations</text>
+  <text x="390" y="64" class="box-sub" text-anchor="middle">&#x3C8;&#x1D62; ~ [base&#xB1;spread]</text>
+  <text x="390" y="80" class="box-detail" text-anchor="middle">Heterogeneous endowments</text>
+  <text x="390" y="94" class="box-detail" text-anchor="middle">Cash + Shares per agent</text>
+  <line x1="500" y1="69" x2="540" y2="69" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <rect x="550" y="24" width="180" height="90" rx="10" fill="#2563eb" opacity=".08" stroke="#2563eb" stroke-opacity=".3" stroke-width="1.5"/>
+  <text x="640" y="48" class="box-title" text-anchor="middle">Risk Types</text>
+  <text x="640" y="64" class="box-sub" text-anchor="middle">RL% / RN% / RA%</text>
+  <text x="640" y="80" class="box-detail" text-anchor="middle">Linked sliders sum=100</text>
+  <text x="640" y="94" class="box-detail" text-anchor="middle">Experience level (DLM)</text>
+  <line x1="730" y1="69" x2="770" y2="69" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <rect x="780" y="24" width="150" height="90" rx="10" fill="#d97706" opacity=".08" stroke="#d97706" stroke-opacity=".3" stroke-width="1.5"/>
+  <text x="855" y="48" class="box-title" text-anchor="middle">FV Model</text>
+  <text x="855" y="64" class="box-sub" text-anchor="middle">E[div]/r (Henning)</text>
+  <text x="855" y="80" class="box-detail" text-anchor="middle">div~{d_L,d_H}</text>
+  <text x="855" y="94" class="box-detail" text-anchor="middle">Interest: r% / round</text>
+  <!-- Arrows down -->
+  <line x1="480" y1="114" x2="480" y2="150" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <!-- Row 2: MARKET ENGINE -->
+  <text x="40" y="148" class="section-label">PHASE 1: SILENT CDA</text>
+  <rect x="30" y="160" width="900" height="100" rx="12" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".25" stroke-width="1.5"/>
+  <rect x="50" y="175" width="160" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
+  <text x="130" y="197" class="box-sub" text-anchor="middle">Dividend + Interest</text>
+  <text x="130" y="212" class="box-detail" text-anchor="middle">div&#xD7;shares + cash&#xD7;r</text>
+  <line x1="210" y1="200" x2="240" y2="200" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="250" y="175" width="160" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
+  <text x="330" y="197" class="box-sub" text-anchor="middle">Reservation Prices</text>
+  <text x="330" y="212" class="box-detail" text-anchor="middle">bid=&#x3C8;&#x2212;&#x3B3;&#x3C3;&#xB2;/2</text>
+  <line x1="410" y1="200" x2="440" y2="200" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="450" y="175" width="140" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
+  <text x="520" y="197" class="box-sub" text-anchor="middle">CDA Matching</text>
+  <text x="520" y="212" class="box-detail" text-anchor="middle">bid&#x2265;ask &#x2192; trade</text>
+  <line x1="590" y1="200" x2="620" y2="200" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="630" y="175" width="140" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
+  <text x="700" y="197" class="box-sub" text-anchor="middle">VWAP + Metrics</text>
+  <text x="700" y="212" class="box-detail" text-anchor="middle">R&#xB2;, NAPD, Amp</text>
+  <line x1="770" y1="200" x2="800" y2="200" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="810" y="175" width="100" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
+  <text x="860" y="197" class="box-sub" text-anchor="middle">Repeat</text>
+  <text x="860" y="212" class="box-detail" text-anchor="middle">T rounds</text>
+  <!-- Arrow down -->
+  <line x1="480" y1="260" x2="480" y2="290" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <!-- Row 3: SOBEL COMMUNICATION -->
+  <text x="40" y="288" class="section-label">PHASE 2: SOBEL COMMUNICATION (toggle ON/OFF)</text>
+  <rect x="30" y="300" width="900" height="120" rx="12" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".25" stroke-width="1.5"/>
+  <rect x="50" y="315" width="180" height="55" rx="8" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".2" stroke-width="1"/>
+  <text x="140" y="337" class="box-sub" text-anchor="middle">Sender (Sobel &#xA7;II)</text>
+  <text x="140" y="352" class="box-detail" text-anchor="middle">Bluff: &#x3C8;&#xD7;(1&#xB1;scale)</text>
+  <line x1="230" y1="340" x2="270" y2="340" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="280" y="315" width="180" height="55" rx="8" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".2" stroke-width="1"/>
+  <text x="370" y="337" class="box-sub" text-anchor="middle">Classify (Def 1/4/V)</text>
+  <text x="370" y="352" class="box-detail" text-anchor="middle">Lie &#x2192; Deceptive &#x2192; Damaging</text>
+  <line x1="460" y1="340" x2="500" y2="340" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="510" y="315" width="180" height="55" rx="8" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".2" stroke-width="1"/>
+  <text x="600" y="337" class="box-sub" text-anchor="middle">Receiver (Def 6)</text>
+  <text x="600" y="352" class="box-detail" text-anchor="middle">Credulity &#xD7; skepticism</text>
+  <line x1="690" y1="340" x2="730" y2="340" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
+  <rect x="740" y="315" width="170" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
+  <text x="825" y="337" class="box-sub" text-anchor="middle">CDA (same engine)</text>
+  <text x="825" y="352" class="box-detail" text-anchor="middle">effectivePsi &#x2192; orders</text>
+  <text x="480" y="405" class="box-detail" text-anchor="middle">&#x2190; Repeat T rounds with communication each round &#x2192;</text>
+  <!-- Arrow down -->
+  <line x1="480" y1="420" x2="480" y2="455" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <!-- Row 4: OUTPUT -->
+  <text x="40" y="450" class="section-label">OUTPUT &amp; EXPERIENCE SESSIONS (DLM 2005)</text>
+  <rect x="30" y="462" width="210" height="80" rx="10" fill="#d97706" opacity=".08" stroke="#d97706" stroke-opacity=".3" stroke-width="1.5"/>
+  <text x="135" y="486" class="box-title" text-anchor="middle">Coase Test</text>
+  <text x="135" y="502" class="box-sub" text-anchor="middle">&#x3C1;(&#x3C8;, shares) &#x2192; 1?</text>
+  <text x="135" y="518" class="box-detail" text-anchor="middle">Efficiency, Top-K conc.</text>
+  <line x1="240" y1="500" x2="280" y2="500" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <rect x="290" y="462" width="210" height="80" rx="10" fill="#d97706" opacity=".08" stroke="#d97706" stroke-opacity=".3" stroke-width="1.5"/>
+  <text x="395" y="486" class="box-title" text-anchor="middle">Bubble Metrics</text>
+  <text x="395" y="502" class="box-sub" text-anchor="middle">R&#xB2; / MSE / NAPD / Amp</text>
+  <text x="395" y="518" class="box-detail" text-anchor="middle">Hypothesis: R / H / E</text>
+  <line x1="500" y1="500" x2="540" y2="500" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <rect x="550" y="462" width="170" height="80" rx="10" fill="#7c3aed" opacity=".08" stroke="#7c3aed" stroke-opacity=".3" stroke-width="1.5"/>
+  <text x="635" y="486" class="box-title" text-anchor="middle">Sobel Summary</text>
+  <text x="635" y="502" class="box-sub" text-anchor="middle">Lies / Deceptions</text>
+  <text x="635" y="518" class="box-detail" text-anchor="middle">Damage by risk type</text>
+  <line x1="720" y1="500" x2="760" y2="500" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
+  <rect x="770" y="462" width="160" height="80" rx="10" fill="#d97706" opacity=".08" stroke="#d97706" stroke-opacity=".3" stroke-width="1.5"/>
+  <text x="850" y="486" class="box-title" text-anchor="middle">Experience</text>
+  <text x="850" y="502" class="box-sub" text-anchor="middle">0&#x2013;5 extra sessions</text>
+  <text x="850" y="518" class="box-detail" text-anchor="middle">DLM replication</text>
+  <text x="480" y="580" text-anchor="middle" class="box-detail" font-style="italic">Lopez-Lira (2025) | Henning et al. (2025) | Dufwenberg et al. (2005 AER) | Sobel (2020 JPE)</text>
+</svg>
