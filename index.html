@@ -251,11 +251,6 @@
           </div>
         </div>
 
-        <!-- Experiment log -->
-        <details class="log-card" id="lab-log-card" style="display:none">
-          <summary><h4>Experiment Log</h4><span class="log-toggle-hint">click to expand</span></summary>
-          <div id="lab-log" class="log-body"></div>
-        </details>
       </div>
 
       <!-- Game view -->
@@ -276,6 +271,12 @@
           <div class="game-canvas-wrap"><canvas id="game-canvas"></canvas></div>
         </div>
       </div>
+
+      <!-- Experiment log -->
+      <details class="log-card" id="lab-log-card" style="display:none">
+        <summary><h4 data-i18n="log.title">Experiment Log</h4><span class="log-toggle-hint" data-i18n="log.toggle">click to expand</span></summary>
+        <div id="lab-log" class="log-body"></div>
+      </details>
 
     </div><!-- /main-area -->
   </div><!-- /app-layout -->
