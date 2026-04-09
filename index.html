@@ -87,12 +87,10 @@
             <div class="range-wrap"><input type="range" id="lab-valSpread" value="40" min="5" max="200" step="5"><span class="range-val" id="v-lab-valSpread">40</span></div></label>
           <div class="form-hint">Half-width: &psi;<sub>i</sub> &in; [base &minus; spread, base + spread]. Wider &rarr; more gains from trade, stronger Coase test.</div>
 
-          <label><span>Dividend Low / High</span>
-            <div style="display:flex;gap:6px;align-items:center">
-              <input type="number" id="lab-divLow" value="0.4" min="0" max="5" step="0.1" style="width:60px;text-align:center;padding:3px">
-              <span>/</span>
-              <input type="number" id="lab-divHigh" value="1.0" min="0" max="10" step="0.1" style="width:60px;text-align:center;padding:3px">
-            </div></label>
+          <label><span>Dividend Low</span>
+            <div class="range-wrap"><input type="range" id="lab-divLow" value="4" min="0" max="50" step="1"><span class="range-val" id="v-lab-divLow">0.4</span></div></label>
+          <label><span>Dividend High</span>
+            <div class="range-wrap"><input type="range" id="lab-divHigh" value="10" min="1" max="100" step="1"><span class="range-val" id="v-lab-divHigh">1.0</span></div></label>
           <div class="form-hint">Stochastic dividend each round: d<sub>L</sub> or d<sub>H</sub> with equal probability. FV = E[div]/r (Henning 2025).</div>
 
           <label><span>Interest Rate</span>

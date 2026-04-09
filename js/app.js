@@ -80,8 +80,6 @@ function assignDisplayNames(agents) {
 function readLabParams() {
   const v = id => { const el = document.getElementById(id); return el ? +el.value : 0; };
   const c = id => { const el = document.getElementById(id); return el ? el.checked : false; };
-  const divLowEl = document.getElementById('lab-divLow');
-  const divHighEl = document.getElementById('lab-divHigh');
   return {
     n: v('p-n'),
     baseValue: v('lab-baseVal'),
@@ -93,8 +91,8 @@ function readLabParams() {
     endowVar: v('lab-endowVar') / 100,
     labRounds: v('lab-rounds'),
     // Henning (2025): dividends & interest
-    divLow: divLowEl ? +divLowEl.value : 0.4,
-    divHigh: divHighEl ? +divHighEl.value : 1.0,
+    divLow: v('lab-divLow') / 10,
+    divHigh: v('lab-divHigh') / 10,
     interestRate: v('lab-interest') / 100,
     // Dufwenberg (2005): experience sessions
     experienceRounds: v('lab-expRounds'),
@@ -455,6 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ve.textContent = inp.value + '%';
       else if (['lab-endowVar','lab-decept','lab-credul','lab-interest'].includes(inp.id))
         ve.textContent = inp.value + '%';
+      else if (['lab-divLow','lab-divHigh'].includes(inp.id))
+        ve.textContent = (inp.value / 10).toFixed(1);
       else
         ve.textContent = inp.value;
     };
