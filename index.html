@@ -314,7 +314,7 @@
             <div class="slide-body">
               <h2 class="slide-heading">Motivation &amp; Contribution</h2>
               <div class="slide-two-col">
-                <div>
+                <div class="slide-col">
                   <p class="slide-text">Asset price bubbles remain one of the most persistent phenomena in financial markets. Three open questions motivate this work:</p>
                   <ul>
                     <li><strong>Q1.</strong> Can computational agents replicate bubble dynamics observed in human experiments?</li>
@@ -322,7 +322,7 @@
                     <li><strong>Q3.</strong> What is the role of strategic communication (Sobel 2020)?</li>
                   </ul>
                 </div>
-                <div>
+                <div class="slide-col">
                   <div class="slide-card" style="border-left:3px solid var(--accent)"><h4>CARA Utility Agents</h4><p>Heterogeneous risk + private valuations via CDA (Lopez-Lira 2025)</p></div>
                   <div class="slide-card" style="border-left:3px solid var(--green)"><h4>Stochastic + LLM Hybrid</h4><p>CARA stochastic default; optional LLM API integration</p></div>
                   <div class="slide-card" style="border-left:3px solid var(--red)"><h4>Sobel Communication</h4><p>Lying/deception model with ON/OFF toggle (Sobel 2020 JPE)</p></div>
@@ -338,7 +338,7 @@
               <h2 class="slide-heading">Research Questions &amp; Hypotheses</h2>
               <p class="slide-sm">Testable Predictions Derived from Four Theoretical Frameworks</p>
               <div class="slide-two-col">
-              <div>
+              <div class="slide-col">
                 <h4>Primary Research Questions</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>RQ</th><th>Question</th><th>Source</th></tr></thead>
@@ -351,7 +351,7 @@
                   </tbody>
                 </table>
               </div>
-              <div>
+              <div class="slide-col">
                 <h4>Hypotheses</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>H</th><th>Prediction</th><th>Metric</th></tr></thead>
@@ -409,7 +409,7 @@
               <h2 class="slide-heading">Methodology: Unified Framework Architecture</h2>
               <p class="slide-sm">Two-Phase Experiment with Stochastic/LLM Agent Hybrid</p>
               <div class="slide-two-col">
-              <div>
+              <div class="slide-col">
                 <h4>Experiment Protocol</h4>
                 <ol>
                   <li><strong>Agent Creation</strong>: n agents with CARA utility (&gamma;<sub>i</sub>), private valuations (&psi;<sub>i</sub>), heterogeneous endowments (cash, shares). If API key provided, agents use LLM reasoning; otherwise, CARA stochastic model.</li>
@@ -422,7 +422,7 @@
                 <div class="formula">LLM: bid = LLM(context, history, &psi;, &gamma;)</div>
                 <p>The same experiment protocol runs identically. Only the decision function changes. This enables direct comparison of stochastic and AI agent behavior.</p>
               </div>
-              <div>
+              <div class="slide-col">
                 <h4>Key Design Choices</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>Component</th><th>Choice</th><th>Justification</th></tr></thead>
@@ -448,7 +448,7 @@
               <h2 class="slide-heading">Methodology: Agent Design &amp; Market Microstructure</h2>
               <p class="slide-sm">CARA Utility, Reservation Prices, and CDA Matching</p>
               <div class="slide-two-col">
-              <div>
+              <div class="slide-col">
                 <h4>Agent Parameterization</h4>
                 <p>Each agent <em>i</em> is fully characterized by four components:</p>
                 <table class="gloss-table" style="font-size:.82em">
@@ -465,7 +465,7 @@
                 <div class="formula">ask<sub>i</sub> = &psi;<sub>i</sub> + &gamma;<sub>i</sub> &middot; &sigma;&sup2; / 2</div>
                 <p>Risk-loving agents (&gamma;&lt;0): bid <em>above</em> &psi; (aggressive buyer). Risk-averse agents (&gamma;&gt;0): ask <em>above</em> &psi; (demand premium to sell). This heterogeneity generates trade volume and potential mispricings.</p>
               </div>
-              <div>
+              <div class="slide-col">
                 <h4>CDA Matching Engine</h4>
                 <ol>
                   <li><strong>Order Collection</strong>: Each agent submits one bid and one ask based on CARA-optimal reservation prices</li>
@@ -490,7 +490,8 @@
               <h2 class="slide-heading">Main Result 1: Price Discovery &amp; Bubble Formation</h2>
               <p class="slide-sm">Bubble Metrics, Hypothesis Classification, and Risk-Type Effects</p>
               <div class="slide-two-col">
-              <div>
+              <div class="slide-col">
+                <div class="slide-card">
                 <h4>Bubble Detection Framework</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>Metric</th><th>Formula</th><th>Interpretation</th></tr></thead>
@@ -502,6 +503,8 @@
                     <tr><td class="term">Turnover</td><td class="math">Total trades / Total shares</td><td>Liquidity and disagreement proxy</td></tr>
                   </tbody>
                 </table>
+                </div>
+                <div class="slide-card">
                 <h4>Hypothesis Classification (Henning Table 1)</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>Type</th><th>Criteria</th><th>Observed In</th></tr></thead>
@@ -511,8 +514,10 @@
                     <tr><td class="term">E (Erratic)</td><td>No consistent pattern, neg PCC</td><td>Gemini 1.5 Pro (3.10)</td></tr>
                   </tbody>
                 </table>
+                </div>
               </div>
-              <div>
+              <div class="slide-col">
+                <div class="slide-card">
                 <h4>Risk Composition Effects</h4>
                 <p>The simulator reveals how agent population composition drives bubble formation:</p>
                 <ul>
@@ -520,8 +525,11 @@
                   <li><strong>Balanced (RL&asymp;RN&asymp;RA)</strong>: Moderate spreads, prices oscillate around FV &rarr; R-type classification in most seeds.</li>
                   <li><strong>High Risk-Averse (RA &gt; 50%)</strong>: Wide spreads, conservative bidding &rarr; prices undershoot FV &rarr; negative deviations, low turnover.</li>
                 </ul>
+                </div>
+                <div class="slide-card">
                 <h4>Comparison: Stochastic vs LLM Agents</h4>
                 <p>When an API key is provided, LLM agents replace the stochastic CARA model. Henning (2025) found that top-tier LLMs (Claude, GPT-4o) achieve R-type behavior with MSE &lt; 1, while weaker models (GPT-3.5, Grok-2) produce H-type bubble dynamics. Our unified framework enables direct A/B comparison on the same experiment protocol.</p>
+                </div>
               </div>
             </div>
             </div>
@@ -533,7 +541,8 @@
               <h2 class="slide-heading">Main Result 2: Strategic Communication &amp; Deception</h2>
               <p class="slide-sm">Sobel (2020 JPE) Model Applied to CDA Markets</p>
               <div class="slide-two-col">
-              <div>
+              <div class="slide-col">
+                <div class="slide-card">
                 <h4>Sobel&rsquo;s Three-Level Framework</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>Level</th><th>Concept</th><th>Definition</th><th>Trading Implementation</th></tr></thead>
@@ -543,15 +552,21 @@
                     <tr><td class="term">Perlocution</td><td><strong>Damage</strong> (Sec V)</td><td>Worse receiver decision</td><td>Others trade at worse prices due to false signal</td></tr>
                   </tbody>
                 </table>
+                </div>
+                <div class="slide-card">
                 <h4>Bluffing by Risk Type (Sec VI)</h4>
                 <div class="formula">Buyers (want low price): reported = &psi; &times; (1 &minus; scale &times; dampen)</div>
                 <div class="formula">Sellers (want high price): reported = &psi; &times; (1 + scale &times; dampen)</div>
                 <p>Risk-loving agents bluff more aggressively (1.5&times; amplifier). Experienced agents dampen bluffing: dampen = max(0.3, 1 &minus; exp &times; 0.15).</p>
+                </div>
+                <div class="slide-card">
                 <h4>Receiver Credulity (Def 6)</h4>
                 <div class="formula">effective<sub>j</sub> = &psi;<sub>j</sub>(1&minus;w) + avg(signals) &times; w</div>
                 <div class="formula">w = credulity / (skepticism[riskType] &times; (1 + exp &times; 0.1))</div>
+                </div>
               </div>
-              <div>
+              <div class="slide-col">
+                <div class="slide-card">
                 <h4>Key Finding: Communication &amp; Efficiency</h4>
                 <p>The communication ON/OFF toggle reveals the causal effect of strategic talk:</p>
                 <ul>
@@ -559,6 +574,8 @@
                   <li><strong>High deception strength + high credulity</strong>: Communication <em>harms</em> efficiency. Credulous agents act on lies, creating misallocation.</li>
                   <li><strong>High deception + low credulity</strong>: Lies are discounted; communication has negligible effect (Sobel Remark 7: lies need not be deceptive).</li>
                 </ul>
+                </div>
+                <div class="slide-card">
                 <h4>Deception Summary Metrics</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>Measure</th><th>How Computed</th></tr></thead>
@@ -569,6 +586,7 @@
                   </tbody>
                 </table>
                 <p>All metrics are tracked per round, per risk type, and across phases &mdash; enabling fine-grained analysis of who lies, who is deceived, and who benefits.</p>
+                </div>
               </div>
             </div>
             </div>
@@ -580,7 +598,7 @@
               <h2 class="slide-heading">Main Result 3: Experience Effect</h2>
               <p class="slide-sm">Dufwenberg et al. (2005, AER) &mdash; Replication In Silico</p>
               <div class="slide-two-col">
-              <div>
+              <div class="slide-col">
                 <h4>Original Experiment (Dufwenberg 2005)</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
@@ -604,7 +622,7 @@
                   </tbody>
                 </table>
               </div>
-              <div>
+              <div class="slide-col">
                 <h4>Our Computational Replication</h4>
                 <p>The experiment includes configurable <strong>experience sessions</strong> (0&ndash;5 additional rounds). After each session, agents increment their experience counter, which affects two channels:</p>
                 <h4>Channel 1: Reduced Deception Aggressiveness</h4>
@@ -626,7 +644,7 @@
               <h2 class="slide-heading">Additional Results: Allocative Efficiency &amp; Coase Theorem</h2>
               <p class="slide-sm">Welfare Analysis, P&amp;L Distribution, and Visualization Framework</p>
               <div class="slide-two-col">
-              <div>
+              <div class="slide-col">
                 <h4>Coase Theorem Test</h4>
                 <p>Regardless of initial endowment allocation, voluntary trade in a CDA should move assets toward agents with the highest private valuation &psi;<sub>i</sub>, provided transaction costs are low.</p>
                 <div class="formula">W = &Sigma;<sub>i</sub> &psi;<sub>i</sub> &times; shares<sub>i</sub> &nbsp;&nbsp;(welfare)</div>
@@ -641,7 +659,7 @@
                   <li>Do risk-averse agents benefit from conservative strategies in volatile markets?</li>
                 </ul>
               </div>
-              <div>
+              <div class="slide-col">
                 <h4>8-Chart Visualization Framework</h4>
                 <table class="gloss-table" style="font-size:.82em">
                   <thead><tr><th>Fig.</th><th>Chart</th><th>Tests</th></tr></thead>
@@ -669,7 +687,7 @@
               <h2 class="slide-heading">Conclusions &amp; Future Directions</h2>
               <p class="slide-sm">Summary of Contributions and Open Research Questions</p>
               <div class="slide-two-col">
-              <div>
+              <div class="slide-col">
                 <h4>Key Contributions</h4>
                 <ol>
                   <li><strong>Unified experiment</strong> integrating experimental finance (Dufwenberg 2005 AER), LLM agent trading (Lopez-Lira 2025, Henning 2025), and game-theoretic communication (Sobel 2020 JPE) into a single reproducible platform.</li>
@@ -686,7 +704,7 @@
                   <li>Risk-loving agents drive bubble formation; balanced populations produce R-type (Rational) pricing</li>
                 </ul>
               </div>
-              <div>
+              <div class="slide-col">
                 <h4>Future Directions</h4>
                 <ul>
                   <li><strong>LLM agent communication</strong>: Let LLM agents generate natural-language messages (not just price signals) and classify Sobel categories via NLP</li>
