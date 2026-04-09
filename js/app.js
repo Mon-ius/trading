@@ -65,6 +65,11 @@ function runSingleMarket() {
 }
 
 function renderSimResults(h) {
+  // Hide lab elements
+  document.getElementById('lab-summary').style.display = 'none';
+  document.getElementById('lab-charts').style.display = 'none';
+  document.getElementById('lab-log-card').style.display = 'none';
+
   document.getElementById('summary-row').style.display = 'flex';
   document.getElementById('export-row').style.display = 'flex';
   const b = h.bubble;
@@ -248,28 +253,46 @@ window._gameLog = function(type, title, detail) {
 };
 
 /* ================================================================
-   AI Agent mode
+   Mode switching — Math / AI / Lab
    ================================================================ */
 function switchMode(mode) {
   document.querySelectorAll('.paradigm-btn').forEach(b => b.classList.toggle('active', b.dataset.v === mode));
   const aiPanel = document.getElementById('p-ai');
+  const labPanel = document.getElementById('p-lab');
   const mathPanels = document.querySelectorAll('.math-only');
+  const btnRun = document.getElementById('btn-run');
   const btnRunAI = document.getElementById('btn-run-ai');
+  const btnRunLab = document.getElementById('btn-run-lab');
   const aiProgress = document.getElementById('ai-progress');
+
+  // Hide all mode-specific elements first
+  aiPanel.style.display = 'none';
+  if (labPanel) labPanel.style.display = 'none';
+  mathPanels.forEach(p => p.style.display = 'none');
+  btnRun.style.display = 'none';
+  btnRunAI.style.display = 'none';
+  if (btnRunLab) btnRunLab.style.display = 'none';
+  aiProgress.style.display = 'none';
+  document.body.classList.remove('mode-ai', 'mode-lab');
+
   if (mode === 'ai') {
     aiPanel.style.display = '';
     aiPanel.classList.remove('collapsed');
-    mathPanels.forEach(p => p.style.display = 'none');
     btnRunAI.style.display = '';
     aiProgress.style.display = '';
     document.body.classList.add('mode-ai');
     if (typeof initGroupModels === 'function') initGroupModels();
+  } else if (mode === 'lab') {
+    if (labPanel) { labPanel.style.display = ''; labPanel.classList.remove('collapsed'); }
+    if (btnRunLab) btnRunLab.style.display = '';
+    document.body.classList.add('mode-lab');
+    // Show common panels (Asset & Market, Risk Preferences)
+    document.getElementById('p-asset').style.display = '';
+    document.getElementById('p-risk').style.display = '';
   } else {
-    aiPanel.style.display = 'none';
+    // Math mode — show all math panels
     mathPanels.forEach(p => p.style.display = '');
-    btnRunAI.style.display = 'none';
-    aiProgress.style.display = 'none';
-    document.body.classList.remove('mode-ai');
+    btnRun.style.display = '';
   }
 }
 
@@ -317,6 +340,158 @@ function renderAILog(aiLog, agents) {
     }
     log.appendChild(d);
   }
+}
+
+/* ================================================================
+   Lab Experiment
+   ================================================================ */
+let _labResult = null;
+
+function readLabParams() {
+  const v = id => { const el = document.getElementById(id); return el ? +el.value : 0; };
+  return {
+    n: v('p-n'),
+    baseValue: v('lab-baseVal'),
+    valSpread: v('lab-valSpread'),
+    rlPct: v('p-rl'),
+    rnPct: v('p-rn'),
+    cashMean: v('lab-cash'),
+    sharesMean: v('lab-shares'),
+    endowVar: v('lab-endowVar') / 100,
+    labRounds: v('lab-rounds'),
+    deceptStrength: v('lab-decept') / 100,
+    credulity: v('lab-credul') / 100,
+    seed: v('p-seed'),
+  };
+}
+
+function runLabUI() {
+  const btn = document.getElementById('btn-run-lab');
+  btn.disabled = true; btn.textContent = 'Running...';
+  setTimeout(() => {
+    try {
+      const params = readLabParams();
+      _labResult = runLabExperiment(params);
+      renderLabResults(_labResult);
+    } catch (e) {
+      console.error('Lab experiment error:', e);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Run Lab Experiment';
+    }
+  }, 30);
+}
+
+function renderLabResults(lab) {
+  // Hide other chart areas
+  document.getElementById('summary-row').style.display = 'none';
+  document.getElementById('sim-charts').style.display = 'none';
+  document.getElementById('exp-charts').style.display = 'none';
+  document.getElementById('exp-table-wrap').style.display = 'none';
+  document.getElementById('log-card').style.display = 'none';
+  document.getElementById('export-row').style.display = 'flex';
+
+  // Show lab elements
+  document.getElementById('lab-summary').style.display = 'flex';
+  document.getElementById('lab-charts').style.display = 'grid';
+  document.getElementById('lab-log-card').style.display = 'block';
+
+  // Summary cards
+  const eff1 = lab.phase1.allocation.efficiency;
+  const eff2 = lab.phase2.allocation.efficiency;
+  document.getElementById('sc-lab-eff1').textContent = (eff1 * 100).toFixed(1) + '%';
+  document.getElementById('sc-lab-eff1').style.color = eff1 > 0.5 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('sc-lab-eff2').textContent = (eff2 * 100).toFixed(1) + '%';
+  document.getElementById('sc-lab-eff2').style.color = eff2 > 0.5 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('sc-lab-corr1').textContent = lab.phase1.allocation.correlation.toFixed(3);
+  document.getElementById('sc-lab-corr2').textContent = lab.phase2.allocation.correlation.toFixed(3);
+
+  const top = lab.highestPsiAgent;
+  document.getElementById('sc-lab-top').innerHTML =
+    `${top.name}<br><span style="font-size:0.75em">&psi;=${top.psi.toFixed(0)} | ${top.sharePercent.toFixed(0)}% shares</span>`;
+
+  // Charts
+  renderAllLabCharts(lab);
+
+  // Log
+  renderLabLog(lab);
+}
+
+function renderLabLog(lab) {
+  const log = document.getElementById('lab-log');
+  log.innerHTML = '';
+
+  // Initial state
+  const initDet = document.createElement('details');
+  initDet.className = 'log-round'; initDet.open = true;
+  const initSum = document.createElement('summary');
+  initSum.textContent = `Initial State: ${lab.initialSnapshot.length} agents | Efficiency: ${(lab.initialAlloc.efficiency * 100).toFixed(1)}%`;
+  initDet.appendChild(initSum);
+  for (const a of lab.initialSnapshot) {
+    const d = document.createElement('div'); d.className = 'log-entry';
+    const rColor = a.riskType === 'risk_loving' ? 'var(--red)' : a.riskType === 'risk_neutral' ? 'var(--amber)' : 'var(--blue)';
+    d.innerHTML = `<strong>${a.displayName}</strong> <span style="color:${rColor}">${a.riskType.replace('_','-')}</span> | &psi;=${a.psi.toFixed(1)} | &gamma;=${a.gamma.toFixed(4)} | cash=$${a.cash} | shares=${a.shares}`;
+    initDet.appendChild(d);
+  }
+  log.appendChild(initDet);
+
+  // Phase 1
+  _appendPhaseLog(log, 'Phase 1 (Silent Trading)', lab.phase1, lab.initialSnapshot);
+
+  // Phase 2
+  _appendPhaseLog(log, 'Phase 2 (Communication + Deception)', lab.phase2, lab.phase1.agents);
+
+  // Deception summary
+  const decDet = document.createElement('details');
+  decDet.className = 'log-round';
+  const decSum = document.createElement('summary');
+  const dec = lab.deception;
+  decSum.textContent = `Deception Summary: ${dec.totalLies}/${dec.totalMessages} lies (${(dec.lieRate*100).toFixed(0)}%) | Inflations: ${dec.inflations} | Deflations: ${dec.deflations}`;
+  decDet.appendChild(decSum);
+  for (const rt of ['risk_loving', 'risk_neutral', 'risk_averse']) {
+    const d = document.createElement('div'); d.className = 'log-entry';
+    const rd = dec.byRiskType[rt];
+    d.textContent = `${rt.replace('_','-')}: ${rd.lies}/${rd.total} lies (${rd.total > 0 ? (rd.lies/rd.total*100).toFixed(0) : 0}%)`;
+    decDet.appendChild(d);
+  }
+  log.appendChild(decDet);
+
+  // Final verdict
+  const verdict = document.createElement('div');
+  verdict.className = 'log-entry';
+  verdict.style.cssText = 'font-weight:700;border-top:2px solid var(--accent);padding-top:8px;margin-top:8px;font-size:1.05em';
+  const top = lab.highestPsiAgent;
+  const coaseHolds = top.sharePercent > 100 / lab.initialSnapshot.length * 1.5;
+  verdict.innerHTML = coaseHolds
+    ? `Coase Theorem Supported: ${top.name} (&psi;=${top.psi.toFixed(0)}) holds ${top.sharePercent.toFixed(0)}% of all shares`
+    : `Coase Theorem Challenged: ${top.name} (&psi;=${top.psi.toFixed(0)}) holds only ${top.sharePercent.toFixed(0)}% of shares`;
+  verdict.style.color = coaseHolds ? 'var(--green)' : 'var(--red)';
+  log.appendChild(verdict);
+}
+
+function _appendPhaseLog(container, title, phase, prevAgents) {
+  const det = document.createElement('details');
+  det.className = 'log-round';
+  const sum = document.createElement('summary');
+  const eff = phase.allocation.efficiency;
+  const corr = phase.allocation.correlation;
+  sum.textContent = `${title}: Efficiency=${(eff*100).toFixed(1)}% | Corr(psi,shares)=${corr.toFixed(3)} | ${phase.rounds.length} rounds`;
+  det.appendChild(sum);
+  for (const r of phase.rounds) {
+    const d = document.createElement('div'); d.className = 'log-entry';
+    const prStr = r.vwap != null ? `P=$${r.vwap.toFixed(1)}` : 'no trades';
+    const liesStr = r.messages ? ` | ${r.messages.filter(m=>m.isLie).length} lies` : '';
+    d.textContent = `Round ${r.round+1}: ${r.volume} trades | ${prStr}${liesStr}`;
+    det.appendChild(d);
+  }
+  // Agent summary
+  for (const a of phase.agents) {
+    const prev = prevAgents.find(p => p.id === a.id);
+    const shareDelta = prev ? a.shares - prev.shares : 0;
+    const d = document.createElement('div'); d.className = 'log-entry';
+    d.innerHTML = `<strong>${a.displayName}</strong> &psi;=${a.psi.toFixed(1)} | shares=${a.shares} (${shareDelta >= 0 ? '+' : ''}${shareDelta}) | P&L=${a.totalPnL >= 0 ? '+' : ''}${a.totalPnL.toFixed(0)}`;
+    det.appendChild(d);
+  }
+  container.appendChild(det);
 }
 
 /* ================================================================
@@ -402,11 +577,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Range displays — auto-sync all sliders
   document.querySelectorAll('.sidebar input[type=range]').forEach(inp => {
-    const vid = inp.id.startsWith('exp-') ? 'v-' + inp.id : 'v-' + inp.id.slice(2);
+    const vid = inp.id.startsWith('exp-') ? 'v-' + inp.id
+      : inp.id.startsWith('lab-') ? 'v-' + inp.id
+      : 'v-' + inp.id.slice(2);
     const ve = document.getElementById(vid);
     if (!ve) return;
     const upd = () => {
       if (['p-alpha','p-bias','p-noise','p-anchor','p-momentum','p-rl','p-rn','p-ra'].includes(inp.id))
+        ve.textContent = inp.value + '%';
+      else if (['lab-endowVar','lab-decept','lab-credul'].includes(inp.id))
         ve.textContent = inp.value + '%';
       else if (inp.id === 'exp-threshold')
         ve.textContent = (+inp.value / 100).toFixed(2);

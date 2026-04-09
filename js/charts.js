@@ -272,6 +272,161 @@ function renderAlphaHeatmap(id, experimentResults, fixedN) {
   }), PC);
 }
 
+/* ================================================================
+   Lab Experiment Charts
+   ================================================================ */
+
+/** Lab Fig 1 — Price Evolution: Phase 1 vs Phase 2 */
+function renderLabPriceChart(id, labResult) {
+  const p1 = labResult.phase1.prices;
+  const p2 = labResult.phase2.prices;
+  const r1 = p1.map((_, i) => i + 1);
+  const r2 = p2.map((_, i) => i + 1);
+  const baseVal = labResult.params.baseValue;
+  Plotly.newPlot(id, [
+    { x: r1, y: p1, type: 'scatter', mode: 'lines+markers', name: 'Phase 1 (Silent)',
+      line: { color: CHART_COLORS.blue, width: 2.5 }, marker: { size: 4 } },
+    { x: r2, y: p2, type: 'scatter', mode: 'lines+markers', name: 'Phase 2 (Deception)',
+      line: { color: CHART_COLORS.red, width: 2.5 }, marker: { size: 4 } },
+    { x: [1, Math.max(r1.length, r2.length)], y: [baseVal, baseVal],
+      type: 'scatter', mode: 'lines', name: 'Base Value',
+      line: { color: CHART_COLORS.green, width: 2, dash: 'dash' } },
+  ], _layout({
+    xaxis: { title: 'Round' },
+    yaxis: { title: 'Market Price' },
+    legend: { x: 0, y: 1.15, orientation: 'h' },
+  }), PC);
+}
+
+/** Lab Fig 2 — Allocation Scatter: Valuation vs Final Shares */
+function renderLabAllocationChart(id, labResult) {
+  const p1 = labResult.phase1.agents;
+  const p2 = labResult.phase2.agents;
+  const colors = { risk_loving: CHART_COLORS.red, risk_neutral: CHART_COLORS.orange, risk_averse: CHART_COLORS.blue };
+  Plotly.newPlot(id, [
+    { x: p1.map(a => a.psi), y: p1.map(a => a.shares), type: 'scatter', mode: 'markers',
+      name: 'Phase 1', marker: { size: 10, color: p1.map(a => colors[a.riskType]), opacity: 0.6,
+        line: { width: 1.5, color: '#fff' } },
+      text: p1.map(a => `${a.displayName}<br>psi=${a.psi.toFixed(1)}<br>${a.riskType}`),
+      hovertemplate: '%{text}<br>shares=%{y}<extra>Phase 1</extra>' },
+    { x: p2.map(a => a.psi), y: p2.map(a => a.shares), type: 'scatter', mode: 'markers',
+      name: 'Phase 2', marker: { size: 10, color: p2.map(a => colors[a.riskType]), opacity: 0.9,
+        symbol: 'diamond', line: { width: 1.5, color: '#333' } },
+      text: p2.map(a => `${a.displayName}<br>psi=${a.psi.toFixed(1)}<br>${a.riskType}`),
+      hovertemplate: '%{text}<br>shares=%{y}<extra>Phase 2</extra>' },
+  ], _layout({
+    xaxis: { title: 'Psychological Valuation (psi)' },
+    yaxis: { title: 'Final Share Holdings' },
+    legend: { x: 0, y: 1.15, orientation: 'h' },
+  }), PC);
+}
+
+/** Lab Fig 3 — Welfare Trajectory */
+function renderLabWelfareChart(id, labResult) {
+  const w1 = labResult.phase1.welfareTrack;
+  const w2 = labResult.phase2.welfareTrack;
+  const r1 = w1.map((_, i) => i + 1);
+  const r2 = w2.map((_, i) => i + 1);
+  const wMax = labResult.initialAlloc.maxWelfare;
+  Plotly.newPlot(id, [
+    { x: r1, y: w1, type: 'scatter', mode: 'lines+markers', name: 'Phase 1 Welfare',
+      line: { color: CHART_COLORS.blue, width: 2.5 }, marker: { size: 4 } },
+    { x: r2, y: w2, type: 'scatter', mode: 'lines+markers', name: 'Phase 2 Welfare',
+      line: { color: CHART_COLORS.red, width: 2.5 }, marker: { size: 4 } },
+    { x: [1, Math.max(r1.length, r2.length)], y: [wMax, wMax],
+      type: 'scatter', mode: 'lines', name: 'Max Welfare',
+      line: { color: CHART_COLORS.green, width: 2, dash: 'dash' } },
+  ], _layout({
+    xaxis: { title: 'Round' },
+    yaxis: { title: 'Welfare (sum psi * shares)' },
+    legend: { x: 0, y: 1.15, orientation: 'h' },
+  }), PC);
+}
+
+/** Lab Fig 4 — Deception Analysis */
+function renderLabDeceptionChart(id, labResult) {
+  const dec = labResult.deception;
+  const msgs = labResult.phase2.rounds.flatMap(r => r.messages || []);
+  if (msgs.length === 0) {
+    Plotly.newPlot(id, [], _layout({ xaxis: { title: '' }, yaxis: { title: '' } }), PC);
+    return;
+  }
+  // Bias distribution by risk type
+  const types = ['risk_loving', 'risk_neutral', 'risk_averse'];
+  const labels = ['Risk-Loving', 'Risk-Neutral', 'Risk-Averse'];
+  const colors = [CHART_COLORS.red, CHART_COLORS.orange, CHART_COLORS.blue];
+  const traces = types.map((t, i) => {
+    const tm = msgs.filter(m => m.riskType === t);
+    return {
+      x: tm.map(m => ((m.bias / m.truePsi) * 100)),
+      type: 'histogram', name: labels[i],
+      marker: { color: colors[i] }, opacity: 0.7, nbinsx: 15,
+    };
+  });
+  Plotly.newPlot(id, traces, _layout({
+    xaxis: { title: 'Signal Bias (% of true psi)' },
+    yaxis: { title: 'Count' },
+    barmode: 'overlay', legend: { x: 0, y: 1.15, orientation: 'h' },
+  }), PC);
+}
+
+/** Lab Fig 5 — Volume comparison Phase 1 vs Phase 2 */
+function renderLabVolumeChart(id, labResult) {
+  const v1 = labResult.phase1.volumes;
+  const v2 = labResult.phase2.volumes;
+  const r1 = v1.map((_, i) => i + 1);
+  const r2 = v2.map((_, i) => i + 1);
+  Plotly.newPlot(id, [
+    { x: r1, y: v1, type: 'bar', name: 'Phase 1 (Silent)',
+      marker: { color: 'rgba(0,122,255,0.6)' } },
+    { x: r2, y: v2, type: 'bar', name: 'Phase 2 (Deception)',
+      marker: { color: 'rgba(255,59,48,0.6)' } },
+  ], _layout({
+    xaxis: { title: 'Round' },
+    yaxis: { title: 'Trades' },
+    barmode: 'group', legend: { x: 0, y: 1.15, orientation: 'h' },
+  }), PC);
+}
+
+/** Lab Fig 6 — Agent P&L by risk type, Phase 1 vs Phase 2 */
+function renderLabPnLChart(id, labResult) {
+  const ini = labResult.initialSnapshot;
+  const p1 = labResult.phase1.agents;
+  const p2 = labResult.phase2.agents;
+  const types = ['risk_loving', 'risk_neutral', 'risk_averse'];
+  const labels = ['Risk-Loving', 'Risk-Neutral', 'Risk-Averse'];
+  const colors = [CHART_COLORS.red, CHART_COLORS.orange, CHART_COLORS.blue];
+
+  const p1Pnl = types.map(t => {
+    const as = p1.filter(a => a.riskType === t);
+    return as.length ? avg(as.map(a => a.totalPnL)) : 0;
+  });
+  const p2Pnl = types.map(t => {
+    const as = p2.filter(a => a.riskType === t);
+    return as.length ? avg(as.map(a => a.totalPnL)) : 0;
+  });
+
+  Plotly.newPlot(id, [
+    { x: labels, y: p1Pnl, type: 'bar', name: 'Phase 1',
+      marker: { color: 'rgba(0,122,255,0.75)' } },
+    { x: labels, y: p2Pnl, type: 'bar', name: 'Phase 2',
+      marker: { color: 'rgba(255,59,48,0.75)' } },
+  ], _layout({
+    xaxis: { title: '' },
+    yaxis: { title: 'Avg P&L' },
+    barmode: 'group', legend: { x: 0, y: 1.15, orientation: 'h' },
+  }), PC);
+}
+
+function renderAllLabCharts(labResult) {
+  renderLabPriceChart('lab-chart-price', labResult);
+  renderLabAllocationChart('lab-chart-alloc', labResult);
+  renderLabWelfareChart('lab-chart-welfare', labResult);
+  renderLabDeceptionChart('lab-chart-deception', labResult);
+  renderLabVolumeChart('lab-chart-volume', labResult);
+  renderLabPnLChart('lab-chart-pnl', labResult);
+}
+
 /** Alpha* vs risk composition (grouped bar) */
 function renderAlphaVsRisk(id, experimentResults, fixedN) {
   const filtered = fixedN ? experimentResults.filter(r => r.n === fixedN) : experimentResults;

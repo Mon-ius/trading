@@ -732,6 +732,9 @@ body.mode-ai .navbar { border-bottom-color: var(--purple); }
 /* AI run button */
 .btn-ai { background: linear-gradient(135deg, var(--purple), var(--accent)); }
 .btn-ai:hover { filter: brightness(1.1); }
+.btn-lab { background: linear-gradient(135deg, var(--teal), var(--green)); }
+.btn-lab:hover { filter: brightness(1.1); }
+body.mode-lab .navbar { border-bottom-color: var(--teal); }
 
 /* AI progress */
 .ai-progress {

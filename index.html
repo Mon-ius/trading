@@ -21,6 +21,7 @@
       <div class="paradigm-switch">
         <button class="paradigm-btn active" data-v="math" onclick="switchMode('math')"><span class="paradigm-icon">&#x03A3;</span> <span class="paradigm-label">Math</span></button>
         <button class="paradigm-btn" data-v="ai" onclick="switchMode('ai')"><span class="paradigm-icon">&#x1F916;</span> <span class="paradigm-label">AI Agent</span></button>
+        <button class="paradigm-btn" data-v="lab" onclick="switchMode('lab')"><span class="paradigm-icon">&#x1F9EA;</span> <span class="paradigm-label">Lab</span></button>
       </div>
       <div class="nav-tools">
         <button class="mobile-toggle" id="sidebar-toggle" title="Parameters">
@@ -212,8 +213,43 @@
         </div>
       </div>
 
+      <!-- ===== Lab Experiment Settings ===== -->
+      <div class="panel lab-only" id="p-lab" style="display:none">
+        <div class="panel-header" onclick="togglePanel('p-lab')">
+          <span class="icon">&#x1F9EA;</span><h3>Lab Experiment</h3><span class="chevron">&#x25BC;</span>
+        </div>
+        <div class="panel-body">
+          <div class="form-hint" style="margin-bottom:8px;font-weight:600">Utility-maximizing agents with heterogeneous valuations trade a single asset. Phase 1: silent CDA. Phase 2: communication with strategic deception. Test: does the asset flow to the highest-valuation agent?</div>
+          <label><span>Base Asset Value</span>
+            <div class="range-wrap"><input type="range" id="lab-baseVal" value="100" min="10" max="500" step="10"><span class="range-val" id="v-lab-baseVal">100</span></div></label>
+          <div class="form-hint">Center of the valuation distribution. Each agent's private &psi;<sub>i</sub> is drawn around this value</div>
+          <label><span>Valuation Spread</span>
+            <div class="range-wrap"><input type="range" id="lab-valSpread" value="40" min="5" max="200" step="5"><span class="range-val" id="v-lab-valSpread">40</span></div></label>
+          <div class="form-hint">Half-width of valuation distribution: &psi;<sub>i</sub> &in; [base &minus; spread, base + spread]. Higher &rarr; more disagreement about asset value</div>
+          <label><span>Initial Cash (mean)</span>
+            <div class="range-wrap"><input type="range" id="lab-cash" value="500" min="100" max="5000" step="100"><span class="range-val" id="v-lab-cash">500</span></div></label>
+          <div class="form-hint">Average starting cash per agent. Actual cash varies by &plusmn; endowment variance</div>
+          <label><span>Initial Shares (mean)</span>
+            <div class="range-wrap"><input type="range" id="lab-shares" value="5" min="1" max="30"><span class="range-val" id="v-lab-shares">5</span></div></label>
+          <div class="form-hint">Average starting share endowment. Total supply = n &times; mean shares</div>
+          <label><span>Endowment Variance</span>
+            <div class="range-wrap"><input type="range" id="lab-endowVar" value="30" min="0" max="80"><span class="range-val" id="v-lab-endowVar">30%</span></div></label>
+          <div class="form-hint">Heterogeneity of initial cash/shares. 0% = equal endowments, high = rich/poor mix</div>
+          <label><span>Trading Rounds (per phase)</span>
+            <div class="range-wrap"><input type="range" id="lab-rounds" value="15" min="3" max="50"><span class="range-val" id="v-lab-rounds">15</span></div></label>
+          <div class="form-hint">Number of CDA rounds in each phase. More rounds &rarr; more convergence toward efficient allocation</div>
+          <label><span>Deception Strength</span>
+            <div class="range-wrap"><input type="range" id="lab-decept" value="30" min="0" max="100"><span class="range-val" id="v-lab-decept">30%</span></div></label>
+          <div class="form-hint">How aggressively agents misreport valuations in Phase 2. 0% = truthful, 100% = maximum strategic deception</div>
+          <label><span>Credulity</span>
+            <div class="range-wrap"><input type="range" id="lab-credul" value="25" min="0" max="50"><span class="range-val" id="v-lab-credul">25%</span></div></label>
+          <div class="form-hint">How much agents trust received signals. 0% = ignore messages, 50% = fully credulous. Risk-averse agents discount signals more</div>
+        </div>
+      </div>
+
       <button id="btn-run" class="btn-primary math-only" data-i18n="btn.run">Run Market</button>
       <button id="btn-run-ai" class="btn-primary btn-ai" style="display:none" onclick="runAIMarket()">Run AI Market</button>
+      <button id="btn-run-lab" class="btn-primary btn-lab" style="display:none" onclick="runLabUI()">Run Lab Experiment</button>
       <div id="ai-progress" class="ai-progress" style="display:none"></div>
 
       <div class="panel-divider"></div>
@@ -356,6 +392,53 @@
             <p class="chart-note"><strong>Note.</strong> Grouped bar chart comparing &alpha;* across risk distributions. More risk-loving agents &rarr; higher &alpha;* needed.</p>
           </div>
         </div>
+        <!-- Lab charts -->
+        <div id="lab-summary" class="summary-row" style="display:none">
+          <div class="summary-card"><div class="sc-label">Phase 1 Efficiency</div><div class="sc-value" id="sc-lab-eff1">-</div></div>
+          <div class="summary-card"><div class="sc-label">Phase 2 Efficiency</div><div class="sc-value" id="sc-lab-eff2">-</div></div>
+          <div class="summary-card"><div class="sc-label">Psi-Share Corr (P1)</div><div class="sc-value" id="sc-lab-corr1">-</div></div>
+          <div class="summary-card"><div class="sc-label">Psi-Share Corr (P2)</div><div class="sc-value" id="sc-lab-corr2">-</div></div>
+          <div class="summary-card"><div class="sc-label">Highest-Psi Agent</div><div class="sc-value" id="sc-lab-top">-</div></div>
+        </div>
+        <div id="lab-charts" class="chart-grid" style="display:none">
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--accent)"></span> Fig. L1 &mdash; Market Price (Phase 1 vs Phase 2)</h4>
+            <div id="lab-chart-price"></div>
+            <p class="chart-note"><strong>Note.</strong> VWAP clearing price each round. Phase 1 (blue) = silent CDA. Phase 2 (red) = CDA with strategic deception. Green dashed = base asset value. Deception can distort price discovery.</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--green)"></span> Fig. L2 &mdash; Allocation: Valuation vs Holdings</h4>
+            <div id="lab-chart-alloc"></div>
+            <p class="chart-note"><strong>Note.</strong> Each dot = one agent. X-axis = private psychological valuation &psi;<sub>i</sub>. Y-axis = final share holdings. Positive correlation means assets flow to highest-valuation agents (Coase theorem). Color = risk type.</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--teal)"></span> Fig. L3 &mdash; Welfare Trajectory</h4>
+            <div id="lab-chart-welfare"></div>
+            <p class="chart-note"><strong>Note.</strong> Total welfare = &Sigma; &psi;<sub>i</sub> &times; shares<sub>i</sub> over trading rounds. Approaching the green "Max Welfare" line means efficient allocation. Deception in Phase 2 may help or hinder convergence.</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> Fig. L4 &mdash; Deception Analysis</h4>
+            <div id="lab-chart-deception"></div>
+            <p class="chart-note"><strong>Note.</strong> Distribution of signal bias in Phase 2. Positive bias = inflation (sellers overstating value). Negative = deflation (buyers understating). Risk-loving agents (red) deceive most aggressively.</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--purple)"></span> Fig. L5 &mdash; Trading Volume</h4>
+            <div id="lab-chart-volume"></div>
+            <p class="chart-note"><strong>Note.</strong> Number of executed trades per round: Phase 1 (silent) vs Phase 2 (deception). Communication can increase or decrease volume depending on how deception affects bid-ask overlap.</p>
+          </div>
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="dot" style="background:var(--amber)"></span> Fig. L6 &mdash; P&amp;L by Risk Type</h4>
+            <div id="lab-chart-pnl"></div>
+            <p class="chart-note"><strong>Note.</strong> Average profit/loss by risk type across phases. Risk-loving agents trade more aggressively; deception may benefit or harm them disproportionately.</p>
+          </div>
+        </div>
+
+        <!-- Lab log -->
+        <details class="log-card" id="lab-log-card" style="display:none">
+          <summary><h4>Lab Experiment Log</h4><span class="log-toggle-hint">click to expand</span></summary>
+          <div id="lab-log" class="log-body"></div>
+        </details>
+
         <div id="exp-table-wrap" style="display:none">
           <h3 class="table-title">&alpha;* Results</h3>
           <table id="exp-table" class="results-table"><thead><tr><th>n</th><th>Risk</th><th>Knowledge</th><th>&alpha;* (%)</th></tr></thead><tbody></tbody></table>
@@ -668,6 +751,7 @@
   <script src="js/charts.js"></script>
   <script src="js/game.js"></script>
   <script src="js/ai-agent.js"></script>
+  <script src="js/lab.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
