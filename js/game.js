@@ -318,10 +318,8 @@ class TradingFloor {
     if (!this._initialZoomSet) {
       this._initialZoomSet = true;
       const bw = this._buildingMap.hub ? this._buildingMap.hub.w : BASE_W;
-      // On mobile (<600px CSS), zoom in tighter so buildings are clearly readable
-      const margin = w < 600 ? 10 : 40;
-      const fitZoom = (w * devicePixelRatio) / (bw + margin);
-      this._camZoom = clamp(fitZoom, 0.8, 5);
+      const fitZoom = w / ((bw + 80) * this._scale);
+      this._camZoom = clamp(fitZoom, 0.5, 3);
     }
   }
 
@@ -362,7 +360,9 @@ class TradingFloor {
     if (!this._camFollow) return;
     const b = this._buildingMap[id];
     if (!b) return;
-    this._camTarget = { x: b.x, y: b.y, zoom: Math.min(1.8, this.canvas.width / ((b.w + 80) * this._scale * devicePixelRatio)) };
+    const w = this.canvas.width / devicePixelRatio;
+    const zoom = Math.min(1.8, w / ((b.w + 80) * this._scale));
+    this._camTarget = { x: b.x, y: b.y, zoom };
   }
 
   _focusStage(id) {
@@ -370,7 +370,9 @@ class TradingFloor {
     const b = this._buildingMap[id];
     if (!b) return;
     const stageY = b.y - b.h / 2 + 28 + (b._stageH || 80) / 2;
-    this._camTarget = { x: b.x, y: stageY - 40, zoom: Math.min(2.2, this.canvas.width / (300 * this._scale * devicePixelRatio)) };
+    const w = this.canvas.width / devicePixelRatio;
+    const zoom = Math.min(1.8, w / ((b.w + 40) * this._scale));
+    this._camTarget = { x: b.x, y: stageY - 40, zoom };
   }
 
   /* ---- Wait helper ---- */
@@ -397,9 +399,9 @@ class TradingFloor {
 
     // Camera lerp
     if (this._camTarget) {
-      this._camX += (this._camTarget.x - this._camX) * 0.08;
-      this._camY += (this._camTarget.y - this._camY) * 0.08;
-      this._camZoom += (this._camTarget.zoom - this._camZoom) * 0.08;
+      this._camX += (this._camTarget.x - this._camX) * 0.12;
+      this._camY += (this._camTarget.y - this._camY) * 0.12;
+      this._camZoom += (this._camTarget.zoom - this._camZoom) * 0.12;
     }
 
     ctx.save();
