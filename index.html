@@ -544,47 +544,36 @@
                 <div class="slide-card">
                 <h4>Sobel&rsquo;s Three-Level Framework</h4>
                 <table class="gloss-table">
-                  <thead><tr><th>Level</th><th>Concept</th><th>Definition</th><th>Trading Implementation</th></tr></thead>
+                  <thead><tr><th>Level</th><th>Concept</th><th>Definition</th></tr></thead>
                   <tbody>
-                    <tr><td class="term">Locution</td><td><strong>Lying</strong> (Def 1)</td><td>m = m<sub>&theta;&#x2080;</sub>, &theta; &notin; &Theta;&#x2080;</td><td>Agent reports &psi;&#x0302; &ne; &psi;<sub>true</sub></td></tr>
-                    <tr><td class="term">Illocution</td><td><strong>Deception</strong> (Def 4)</td><td>&mu;(&middot;|m) farther from truth</td><td>Report shifts others&rsquo; beliefs away from true &psi;</td></tr>
-                    <tr><td class="term">Perlocution</td><td><strong>Damage</strong> (Sec V)</td><td>Worse receiver decision</td><td>Others trade at worse prices due to false signal</td></tr>
+                    <tr><td class="term">Locution</td><td><strong>Lying</strong> (Def 1)</td><td>m &ne; &theta;: agent reports &psi;&#x0302; &ne; &psi;<sub>true</sub></td></tr>
+                    <tr><td class="term">Illocution</td><td><strong>Deception</strong> (Def 4)</td><td>&mu;(&middot;|m) farther from truth</td></tr>
+                    <tr><td class="term">Perlocution</td><td><strong>Damage</strong> (Sec V)</td><td>Others trade at worse prices</td></tr>
                   </tbody>
                 </table>
-                </div>
-                <div class="slide-card">
-                <h4>Bluffing by Risk Type (Sec VI)</h4>
-                <div class="formula">Buyers (want low price): reported = &psi; &times; (1 &minus; scale &times; dampen)</div>
-                <div class="formula">Sellers (want high price): reported = &psi; &times; (1 + scale &times; dampen)</div>
-                <p>Risk-loving agents bluff more aggressively (1.5&times; amplifier). Experienced agents dampen bluffing: dampen = max(0.3, 1 &minus; exp &times; 0.15).</p>
-                </div>
-                <div class="slide-card">
-                <h4>Receiver Credulity (Def 6)</h4>
-                <div class="formula">effective<sub>j</sub> = &psi;<sub>j</sub>(1&minus;w) + avg(signals) &times; w</div>
-                <div class="formula">w = credulity / (skepticism[riskType] &times; (1 + exp &times; 0.1))</div>
+                <h4>Bluffing &amp; Credulity</h4>
+                <div class="formula">Buyer bluff: &psi; &times; (1 &minus; scale &times; dampen)</div>
+                <div class="formula">Seller bluff: &psi; &times; (1 + scale &times; dampen)</div>
+                <div class="formula">w = credulity / (skepticism &times; (1 + exp &times; 0.1))</div>
                 </div>
               </div>
               <div class="slide-col">
                 <div class="slide-card">
-                <h4>Key Finding: Communication &amp; Efficiency</h4>
-                <p>The communication ON/OFF toggle reveals the causal effect of strategic talk:</p>
+                <h4>Communication &amp; Efficiency</h4>
                 <ul>
-                  <li><strong>Low deception strength + moderate credulity</strong>: Communication <em>improves</em> efficiency. Agents reveal partial information about &psi;<sub>i</sub>, enabling better matching.</li>
-                  <li><strong>High deception strength + high credulity</strong>: Communication <em>harms</em> efficiency. Credulous agents act on lies, creating misallocation.</li>
-                  <li><strong>High deception + low credulity</strong>: Lies are discounted; communication has negligible effect (Sobel Remark 7: lies need not be deceptive).</li>
+                  <li><strong>Low deception + moderate credulity</strong>: Communication <em>improves</em> efficiency via partial &psi;<sub>i</sub> revelation.</li>
+                  <li><strong>High deception + high credulity</strong>: Communication <em>harms</em> efficiency &mdash; credulous agents act on lies.</li>
+                  <li><strong>High deception + low credulity</strong>: Lies discounted; negligible effect (Sobel Remark 7).</li>
                 </ul>
-                </div>
-                <div class="slide-card">
-                <h4>Deception Summary Metrics</h4>
+                <h4>Deception Metrics</h4>
                 <table class="gloss-table">
                   <thead><tr><th>Measure</th><th>How Computed</th></tr></thead>
                   <tbody>
-                    <tr><td class="term">Lie count</td><td>Messages where |reported &minus; &psi;| &gt; threshold</td></tr>
-                    <tr><td class="term">Deceptive count</td><td>Lies that shift receiver beliefs farther from truth</td></tr>
-                    <tr><td class="term">Damaging count</td><td>Deceptive messages leading to worse receiver trades</td></tr>
+                    <tr><td class="term">Lie count</td><td>|reported &minus; &psi;| &gt; threshold</td></tr>
+                    <tr><td class="term">Deceptive</td><td>Lies shifting beliefs farther from truth</td></tr>
+                    <tr><td class="term">Damaging</td><td>Deceptive messages &rarr; worse trades</td></tr>
                   </tbody>
                 </table>
-                <p>All metrics are tracked per round, per risk type, and across phases &mdash; enabling fine-grained analysis of who lies, who is deceived, and who benefits.</p>
                 </div>
               </div>
             </div>
