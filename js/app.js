@@ -399,6 +399,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = document.getElementById('tab-' + tab.dataset.tab);
     if (target) target.classList.add('active');
     document.getElementById('nav-menu').classList.remove('open');
+    // Hide sidebar & toggle on non-experiment tabs
+    const isExp = tab.dataset.tab === 'experiment';
+    document.getElementById('sidebar').style.display = isExp ? '' : 'none';
+    document.getElementById('sidebar-toggle').style.display = isExp ? '' : 'none';
+    if (!isExp) { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-backdrop').classList.remove('visible'); }
   }));
 
   // Sidebar
