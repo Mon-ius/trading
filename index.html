@@ -282,18 +282,31 @@
       <!-- ===== Slides ===== -->
       <div id="tab-slides" class="tab-content">
         <div class="slides-wrap">
-          <div class="slides-nav">
-            <button class="slide-prev" onclick="changeSlide(-1)">&larr;</button>
-            <span class="slide-counter" id="slide-counter">1 / 10</span>
-            <button class="slide-next" onclick="changeSlide(1)">&rarr;</button>
+          <div class="slides-toolbar">
+            <span class="slides-counter"><span id="slide-cur">1</span> / <span id="slide-tot">10</span></span>
+            <div class="slides-nav slides-export-row">
+              <button class="slides-btn" id="slide-prev" onclick="slideNav(-1)" title="Previous">&larr;</button>
+              <button class="slides-btn" id="slide-next" onclick="slideNav(1)" title="Next">&rarr;</button>
+              <button class="slides-btn" id="slide-fs" onclick="toggleSlideFullscreen()" title="Fullscreen">&#x26F6;</button>
+              <button class="slides-btn" id="slide-read" onclick="toggleReadingMode()" title="Reading mode">&#x2630;</button>
+              <button class="slides-btn" id="slide-pdf" onclick="exportSlidesPDF()" title="Export PDF">&#x1F5B6;</button>
+            </div>
           </div>
+
+          <div class="slides-viewport" id="slides-viewport">
 
           <!-- Slide 1: Title & Motivation -->
           <div class="slide active" data-slide="1">
-            <div class="slide-num">1 / 10</div>
-            <h2>Strategic Communication, Experience, and Bubbles in Experimental Asset Markets</h2>
-            <p class="slide-subtitle">A Unified Computational Framework for LLM Agent Trading with Sobel Communication</p>
-            <div class="slide-body two-col">
+            <div class="slide-body">
+            <div class="slide-center" style="margin-bottom:24px">
+              <h1 class="slide-title">Strategic Communication, Experience, and Bubbles in Experimental Asset Markets</h1>
+              <p class="slide-subtitle">A Unified Computational Framework for LLM Agent Trading with Sobel Communication</p>
+              <div class="slide-meta">
+                <p>Lopez-Lira (2025) &bull; Henning et al. (2025) &bull; Dufwenberg et al. (2005, <em>AER</em>) &bull; Sobel (2020, <em>JPE</em>)</p>
+                <p class="slide-tag">Interactive Market Microstructure Simulator</p>
+              </div>
+            </div>
+            <div class="slide-two-col">
               <div>
                 <h4>Motivation</h4>
                 <p>Asset price bubbles remain one of the most persistent and damaging phenomena in financial markets. Laboratory experiments (Smith et al. 1988) consistently reproduce bubble-crash patterns even when fundamental value is common knowledge. Three open questions motivate this work:</p>
@@ -331,7 +344,7 @@
 
           <!-- Slide 2: Research Questions & Hypotheses -->
           <div class="slide" data-slide="2">
-            <div class="slide-num">2 / 10</div>
+
             <h2>Research Questions &amp; Hypotheses</h2>
             <p class="slide-subtitle">Testable Predictions Derived from Four Theoretical Frameworks</p>
             <div class="slide-body two-col">
@@ -369,7 +382,7 @@
 
           <!-- Slide 3: Literature & Theoretical Foundations -->
           <div class="slide" data-slide="3">
-            <div class="slide-num">3 / 10</div>
+
             <h2>Theoretical Foundations</h2>
             <p class="slide-subtitle">Four Papers, One Unified Framework</p>
             <div class="slide-body">
@@ -400,7 +413,7 @@
 
           <!-- Slide 4: Methodology — Framework Architecture -->
           <div class="slide" data-slide="4">
-            <div class="slide-num">4 / 10</div>
+
             <h2>Methodology: Unified Framework Architecture</h2>
             <p class="slide-subtitle">Two-Phase Experiment with Stochastic/LLM Agent Hybrid</p>
             <div class="slide-body two-col">
@@ -438,7 +451,6 @@
 
           <!-- Slide 5: Methodology — Agent Design & CDA -->
           <div class="slide" data-slide="5">
-            <div class="slide-num">5 / 10</div>
             <h2>Methodology: Agent Design &amp; Market Microstructure</h2>
             <p class="slide-subtitle">CARA Utility, Reservation Prices, and CDA Matching</p>
             <div class="slide-body two-col">
@@ -479,7 +491,6 @@
 
           <!-- Slide 6: Main Result 1 — Price Discovery & Bubble Formation -->
           <div class="slide" data-slide="6">
-            <div class="slide-num">6 / 10</div>
             <h2>Main Result 1: Price Discovery &amp; Bubble Formation</h2>
             <p class="slide-subtitle">Bubble Metrics, Hypothesis Classification, and Risk-Type Effects</p>
             <div class="slide-body two-col">
@@ -521,7 +532,6 @@
 
           <!-- Slide 7: Main Result 2 — Sobel Strategic Communication -->
           <div class="slide" data-slide="7">
-            <div class="slide-num">7 / 10</div>
             <h2>Main Result 2: Strategic Communication &amp; Deception</h2>
             <p class="slide-subtitle">Sobel (2020 JPE) Model Applied to CDA Markets</p>
             <div class="slide-body two-col">
@@ -567,7 +577,6 @@
 
           <!-- Slide 8: Main Result 3 — Experience Effect -->
           <div class="slide" data-slide="8">
-            <div class="slide-num">8 / 10</div>
             <h2>Main Result 3: Experience Effect</h2>
             <p class="slide-subtitle">Dufwenberg et al. (2005, AER) &mdash; Replication In Silico</p>
             <div class="slide-body two-col">
@@ -612,7 +621,6 @@
 
           <!-- Slide 9: Additional Results — Coase & Efficiency -->
           <div class="slide" data-slide="9">
-            <div class="slide-num">9 / 10</div>
             <h2>Additional Results: Allocative Efficiency &amp; Coase Theorem</h2>
             <p class="slide-subtitle">Welfare Analysis, P&amp;L Distribution, and Visualization Framework</p>
             <div class="slide-body two-col">
@@ -654,7 +662,6 @@
 
           <!-- Slide 10: Conclusions & Future Directions -->
           <div class="slide" data-slide="10">
-            <div class="slide-num">10 / 10</div>
             <h2>Conclusions &amp; Future Directions</h2>
             <p class="slide-subtitle">Summary of Contributions and Open Research Questions</p>
             <div class="slide-body two-col">
@@ -692,6 +699,7 @@
             </div>
           </div>
 
+          </div><!-- /slides-viewport -->
         </div>
       </div><!-- /slides -->
 

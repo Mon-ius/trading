@@ -5,17 +5,55 @@
 let _history = null, _floor = null, _labResult = null;
 
 /* Slide navigation */
-function changeSlide(dir) {
-  const slides = document.querySelectorAll('.slides-wrap .slide');
-  if (!slides.length) return;
-  let cur = 0;
-  slides.forEach((s, i) => { if (s.classList.contains('active')) cur = i; });
-  slides[cur].classList.remove('active');
-  cur = (cur + dir + slides.length) % slides.length;
-  slides[cur].classList.add('active');
-  const counter = document.getElementById('slide-counter');
-  if (counter) counter.textContent = (cur + 1) + ' / ' + slides.length;
+let _curSlide = 1;
+function _slideCount() { return document.querySelectorAll('#slides-viewport .slide').length; }
+function slideNav(dir) {
+  const total = _slideCount();
+  const next = Math.max(1, Math.min(total, _curSlide + dir));
+  if (next === _curSlide) return;
+  _curSlide = next;
+  document.querySelectorAll('#slides-viewport .slide').forEach(s => s.classList.remove('active'));
+  const el = document.querySelector(`#slides-viewport .slide[data-slide="${_curSlide}"]`);
+  if (el) el.classList.add('active');
+  document.getElementById('slide-cur').textContent = _curSlide;
+  document.getElementById('slide-prev').disabled = _curSlide <= 1;
+  document.getElementById('slide-next').disabled = _curSlide >= total;
 }
+function toggleSlideFullscreen() {
+  const vp = document.getElementById('slides-viewport');
+  vp.classList.toggle('fullscreen');
+}
+function toggleReadingMode() {
+  const vp = document.getElementById('slides-viewport');
+  vp.classList.toggle('reading-mode');
+}
+function exportSlidesPDF() {
+  const vp = document.getElementById('slides-viewport');
+  const wasReading = vp.classList.contains('reading-mode');
+  if (!wasReading) vp.classList.add('reading-mode');
+  setTimeout(() => {
+    window.print();
+    if (!wasReading) vp.classList.remove('reading-mode');
+  }, 400);
+}
+(function initSlides() {
+  const total = document.querySelectorAll('#slides-viewport .slide').length;
+  const totEl = document.getElementById('slide-tot');
+  if (totEl) totEl.textContent = total;
+  const prevBtn = document.getElementById('slide-prev');
+  if (prevBtn) prevBtn.disabled = true;
+  document.addEventListener('keydown', e => {
+    const slidesTab = document.getElementById('tab-slides');
+    if (!slidesTab || !slidesTab.classList.contains('active')) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); slideNav(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); slideNav(-1); }
+    if (e.key === 'Escape') {
+      const vp = document.getElementById('slides-viewport');
+      if (vp && vp.classList.contains('fullscreen')) { vp.classList.remove('fullscreen'); e.preventDefault(); }
+    }
+    if (e.key === 'f' || e.key === 'F') { toggleSlideFullscreen(); e.preventDefault(); }
+  });
+})();
 
 /* ================================================================
    Theme management
