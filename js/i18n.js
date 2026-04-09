@@ -1,10 +1,10 @@
 /**
- * i18n — Market Microstructure Simulator
+ * i18n — Virtual Trading Simulator
  * Full EN + ZH support
  */
 const I18N = {
   en: {
-    'app.title': 'Market Microstructure',
+    'app.title': 'Virtual Trading',
     'app.subtitle': 'Bubbles, Experience & Strategic Communication',
     'nav.experiment': 'Experiment',
     'mode.sim': 'Simulation',
@@ -189,7 +189,7 @@ const I18N = {
     'pd.alpharisk.d': 'Grouped bar chart comparing α* across risk distributions for each knowledge level. Reveals how risk-loving populations affect bubble persistence.',
   },
   zh: {
-    'app.title': '市场微观结构',
+    'app.title': '虚拟交易',
     'app.subtitle': '泡沫、经验与战略沟通',
     'nav.experiment': '实验',
     'mode.sim': '模拟',

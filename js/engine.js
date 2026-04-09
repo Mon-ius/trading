@@ -1,5 +1,5 @@
 /**
- * Market Microstructure Simulation Engine
+ * Virtual Trading Simulation Engine
  * ========================================
  * Continuous Double Auction with declining fundamental value.
  *
