@@ -150,7 +150,7 @@ function renderLabResults(lab) {
   const dec = lab.deception;
   const liesEl = document.getElementById('sc-lab-lies');
   if (lab.commEnabled && dec.totalMessages > 0) {
-    liesEl.innerHTML = `${dec.totalLies}/${dec.totalMessages}<br><span style="font-size:0.7em">${dec.totalDeceptions} deceptive | ${dec.totalDamaging} damaging</span>`;
+    liesEl.innerHTML = `${dec.totalLies}/${dec.totalMessages}<div class="sc-detail">${dec.totalDeceptions} deceptive · ${dec.totalDamaging} damaging</div>`;
   } else {
     liesEl.textContent = 'Comm OFF';
     liesEl.style.color = 'var(--fg-2)';
@@ -159,7 +159,7 @@ function renderLabResults(lab) {
   // Coase theorem agent
   const top = lab.highestPsiAgent;
   document.getElementById('sc-lab-top').innerHTML =
-    `${top.name}<br><span style="font-size:0.75em">&psi;=${top.psi.toFixed(0)} | ${top.sharePercent.toFixed(0)}% shares</span>`;
+    `${top.name}<div class="sc-detail">&psi;=${top.psi.toFixed(0)} · ${top.sharePercent.toFixed(0)}% shares</div>`;
 
   // Charts
   renderAllLabCharts(lab);
