@@ -796,8 +796,10 @@ class TradingFloor {
 
         for (const msg of rd.messages) {
           const sp = this.sprites[msg.senderId];
+          if (!sp) continue;
           const label = msg.isLie ? 'LIE' : 'TRUTH';
-          sp.bubble = { text: `$${msg.message.toFixed(0)} ${label}`, alpha: 2.0, isLie: msg.isLie };
+          const val = msg.reported ?? msg.message ?? 0;
+          sp.bubble = { text: `$${val.toFixed(0)} ${label}`, alpha: 2.0, isLie: msg.isLie };
         }
         await this._wait(Math.round(1200 * stepScale));
 
