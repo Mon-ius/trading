@@ -59,10 +59,11 @@ body {
    Navbar — matching lying project
    ================================================================ */
 .navbar {
+  position: sticky; top: 0; z-index: 100;
   display: flex; align-items: center; gap: 16px;
   padding: 0 24px; height: 52px;
   background: var(--bg-1); border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-sm);
 }
 .nav-brand {
   font-size: 1rem; font-weight: 700; letter-spacing: -.02em;
@@ -72,9 +73,9 @@ body {
 }
 .nav-tabs { display: flex; gap: 2px; flex: 1; }
 .nav-tab {
-  padding: 14px 16px; border: none; background: transparent;
-  color: var(--fg-2); font-family: var(--font-sans); font-size: .8rem; font-weight: 500;
-  cursor: pointer; transition: color .15s var(--ease); position: relative;
+  padding: 14px 16px; font-size: .8rem; font-weight: 500; color: var(--fg-2);
+  border: none; background: none; cursor: pointer; position: relative;
+  font-family: inherit; transition: color .15s;
 }
 .nav-tab:hover { color: var(--fg-0); }
 .nav-tab.active { color: var(--accent); font-weight: 600; }
@@ -82,24 +83,26 @@ body {
   content: ''; position: absolute; bottom: 0; left: 8px; right: 8px;
   height: 2px; background: var(--accent); border-radius: 1px;
 }
-
-.nav-menu { display: flex; align-items: center; gap: 16px; margin-left: auto; }
 .nav-tools { display: flex; align-items: center; gap: 10px; }
-.paradigm-label { white-space: nowrap; }
-
 .nav-tools select {
-  font-family: var(--font-sans); font-size: .78rem; font-weight: 500;
+  font-family: inherit; font-size: .78rem; font-weight: 500;
   background: var(--bg-2); color: var(--fg-0); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 0 22px 0 8px; height: 30px;
   outline: none; cursor: pointer; width: auto;
   -webkit-appearance: none; appearance: none;
-  transition: border-color .15s var(--ease);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%239aa0ad' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 6px center;
 }
-.nav-tools select:hover { border-color: var(--accent); }
-
-/* Theme toggle button */
+.nav-menu { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.nav-hamburger { display: none; }
+.mobile-toggle {
+  display: none; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg-2); color: var(--fg-1);
+  cursor: pointer; padding: 0; transition: all .2s var(--ease);
+}
+.mobile-toggle:hover { background: var(--bg-3); border-color: var(--accent); }
+.mobile-toggle svg { width: 16px; height: 16px; }
 .theme-btn {
   width: 30px; height: 30px; border-radius: var(--radius-sm);
   border: 1px solid var(--border); background: var(--bg-2); color: var(--fg-1);
@@ -117,24 +120,6 @@ body {
   [data-theme="auto"] .theme-btn .sun { display: block; }
   [data-theme="auto"] .theme-btn .moon { display: none; }
 }
-
-/* Sidebar toggle (mobile) */
-.mobile-toggle {
-  display: none; width: 30px; height: 30px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--bg-2); color: var(--fg-1);
-  cursor: pointer; align-items: center; justify-content: center; padding: 0;
-}
-.mobile-toggle svg { width: 16px; height: 16px; }
-.mobile-toggle:hover { background: var(--bg-3); border-color: var(--accent); }
-
-/* Hamburger (mobile) */
-.nav-hamburger {
-  display: none; width: 30px; height: 30px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--bg-2); color: var(--fg-1);
-  cursor: pointer; align-items: center; justify-content: center; padding: 0; margin-left: auto;
-}
-.nav-hamburger svg { width: 16px; height: 16px; }
-.nav-hamburger:hover { background: var(--bg-3); border-color: var(--accent); }
 
 /* ================================================================
    App layout — sidebar + main
@@ -522,11 +507,12 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
   .nav-menu.open { display: flex; }
   .app-layout { grid-template-columns: 1fr; }
   .sidebar {
-    position: fixed; top: 52px; left: 0; bottom: 0; width: 310px; z-index: 90;
-    max-height: calc(100vh - 52px); max-height: calc(100dvh - 52px);
+    position: fixed; top: 52px; left: 0; bottom: 0; width: 310px;
+    z-index: 90; transform: translateX(-100%);
+    transition: transform .3s var(--ease);
+    border-right: 1px solid var(--border); border-bottom: none;
+    background: var(--bg-1); max-height: calc(100vh - 52px); max-height: calc(100dvh - 52px);
     overflow-y: auto; -webkit-overflow-scrolling: touch;
-    border-right: 1px solid var(--border);
-    transform: translateX(-100%); transition: transform .3s var(--ease);
     box-shadow: none; padding-bottom: 60px;
   }
   .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
@@ -711,8 +697,6 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
 /* ================================================================
    AI Agent Mode
    ================================================================ */
-body.mode-ai .navbar { border-bottom-color: var(--purple); }
-
 /* Global select styling (dark mode aware) */
 .sidebar select, .section-card select, .roster-row select {
   font-family: var(--font-sans); font-size: .68rem; font-weight: 500;
@@ -740,7 +724,6 @@ body.mode-ai .navbar { border-bottom-color: var(--purple); }
 .btn-ai:hover { filter: brightness(1.1); }
 .btn-lab { background: linear-gradient(135deg, var(--teal), var(--green)); }
 .btn-lab:hover { filter: brightness(1.1); }
-body.mode-lab .navbar { border-bottom-color: var(--teal); }
 
 /* Toggle switch for communication ON/OFF */
 .toggle-switch { position: relative; display: inline-block; width: 42px; height: 22px; flex-shrink: 0; }
