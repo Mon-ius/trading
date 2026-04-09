@@ -529,8 +529,7 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
   .arch-defs { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
   .arch-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .arch-svg-container { padding: 12px; }
-  .gloss-table th, .gloss-table td { padding: 6px 8px; }
-  .glossary-wrap { padding: 20px 16px 40px; }
+  .gloss-table th, .gloss-table td { padding: 6px 8px; font-size: .76rem; }
 }
 @media (max-width: 550px) {
   .navbar { padding: 0 10px; gap: 8px; }
