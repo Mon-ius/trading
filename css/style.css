@@ -858,11 +858,19 @@ body.mode-lab .navbar { border-bottom-color: var(--teal); }
   border-radius: 999px; background: var(--accent-light); color: var(--accent);
   font-size: .78rem; font-weight: 600;
 }
+.slide-heading {
+  font-size: 1.6rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -.02em;
+  display: flex; align-items: center; gap: 10px;
+}
 .slide h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -.02em; }
+.slide-text { font-size: .95rem; color: var(--fg-1); line-height: 1.65; margin-top: 8px; }
+.slide-sm { font-size: .82rem; color: var(--fg-2); line-height: 1.55; margin-bottom: 16px; }
 .slide h4 { font-size: .88rem; margin: 10px 0 4px; color: var(--accent); }
 .slide p, .slide li { font-size: .82rem; line-height: 1.55; color: var(--fg-1); }
 .slide ul { padding-left: 18px; margin: 4px 0 8px; }
+.slide ol { padding-left: 18px; margin: 4px 0 8px; }
 .slide code { font-size: .72rem; background: var(--bg-2); padding: 1px 4px; border-radius: 3px; }
+.slide-note-sm { font-size: .82rem; color: var(--fg-3); margin-top: 20px; font-style: italic; }
 
 /* Layout helpers */
 .two-col, .slide-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
@@ -877,7 +885,7 @@ body.mode-lab .navbar { border-bottom-color: var(--teal); }
 @media (max-width: 768px) {
   .slide { padding: 28px 20px; }
   .slide-title { font-size: 1.6rem; }
-  .slide h2 { font-size: 1.2rem; }
+  .slide h2, .slide-heading { font-size: 1.2rem; }
   .two-col, .slide-two-col { grid-template-columns: 1fr; }
   .slides-viewport.fullscreen .slide { padding: 32px 24px; }
 }
