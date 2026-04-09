@@ -792,10 +792,9 @@ class TradingFloor {
       this._roundNum = r + 1;
       const rd = rounds[r];
 
-      // Communication phase
+      // Communication phase — camera stays on pit (comm is beside it)
       if (this._hasComm && rd.messages && rd.messages.length > 0) {
         this._arrangeIn('comm', this.sprites, true);
-        this._focusBuilding('comm');
         this._log('round', `Round ${r + 1}: Communication`);
         await this._wait(Math.round(600 * stepScale));
 
@@ -809,7 +808,6 @@ class TradingFloor {
         await this._wait(Math.round(1200 * stepScale));
 
         this._arrangeIn('pit', this.sprites, true);
-        this._focusBuilding('pit');
         await this._wait(Math.round(400 * stepScale));
       }
 
@@ -827,7 +825,6 @@ class TradingFloor {
           seller.active = true;
           buyer.moveTo(stage.x - 25, stage.y);
           seller.moveTo(stage.x + 25, stage.y);
-          this._focusStage('pit');
           await this._wait(Math.round(400 * stepScale));
 
           const fvNow = (history.fvs && history.fvs[r]) || history.trueValue || 100;
