@@ -122,15 +122,15 @@
             <div class="seg" style="flex:34; background:var(--amber);"><span>34%</span></div>
             <div class="seg" style="flex:33; background:var(--blue);"><span>33%</span></div>
           </div>
-          <label><span>Risk-Loving</span>
+          <label><span data-i18n="label.riskloving">Risk-loving (&alpha;&lt;0)</span>
             <div class="range-wrap"><input type="range" id="p-rl" value="33" min="0" max="100"><span class="range-val" id="v-rl">33%</span></div></label>
-          <div class="form-hint">&gamma; &lt; 0. Aggressive bidding, narrow spreads. CARA utility: U(W) = &minus;exp(&minus;&gamma;W)/&gamma;</div>
-          <label><span>Risk-Neutral</span>
+          <div class="form-hint">&alpha; &lt; 0. Aggressive bidding, narrow spreads. CARA utility: U(W) = &minus;exp(&minus;&alpha;W)/&alpha;</div>
+          <label><span data-i18n="label.riskneutral">Risk-neutral (&alpha;&thickapprox;0)</span>
             <div class="range-wrap"><input type="range" id="p-rn" value="34" min="0" max="100"><span class="range-val" id="v-rn">34%</span></div></label>
-          <div class="form-hint">&gamma; &approx; 0. Prices at expected value. Moderate spreads.</div>
-          <label><span>Risk-Averse</span>
+          <div class="form-hint">&alpha; &thickapprox; 0. Prices at expected value. Moderate spreads.</div>
+          <label><span data-i18n="label.riskaverse">Risk-averse (&alpha;&gt;0)</span>
             <div class="range-wrap"><input type="range" id="p-ra" value="33" min="0" max="100"><span class="range-val" id="v-ra">33%</span></div></label>
-          <div class="form-hint">&gamma; &gt; 0. Wide spreads, conservative bids. Linked sliders always sum to 100%.</div>
+          <div class="form-hint">&alpha; &gt; 0. Wide spreads, conservative bids. Linked sliders always sum to 100%.</div>
         </div>
       </div>
 
@@ -353,7 +353,7 @@
                 <table class="gloss-table">
                   <thead><tr><th>H</th><th>Prediction</th><th>Metric</th></tr></thead>
                   <tbody>
-                    <tr><td class="term">H1</td><td>Risk-loving agents (&gamma;&lt;0) drive bubble formation; risk-averse agents dampen it</td><td>NAPD, Amplitude by risk type</td></tr>
+                    <tr><td class="term">H1</td><td>Risk-loving agents (&alpha;&lt;0) drive bubble formation; risk-averse agents dampen it</td><td>NAPD, Amplitude by risk type</td></tr>
                     <tr><td class="term">H2</td><td>Haessel-R&sup2; increases monotonically across experience sessions (bubbles diminish)</td><td>R&sup2; per session (Fig. 7)</td></tr>
                     <tr><td class="term">H3</td><td>Sobel communication (Phase 2) increases allocative efficiency when credulity is moderate</td><td>P1 vs P2 efficiency</td></tr>
                     <tr><td class="term">H4</td><td>High deception strength reduces welfare when receivers are credulous</td><td>Welfare trajectory (Fig. 3)</td></tr>
@@ -378,7 +378,7 @@
                 <div class="slide-card" style="border-left:4px solid var(--accent)">
                   <h4>Lopez-Lira (2025) &mdash; &ldquo;Can Large Language Models Trade?&rdquo;</h4>
                   <p>Open-source framework for LLM trading agents with persistent order book, limit orders, partial fills, dividends, and heterogeneous strategies. Demonstrates LLMs can function as value investors, momentum traders, and market makers. Provides the CARA utility agent architecture and CDA matching engine we adopt.</p>
-                  <div class="formula">U(W) = &minus;exp(&minus;&gamma;W) / &gamma; &nbsp;&nbsp;|&nbsp;&nbsp; bid<sub>i</sub> = &psi;<sub>i</sub> &minus; &gamma;<sub>i</sub>&sigma;&sup2;/2 &nbsp;&nbsp;|&nbsp;&nbsp; ask<sub>i</sub> = &psi;<sub>i</sub> + &gamma;<sub>i</sub>&sigma;&sup2;/2</div>
+                  <div class="formula">U(W) = &minus;exp(&minus;&alpha;W) / &alpha; &nbsp;&nbsp;|&nbsp;&nbsp; bid<sub>i</sub> = &psi;<sub>i</sub> &minus; &alpha;<sub>i</sub>&sigma;&sup2;/2 &nbsp;&nbsp;|&nbsp;&nbsp; ask<sub>i</sub> = &psi;<sub>i</sub> + &alpha;<sub>i</sub>&sigma;&sup2;/2</div>
                 </div>
                 <div class="slide-card" style="border-left:4px solid var(--green)">
                   <h4>Dufwenberg, Lindqvist &amp; Moore (2005, AER) &mdash; &ldquo;Bubbles and Experience&rdquo;</h4>
@@ -409,14 +409,14 @@
               <div class="slide-col">
                 <h4>Experiment Protocol</h4>
                 <ol>
-                  <li><strong>Agent Creation</strong>: n agents with CARA utility (&gamma;<sub>i</sub>), private valuations (&psi;<sub>i</sub>), heterogeneous endowments (cash, shares). If API key provided, agents use LLM reasoning; otherwise, CARA stochastic model.</li>
+                  <li><strong>Agent Creation</strong>: n agents with CARA utility (&alpha;<sub>i</sub>), private valuations (&psi;<sub>i</sub>), heterogeneous endowments (cash, shares). If API key provided, agents use LLM reasoning; otherwise, CARA stochastic model.</li>
                   <li><strong>Phase 1 &mdash; Silent CDA</strong>: T rounds of dividend payment &rarr; interest accrual &rarr; order submission (reservation prices) &rarr; CDA matching. No communication. Establishes baseline.</li>
                   <li><strong>Phase 2 &mdash; Sobel Communication</strong>: Same agents, positions carry over. Each round adds pre-trade Sobel sender-receiver phase. Receivers update effective &psi; based on credulity. Toggle OFF = silent control.</li>
                   <li><strong>Experience Sessions</strong>: 0&ndash;5 additional silent sessions with reset endowments but persistent experience. Tests Dufwenberg (2005) experience effect.</li>
                 </ol>
                 <h4>Stochastic vs LLM Decision-Making</h4>
-                <div class="formula">Stochastic: bid = &psi; &minus; &gamma;&sigma;&sup2;/2 + noise</div>
-                <div class="formula">LLM: bid = LLM(context, history, &psi;, &gamma;)</div>
+                <div class="formula">Stochastic: bid = &psi; &minus; &alpha;&sigma;&sup2;/2 + noise</div>
+                <div class="formula">LLM: bid = LLM(context, history, &psi;, &alpha;)</div>
                 <p>The same experiment protocol runs identically. Only the decision function changes. This enables direct comparison of stochastic and AI agent behavior.</p>
               </div>
               <div class="slide-col">
@@ -425,7 +425,7 @@
                   <thead><tr><th>Component</th><th>Choice</th><th>Justification</th></tr></thead>
                   <tbody>
                     <tr><td class="term">Market mechanism</td><td>CDA (continuous double auction)</td><td>Standard in experimental economics (Smith 1962)</td></tr>
-                    <tr><td class="term">Utility function</td><td>CARA: U = &minus;e<sup>&minus;&gamma;W</sup>/&gamma;</td><td>Tractable, generates reservation prices analytically</td></tr>
+                    <tr><td class="term">Utility function</td><td>CARA: U = &minus;e<sup>&minus;&alpha;W</sup>/&alpha;</td><td>Tractable, generates reservation prices analytically</td></tr>
                     <tr><td class="term">FV model</td><td>Constant: E[div]/r</td><td>Henning (2025) calibration, perpetuity</td></tr>
                     <tr><td class="term">Communication</td><td>Sobel sender-receiver</td><td>Formal game-theoretic foundation (JPE)</td></tr>
                     <tr><td class="term">Experience</td><td>Session repetition</td><td>Dufwenberg (2005) experimental design</td></tr>
@@ -451,16 +451,16 @@
                 <table class="gloss-table">
                   <thead><tr><th>Parameter</th><th>Symbol</th><th>Distribution</th></tr></thead>
                   <tbody>
-                    <tr><td class="term">Risk aversion</td><td>&gamma;<sub>i</sub></td><td>Risk-loving: &gamma;&in;[&minus;0.01,&minus;0.001]; Neutral: &gamma;&in;[0.01,0.03]; Averse: &gamma;&in;[0.05,0.12]</td></tr>
+                    <tr><td class="term">Risk aversion</td><td>&alpha;<sub>i</sub></td><td>Risk-loving: &alpha;&in;[&minus;0.01,&minus;0.001]; Neutral: &alpha;&in;[0.01,0.03]; Averse: &alpha;&in;[0.05,0.12]</td></tr>
                     <tr><td class="term">Private valuation</td><td>&psi;<sub>i</sub></td><td>Uniform[base&minus;spread, base+spread]</td></tr>
                     <tr><td class="term">Initial cash</td><td>c<sub>i,0</sub></td><td>Normal(&mu;<sub>cash</sub>, &sigma;<sup>2</sup><sub>endow</sub>)</td></tr>
                     <tr><td class="term">Initial shares</td><td>s<sub>i,0</sub></td><td>Poisson(&mu;<sub>shares</sub>) with variance</td></tr>
                   </tbody>
                 </table>
                 <h4>CARA Reservation Prices</h4>
-                <div class="formula">bid<sub>i</sub> = &psi;<sub>i</sub> &minus; &gamma;<sub>i</sub> &middot; &sigma;&sup2; / 2</div>
-                <div class="formula">ask<sub>i</sub> = &psi;<sub>i</sub> + &gamma;<sub>i</sub> &middot; &sigma;&sup2; / 2</div>
-                <p>Risk-loving agents (&gamma;&lt;0): bid <em>above</em> &psi; (aggressive buyer). Risk-averse agents (&gamma;&gt;0): ask <em>above</em> &psi; (demand premium to sell). This heterogeneity generates trade volume and potential mispricings.</p>
+                <div class="formula">bid<sub>i</sub> = &psi;<sub>i</sub> &minus; &alpha;<sub>i</sub> &middot; &sigma;&sup2; / 2</div>
+                <div class="formula">ask<sub>i</sub> = &psi;<sub>i</sub> + &alpha;<sub>i</sub> &middot; &sigma;&sup2; / 2</div>
+                <p>Risk-loving agents (&alpha;&lt;0): bid <em>above</em> &psi; (aggressive buyer). Risk-averse agents (&alpha;&gt;0): ask <em>above</em> &psi; (demand premium to sell). This heterogeneity generates trade volume and potential mispricings.</p>
               </div>
               <div class="slide-col">
                 <h4>CDA Matching Engine</h4>
@@ -736,9 +736,9 @@
               <text x="40" y="16" class="section-label">AGENT CREATION (Lopez-Lira + DLM)</text>
               <rect x="30" y="24" width="200" height="90" rx="10" fill="#2563eb" opacity=".08" stroke="#2563eb" stroke-opacity=".3" stroke-width="1.5"/>
               <text x="130" y="48" class="box-title" text-anchor="middle">CARA Utility</text>
-              <text x="130" y="64" class="box-sub" text-anchor="middle">U(W)=&minus;exp(&minus;&gamma;W)/&gamma;</text>
-              <text x="130" y="80" class="box-detail" text-anchor="middle">&gamma; &lt; 0: risk-loving</text>
-              <text x="130" y="94" class="box-detail" text-anchor="middle">&gamma; &gt; 0: risk-averse</text>
+              <text x="130" y="64" class="box-sub" text-anchor="middle">U(W)=&minus;exp(&minus;&alpha;W)/&alpha;</text>
+              <text x="130" y="80" class="box-detail" text-anchor="middle">&alpha; &lt; 0: risk-loving</text>
+              <text x="130" y="94" class="box-detail" text-anchor="middle">&alpha; &gt; 0: risk-averse</text>
               <line x1="230" y1="69" x2="270" y2="69" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
               <rect x="280" y="24" width="220" height="90" rx="10" fill="#2563eb" opacity=".08" stroke="#2563eb" stroke-opacity=".3" stroke-width="1.5"/>
               <text x="390" y="48" class="box-title" text-anchor="middle">Private Valuations</text>
@@ -768,7 +768,7 @@
               <line x1="210" y1="200" x2="240" y2="200" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="250" y="175" width="160" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
               <text x="330" y="197" class="box-sub" text-anchor="middle">Reservation Prices</text>
-              <text x="330" y="212" class="box-detail" text-anchor="middle">bid=&psi;&minus;&gamma;&sigma;&sup2;/2</text>
+              <text x="330" y="212" class="box-detail" text-anchor="middle">bid=&psi;&minus;&alpha;&sigma;&sup2;/2</text>
               <line x1="410" y1="200" x2="440" y2="200" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="450" y="175" width="140" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
               <text x="520" y="197" class="box-sub" text-anchor="middle">CDA Matching</text>
@@ -833,8 +833,8 @@
           <div class="arch-defs">
             <div class="arch-def-card">
               <h4>CARA Utility (Lopez-Lira)</h4>
-              <p>Constant Absolute Risk Aversion. Parameter &gamma; determines risk attitude: &gamma; &gt; 0 risk-averse, &gamma; = 0 neutral, &gamma; &lt; 0 risk-loving.</p>
-              <div class="formula">U(W) = &minus;exp(&minus;&gamma; &middot; W) / &gamma;</div>
+              <p>Constant Absolute Risk Aversion. Parameter &alpha; determines risk attitude: &alpha; &gt; 0 risk-averse, &alpha; = 0 neutral, &alpha; &lt; 0 risk-loving.</p>
+              <div class="formula">U(W) = &minus;exp(&minus;&alpha; &middot; W) / &alpha;</div>
               <span class="formula-ref">Lopez-Lira (2025) &sect;2; DLM (2005) fn.5</span>
             </div>
             <div class="arch-def-card">
@@ -846,7 +846,7 @@
             <div class="arch-def-card">
               <h4>Reservation Prices</h4>
               <p>CARA-optimal bid/ask prices incorporating risk premium from market uncertainty &sigma;.</p>
-              <div class="formula">bid = &psi; &minus; &gamma;&sigma;&sup2;/2 &nbsp;|&nbsp; ask = &psi; + &gamma;&sigma;&sup2;/2</div>
+              <div class="formula">bid = &psi; &minus; &alpha;&sigma;&sup2;/2 &nbsp;|&nbsp; ask = &psi; + &alpha;&sigma;&sup2;/2</div>
               <span class="formula-ref">Lopez-Lira (2025) &sect;2.2</span>
             </div>
             <div class="arch-def-card">
@@ -884,9 +884,9 @@
               <tbody>
                 <tr><td class="term">CDA</td><td>Continuous Double Auction</td><td>Bilateral trading mechanism: buyers and sellers submit limit orders; trade executes when bid &ge; ask. Price = midpoint.</td></tr>
                 <tr><td class="term">FV</td><td>Fundamental Value</td><td>FV = E[div]/r (constant, Henning 2025). Stochastic dividends d&in;{d<sub>L</sub>,d<sub>H</sub>} with interest rate r.</td></tr>
-                <tr><td class="term">CARA</td><td>Constant Absolute Risk Aversion</td><td>Utility U(W) = &minus;exp(&minus;&gamma;W)/&gamma;. Parameter &gamma;: positive = risk-averse, zero = neutral, negative = risk-loving.</td></tr>
+                <tr><td class="term">CARA</td><td>Constant Absolute Risk Aversion</td><td>Utility U(W) = &minus;exp(&minus;&alpha;W)/&alpha;. Parameter &alpha;: positive = risk-averse, zero = neutral, negative = risk-loving.</td></tr>
                 <tr><td class="term">&psi;<sub>i</sub></td><td>Private Psychological Valuation</td><td>Agent i&rsquo;s true private value for the asset. Drawn from [baseValue &plusmn; spread]. Key to Coase theorem test.</td></tr>
-                <tr><td class="term">&gamma;</td><td>Risk Aversion Parameter</td><td>CARA coefficient. &gamma; &lt; 0: risk-loving, &gamma; &asymp; 0: risk-neutral, &gamma; &gt; 0: risk-averse. Drawn per agent from type-specific ranges.</td></tr>
+                <tr><td class="term">&alpha;</td><td>Risk Aversion Parameter</td><td>CARA coefficient. &alpha; &lt; 0: risk-loving, &alpha; &asymp; 0: risk-neutral, &alpha; &gt; 0: risk-averse. Drawn per agent from type-specific ranges.</td></tr>
                 <tr><td class="term">R&sup2;</td><td>Haessel R-squared</td><td>Goodness-of-fit: 1 &minus; &Sigma;(P&minus;FV)&sup2;/&Sigma;(FV&minus;F&#x0304;V)&sup2;. Values near 1 = prices track FV (rational). DLM (2005).</td></tr>
                 <tr><td class="term">NAPD</td><td>Normalized Abs. Price Deviation</td><td>&Sigma;|P(t)&minus;FV(t)| / total_shares. Higher = larger bubble. DLM (2005) Table 2.</td></tr>
                 <tr><td class="term">MSE</td><td>Mean Squared Error</td><td>&Sigma;(P&minus;FV)&sup2;/T. Henning (2025) Table 1: Claude 0.54, GPT-3.5 26.37.</td></tr>
@@ -910,10 +910,10 @@
             <table class="gloss-table">
               <thead><tr><th data-i18n="th.expr">Expression</th><th data-i18n="th.meaning">Meaning</th></tr></thead>
               <tbody>
-                <tr><td class="math">U(W) = &minus;exp(&minus;&gamma;W) / &gamma;</td><td>CARA utility function with risk aversion &gamma;. Lopez-Lira (2025); DLM fn.5.</td></tr>
+                <tr><td class="math">U(W) = &minus;exp(&minus;&alpha;W) / &alpha;</td><td>CARA utility function with risk aversion &alpha;. Lopez-Lira (2025); DLM fn.5.</td></tr>
                 <tr><td class="math">FV = E[div] / r = (d<sub>L</sub>+d<sub>H</sub>)/2r</td><td>Constant fundamental value (Henning perpetuity model). Henning (2025) Eq.1.</td></tr>
-                <tr><td class="math">bid = &psi; &minus; &gamma;&sigma;&sup2;/2</td><td>CARA-optimal buy reservation price. Lopez-Lira (2025) &sect;2.2.</td></tr>
-                <tr><td class="math">ask = &psi; + &gamma;&sigma;&sup2;/2</td><td>CARA-optimal sell reservation price. Lopez-Lira (2025) &sect;2.2.</td></tr>
+                <tr><td class="math">bid = &psi; &minus; &alpha;&sigma;&sup2;/2</td><td>CARA-optimal buy reservation price. Lopez-Lira (2025) &sect;2.2.</td></tr>
+                <tr><td class="math">ask = &psi; + &alpha;&sigma;&sup2;/2</td><td>CARA-optimal sell reservation price. Lopez-Lira (2025) &sect;2.2.</td></tr>
                 <tr><td class="math">R&sup2; = 1&minus;&Sigma;(P&minus;FV)&sup2;/&Sigma;(FV&minus;F&#x0304;V)&sup2;</td><td>Haessel R-squared: price tracking quality. DLM &sect;II; Haessel (1978).</td></tr>
                 <tr><td class="math">NAPD = &Sigma;|P&minus;FV| / shares</td><td>Normalized absolute price deviation. DLM &sect;II p.1733&ndash;34.</td></tr>
                 <tr><td class="math">&alpha;* = min{&alpha;: NAPD &lt; &epsilon;}</td><td>Critical experienced fraction. DLM &sect;II Table 2.</td></tr>

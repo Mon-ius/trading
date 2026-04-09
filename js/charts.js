@@ -312,17 +312,18 @@ function renderLabPriceChart(id, labResult) {
 function renderLabAllocationChart(id, labResult) {
   const p1 = labResult.phase1.agents;
   const p2 = labResult.phase2.agents;
-  const colors = { risk_loving: CHART_COLORS.red, risk_neutral: CHART_COLORS.orange, risk_averse: CHART_COLORS.blue };
+  const RC = { risk_loving: '#dc2626', risk_neutral: '#d97706', risk_averse: '#2563eb' };
+  const RL = { risk_loving: t('rt.rl'), risk_neutral: t('rt.rn'), risk_averse: t('rt.ra') };
   Plotly.newPlot(id, [
     { x: p1.map(a => a.psi), y: p1.map(a => a.shares), type: 'scatter', mode: 'markers',
-      name: 'Phase 1', marker: { size: 10, color: p1.map(a => colors[a.riskType]), opacity: 0.6,
+      name: 'Phase 1', marker: { size: 10, color: p1.map(a => RC[a.riskType]), opacity: 0.6,
         line: { width: 1.5, color: '#fff' } },
-      text: p1.map(a => `${a.displayName}<br>\u03c8=${a.psi.toFixed(1)}<br>${a.riskType}`),
+      text: p1.map(a => `${a.displayName}<br>\u03c8=${a.psi.toFixed(1)}<br>${RL[a.riskType]}`),
       hovertemplate: '%{text}<br>shares=%{y}<extra>Phase 1</extra>' },
     { x: p2.map(a => a.psi), y: p2.map(a => a.shares), type: 'scatter', mode: 'markers',
-      name: 'Phase 2', marker: { size: 10, color: p2.map(a => colors[a.riskType]), opacity: 0.9,
+      name: 'Phase 2', marker: { size: 10, color: p2.map(a => RC[a.riskType]), opacity: 0.9,
         symbol: 'diamond', line: { width: 1.5, color: '#333' } },
-      text: p2.map(a => `${a.displayName}<br>\u03c8=${a.psi.toFixed(1)}<br>${a.riskType}`),
+      text: p2.map(a => `${a.displayName}<br>\u03c8=${a.psi.toFixed(1)}<br>${RL[a.riskType]}`),
       hovertemplate: '%{text}<br>shares=%{y}<extra>Phase 2</extra>' },
   ], _layout({
     xaxis: { title: 'Psychological Valuation (\u03c8)' },
@@ -367,8 +368,8 @@ function renderLabDeceptionChart(id, labResult) {
   }
   // Sobel classification counts by risk type
   const types = ['risk_loving', 'risk_neutral', 'risk_averse'];
-  const labels = ['Risk-Loving', 'Risk-Neutral', 'Risk-Averse'];
-  const colors = [CHART_COLORS.red, CHART_COLORS.orange, CHART_COLORS.blue];
+  const labels = [t('rt.rl'), t('rt.rn'), t('rt.ra')];
+  const colors = ['#dc2626', '#d97706', '#2563eb'];
 
   // Stacked bar: lies, deceptions, damaging per risk type
   const sobelCats = ['Truthful', 'Lie only', 'Deceptive', 'Damaging'];
@@ -417,14 +418,14 @@ function renderLabPnLChart(id, labResult) {
   const p1 = labResult.phase1.agents;
   const p2 = labResult.phase2.agents;
   const types = ['risk_loving', 'risk_neutral', 'risk_averse'];
-  const labels = ['Risk-Loving', 'Risk-Neutral', 'Risk-Averse'];
+  const labels = [t('rt.rl'), t('rt.rn'), t('rt.ra')];
 
-  const p1Pnl = types.map(t => {
-    const as = p1.filter(a => a.riskType === t);
+  const p1Pnl = types.map(tp => {
+    const as = p1.filter(a => a.riskType === tp);
     return as.length ? avg(as.map(a => a.totalPnL)) : 0;
   });
-  const p2Pnl = types.map(t => {
-    const as = p2.filter(a => a.riskType === t);
+  const p2Pnl = types.map(tp => {
+    const as = p2.filter(a => a.riskType === tp);
     return as.length ? avg(as.map(a => a.totalPnL)) : 0;
   });
 

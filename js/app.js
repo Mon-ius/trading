@@ -206,7 +206,7 @@ function exportJSON() {
 function exportCSV() {
   if (!_labResult) return;
   const agents = _labResult.initialSnapshot;
-  const header = 'id,name,riskType,gamma,psi,cash,shares,totalPnL';
+  const header = 'id,name,riskType,alpha,psi,cash,shares,totalPnL';
   const rows = agents.map(a =>
     `${a.id},${a.displayName},${a.riskType},${a.gamma.toFixed(4)},${a.psi.toFixed(1)},${a.cash.toFixed(0)},${a.shares},${(a.totalPnL||0).toFixed(2)}`);
   const pHeader = '\nphase,round,fv,price,volume';
@@ -250,7 +250,8 @@ function renderLabLog(lab) {
   for (const a of lab.initialSnapshot) {
     const d = document.createElement('div'); d.className = 'log-entry';
     const rColor = a.riskType === 'risk_loving' ? 'var(--red)' : a.riskType === 'risk_neutral' ? 'var(--amber)' : 'var(--blue)';
-    d.innerHTML = `<strong>${a.displayName}</strong> <span style="color:${rColor}">${a.riskType.replace('_','-')}</span> | &psi;=${a.psi.toFixed(1)} | &gamma;=${a.gamma.toFixed(4)} | cash=$${a.cash} | shares=${a.shares}`;
+    const rLabel = a.riskType === 'risk_loving' ? t('rt.rl') : a.riskType === 'risk_neutral' ? t('rt.rn') : t('rt.ra');
+    d.innerHTML = `<strong>${a.displayName}</strong> <span style="color:${rColor}">${rLabel}</span> | &psi;=${a.psi.toFixed(1)} | &alpha;=${a.gamma.toFixed(4)} | cash=$${a.cash} | shares=${a.shares}`;
     initDet.appendChild(d);
   }
   log.appendChild(initDet);
@@ -280,7 +281,8 @@ function renderLabLog(lab) {
     for (const rt of ['risk_loving', 'risk_neutral', 'risk_averse']) {
       const d = document.createElement('div'); d.className = 'log-entry';
       const rd = dec.byRiskType[rt];
-      d.textContent = `${rt.replace('_','-')}: ${rd.lies} lies / ${rd.deceptions} deceptive / ${rd.damaging} damaging (of ${rd.total})`;
+      const rtLabel = rt === 'risk_loving' ? t('rt.rl') : rt === 'risk_neutral' ? t('rt.rn') : t('rt.ra');
+      d.textContent = `${rtLabel}: ${rd.lies} lies / ${rd.deceptions} deceptive / ${rd.damaging} damaging (of ${rd.total})`;
       decDet.appendChild(d);
     }
     log.appendChild(decDet);
