@@ -78,7 +78,7 @@ const PROVIDERS = {
       { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
     ],
     defaultEndpoint: 'https://openai-20250719-f7491cbb.rootdirectorylab.com/v1/chat/completions',
-    call: _openaiCall('GPT', 'https://api.openai.com/v1/chat/completions'),
+    call: _openaiCall('GPT', 'https://openai-20250719-f7491cbb.rootdirectorylab.com/v1/chat/completions'),
   },
   gemini: {
     name: 'Gemini',

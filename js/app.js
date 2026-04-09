@@ -513,6 +513,16 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-zoom-in').addEventListener('click', () => { if (_floor) { const z = Math.min(4, _floor._camZoom * 1.2); _floor._camZoom = z; if (_floor._camTarget) _floor._camTarget.zoom = z; document.getElementById('zoom-val').textContent = Math.round(z * 100) + '%'; }});
   document.getElementById('btn-zoom-out').addEventListener('click', () => { if (_floor) { const z = Math.max(0.3, _floor._camZoom / 1.2); _floor._camZoom = z; if (_floor._camTarget) _floor._camTarget.zoom = z; document.getElementById('zoom-val').textContent = Math.round(z * 100) + '%'; }});
 
+  // AI provider → sync endpoint placeholder with default
+  const provSel = document.getElementById('ai-provider');
+  const epInput = document.getElementById('ai-endpoint');
+  function syncEndpoint() {
+    const p = typeof PROVIDERS !== 'undefined' && PROVIDERS[provSel.value];
+    epInput.placeholder = p && p.defaultEndpoint ? p.defaultEndpoint : 'Endpoint (optional)';
+  }
+  provSel.addEventListener('change', syncEndpoint);
+  syncEndpoint();
+
   // Run button
   document.getElementById('btn-run').addEventListener('click', runExperiment);
 
