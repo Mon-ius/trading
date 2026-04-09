@@ -38,7 +38,8 @@
     </button>
   </nav>
 
-  <!-- ===== App layout ===== -->
+  <!-- ===== Experiment Tab ===== -->
+  <div id="tab-experiment" class="tab-content active">
   <div class="app-layout">
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
@@ -180,7 +181,6 @@
 
     <!-- Main area -->
     <div class="main-area">
-      <div id="tab-experiment" class="tab-content active">
       <div class="view-toggle">
         <button class="view-btn active" data-view="chart" data-i18n="btn.charts">Charts</button>
         <button class="view-btn" data-view="game" data-i18n="btn.game">Trading Floor</button>
@@ -277,10 +277,12 @@
         </div>
       </div>
 
-      </div><!-- /experiment -->
+    </div><!-- /main-area -->
+  </div><!-- /app-layout -->
+  </div><!-- /tab-experiment -->
 
-      <!-- ===== Slides ===== -->
-      <div id="tab-slides" class="tab-content">
+  <!-- ===== Slides ===== -->
+  <div id="tab-slides" class="tab-content">
         <div class="slides-wrap">
           <div class="slides-toolbar">
             <span class="slides-counter"><span id="slide-cur">1</span> / <span id="slide-tot">10</span></span>
@@ -704,10 +706,10 @@
 
           </div><!-- /slides-viewport -->
         </div>
-      </div><!-- /slides -->
+  </div><!-- /slides -->
 
-      <!-- ===== System Architecture ===== -->
-      <div id="tab-architecture" class="tab-content">
+  <!-- ===== System Architecture ===== -->
+  <div id="tab-architecture" class="tab-content">
         <div class="arch-wrap">
           <div class="arch-header">
             <div>
@@ -985,10 +987,7 @@
             </table>
           </div>
         </div>
-      </div><!-- /glossary -->
-
-    </div>
-  </div>
+  </div><!-- /glossary -->
 
   <script src="js/engine.js"></script>
   <script src="js/i18n.js"></script>
