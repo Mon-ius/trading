@@ -4,6 +4,19 @@
 
 let _history = null, _floor = null, _expResults = null;
 
+/* Slide navigation */
+function changeSlide(dir) {
+  const slides = document.querySelectorAll('.slides-wrap .slide');
+  if (!slides.length) return;
+  let cur = 0;
+  slides.forEach((s, i) => { if (s.classList.contains('active')) cur = i; });
+  slides[cur].classList.remove('active');
+  cur = (cur + dir + slides.length) % slides.length;
+  slides[cur].classList.add('active');
+  const counter = document.getElementById('slide-counter');
+  if (counter) counter.textContent = (cur + 1) + ' / ' + slides.length;
+}
+
 /* ================================================================
    Theme management
    ================================================================ */
