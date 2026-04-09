@@ -294,7 +294,9 @@ class TradingFloor {
         this._ensureDrawing();
       } else if (e.touches.length === 2 && lastPinch > 0) {
         const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-        this._camZoom = clamp(this._camZoom * (dist / lastPinch), 0.3, 5);
+        const z = clamp(this._camZoom * (dist / lastPinch), 0.3, 5);
+        this._camZoom = z;
+        if (this._camTarget) this._camTarget.zoom = z;
         lastPinch = dist;
       }
     }, { passive: true });
@@ -302,7 +304,9 @@ class TradingFloor {
 
     cv.addEventListener('wheel', e => {
       e.preventDefault();
-      this._camZoom = clamp(this._camZoom * (e.deltaY > 0 ? 0.9 : 1.1), 0.3, 5);
+      const z = clamp(this._camZoom * (e.deltaY > 0 ? 0.9 : 1.1), 0.3, 5);
+      this._camZoom = z;
+      if (this._camTarget) this._camTarget.zoom = z;
       this._ensureDrawing();
     }, { passive: false });
 

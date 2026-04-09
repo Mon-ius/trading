@@ -510,8 +510,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-pause').addEventListener('click', () => { if (_floor) _floor.togglePause(); });
   document.getElementById('btn-follow').addEventListener('click', function() { if (_floor) { _floor._camFollow = !_floor._camFollow; this.classList.toggle('active', _floor._camFollow); }});
   document.getElementById('game-speed').addEventListener('input', function() { document.getElementById('speed-val').textContent = (+this.value).toFixed(1) + 'x'; if (_floor) _floor.speed = +this.value; });
-  document.getElementById('btn-zoom-in').addEventListener('click', () => { if (_floor) { _floor._camZoom = Math.min(4, _floor._camZoom * 1.2); document.getElementById('zoom-val').textContent = Math.round(_floor._camZoom * 100) + '%'; }});
-  document.getElementById('btn-zoom-out').addEventListener('click', () => { if (_floor) { _floor._camZoom = Math.max(0.3, _floor._camZoom / 1.2); document.getElementById('zoom-val').textContent = Math.round(_floor._camZoom * 100) + '%'; }});
+  document.getElementById('btn-zoom-in').addEventListener('click', () => { if (_floor) { const z = Math.min(4, _floor._camZoom * 1.2); _floor._camZoom = z; if (_floor._camTarget) _floor._camTarget.zoom = z; document.getElementById('zoom-val').textContent = Math.round(z * 100) + '%'; }});
+  document.getElementById('btn-zoom-out').addEventListener('click', () => { if (_floor) { const z = Math.max(0.3, _floor._camZoom / 1.2); _floor._camZoom = z; if (_floor._camTarget) _floor._camTarget.zoom = z; document.getElementById('zoom-val').textContent = Math.round(z * 100) + '%'; }});
 
   // Run button
   document.getElementById('btn-run').addEventListener('click', runExperiment);
