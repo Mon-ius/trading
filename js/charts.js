@@ -276,29 +276,39 @@ function renderAlphaHeatmap(id, experimentResults, fixedN) {
    Lab Experiment Charts
    ================================================================ */
 
-/** Lab Fig 1 — Price Evolution: Phase 1 vs Phase 2 */
+/** Lab Fig 1 — Price vs Fundamental Value (Henning 2025) */
 function renderLabPriceChart(id, labResult) {
   const p1 = labResult.phase1.prices;
   const p2 = labResult.phase2.prices;
+  const fv = labResult.fundamentalValue;
   const r1 = p1.map((_, i) => i + 1);
   const r2 = p2.map((_, i) => i + 1);
-  const baseVal = labResult.params.baseValue;
-  Plotly.newPlot(id, [
+  const maxR = Math.max(r1.length, r2.length);
+  const traces = [
     { x: r1, y: p1, type: 'scatter', mode: 'lines+markers', name: 'Phase 1 (Silent)',
       line: { color: CHART_COLORS.blue, width: 2.5 }, marker: { size: 4 } },
-    { x: r2, y: p2, type: 'scatter', mode: 'lines+markers', name: 'Phase 2 (Deception)',
+    { x: r2, y: p2, type: 'scatter', mode: 'lines+markers',
+      name: labResult.commEnabled ? 'Phase 2 (Sobel Comm)' : 'Phase 2 (Silent)',
       line: { color: CHART_COLORS.red, width: 2.5 }, marker: { size: 4 } },
-    { x: [1, Math.max(r1.length, r2.length)], y: [baseVal, baseVal],
-      type: 'scatter', mode: 'lines', name: 'Base Value',
+    { x: [1, maxR], y: [fv, fv], type: 'scatter', mode: 'lines', name: 'FV = E[div]/r',
       line: { color: CHART_COLORS.green, width: 2, dash: 'dash' } },
-  ], _layout({
+  ];
+  // Add bubble metric annotations
+  const bm1 = labResult.phase1.bubbleMetrics;
+  const bm2 = labResult.phase2.bubbleMetrics;
+  Plotly.newPlot(id, traces, _layout({
     xaxis: { title: 'Round' },
     yaxis: { title: 'Market Price' },
     legend: { x: 0, y: 1.15, orientation: 'h' },
+    annotations: [{
+      x: 1, y: 1.08, xref: 'paper', yref: 'paper', showarrow: false,
+      text: `P1: R\u00b2=${bm1.haesselR2.toFixed(2)} ${bm1.hypothesis} | P2: R\u00b2=${bm2.haesselR2.toFixed(2)} ${bm2.hypothesis}`,
+      font: { size: 10, color: '#8b949e' },
+    }],
   }), PC);
 }
 
-/** Lab Fig 2 — Allocation Scatter: Valuation vs Final Shares */
+/** Lab Fig 2 — Allocation: Valuation vs Holdings (Coase test) */
 function renderLabAllocationChart(id, labResult) {
   const p1 = labResult.phase1.agents;
   const p2 = labResult.phase2.agents;
@@ -307,15 +317,15 @@ function renderLabAllocationChart(id, labResult) {
     { x: p1.map(a => a.psi), y: p1.map(a => a.shares), type: 'scatter', mode: 'markers',
       name: 'Phase 1', marker: { size: 10, color: p1.map(a => colors[a.riskType]), opacity: 0.6,
         line: { width: 1.5, color: '#fff' } },
-      text: p1.map(a => `${a.displayName}<br>psi=${a.psi.toFixed(1)}<br>${a.riskType}`),
+      text: p1.map(a => `${a.displayName}<br>\u03c8=${a.psi.toFixed(1)}<br>${a.riskType}`),
       hovertemplate: '%{text}<br>shares=%{y}<extra>Phase 1</extra>' },
     { x: p2.map(a => a.psi), y: p2.map(a => a.shares), type: 'scatter', mode: 'markers',
       name: 'Phase 2', marker: { size: 10, color: p2.map(a => colors[a.riskType]), opacity: 0.9,
         symbol: 'diamond', line: { width: 1.5, color: '#333' } },
-      text: p2.map(a => `${a.displayName}<br>psi=${a.psi.toFixed(1)}<br>${a.riskType}`),
+      text: p2.map(a => `${a.displayName}<br>\u03c8=${a.psi.toFixed(1)}<br>${a.riskType}`),
       hovertemplate: '%{text}<br>shares=%{y}<extra>Phase 2</extra>' },
   ], _layout({
-    xaxis: { title: 'Psychological Valuation (psi)' },
+    xaxis: { title: 'Psychological Valuation (\u03c8)' },
     yaxis: { title: 'Final Share Holdings' },
     legend: { x: 0, y: 1.15, orientation: 'h' },
   }), PC);
@@ -329,48 +339,61 @@ function renderLabWelfareChart(id, labResult) {
   const r2 = w2.map((_, i) => i + 1);
   const wMax = labResult.initialAlloc.maxWelfare;
   Plotly.newPlot(id, [
-    { x: r1, y: w1, type: 'scatter', mode: 'lines+markers', name: 'Phase 1 Welfare',
+    { x: r1, y: w1, type: 'scatter', mode: 'lines+markers', name: 'Phase 1',
       line: { color: CHART_COLORS.blue, width: 2.5 }, marker: { size: 4 } },
-    { x: r2, y: w2, type: 'scatter', mode: 'lines+markers', name: 'Phase 2 Welfare',
+    { x: r2, y: w2, type: 'scatter', mode: 'lines+markers', name: 'Phase 2',
       line: { color: CHART_COLORS.red, width: 2.5 }, marker: { size: 4 } },
     { x: [1, Math.max(r1.length, r2.length)], y: [wMax, wMax],
       type: 'scatter', mode: 'lines', name: 'Max Welfare',
       line: { color: CHART_COLORS.green, width: 2, dash: 'dash' } },
   ], _layout({
     xaxis: { title: 'Round' },
-    yaxis: { title: 'Welfare (sum psi * shares)' },
+    yaxis: { title: 'Welfare (\u03a3 \u03c8\u1d62 \u00d7 shares\u1d62)' },
     legend: { x: 0, y: 1.15, orientation: 'h' },
   }), PC);
 }
 
-/** Lab Fig 4 — Deception Analysis */
+/** Lab Fig 4 — Sobel Lying & Deception Analysis */
 function renderLabDeceptionChart(id, labResult) {
-  const dec = labResult.deception;
   const msgs = labResult.phase2.rounds.flatMap(r => r.messages || []);
   if (msgs.length === 0) {
-    Plotly.newPlot(id, [], _layout({ xaxis: { title: '' }, yaxis: { title: '' } }), PC);
+    // No communication — show empty state with label
+    Plotly.newPlot(id, [], _layout({
+      xaxis: { title: 'Communication OFF' }, yaxis: { title: '' },
+      annotations: [{ x: 0.5, y: 0.5, xref: 'paper', yref: 'paper', text: 'Communication disabled',
+        showarrow: false, font: { size: 14, color: '#8b949e' } }],
+    }), PC);
     return;
   }
-  // Bias distribution by risk type
+  // Sobel classification counts by risk type
   const types = ['risk_loving', 'risk_neutral', 'risk_averse'];
   const labels = ['Risk-Loving', 'Risk-Neutral', 'Risk-Averse'];
   const colors = [CHART_COLORS.red, CHART_COLORS.orange, CHART_COLORS.blue];
-  const traces = types.map((t, i) => {
-    const tm = msgs.filter(m => m.riskType === t);
-    return {
-      x: tm.map(m => ((m.bias / m.truePsi) * 100)),
-      type: 'histogram', name: labels[i],
-      marker: { color: colors[i] }, opacity: 0.7, nbinsx: 15,
-    };
-  });
+
+  // Stacked bar: lies, deceptions, damaging per risk type
+  const sobelCats = ['Truthful', 'Lie only', 'Deceptive', 'Damaging'];
+  const catColors = ['rgba(52,199,89,0.7)', 'rgba(255,149,0,0.7)', 'rgba(255,59,48,0.7)', 'rgba(175,82,222,0.7)'];
+
+  const traces = sobelCats.map((cat, ci) => ({
+    x: labels,
+    y: types.map(t => {
+      const tm = msgs.filter(m => m.riskType === t);
+      if (cat === 'Truthful') return tm.filter(m => !m.isLie).length;
+      if (cat === 'Lie only') return tm.filter(m => m.isLie && !m.isDeceptive).length;
+      if (cat === 'Deceptive') return tm.filter(m => m.isDeceptive && !m.isDamaging).length;
+      return tm.filter(m => m.isDamaging).length;
+    }),
+    type: 'bar', name: cat, marker: { color: catColors[ci] },
+  }));
+
   Plotly.newPlot(id, traces, _layout({
-    xaxis: { title: 'Signal Bias (% of true psi)' },
-    yaxis: { title: 'Count' },
-    barmode: 'overlay', legend: { x: 0, y: 1.15, orientation: 'h' },
+    xaxis: { title: '' },
+    yaxis: { title: 'Message Count' },
+    barmode: 'stack', legend: { x: 0, y: 1.15, orientation: 'h' },
   }), PC);
 }
 
-/** Lab Fig 5 — Volume comparison Phase 1 vs Phase 2 */
+/** Lab Fig 5 — Volume comparison */
 function renderLabVolumeChart(id, labResult) {
   const v1 = labResult.phase1.volumes;
   const v2 = labResult.phase2.volumes;
@@ -379,7 +402,8 @@ function renderLabVolumeChart(id, labResult) {
   Plotly.newPlot(id, [
     { x: r1, y: v1, type: 'bar', name: 'Phase 1 (Silent)',
       marker: { color: 'rgba(0,122,255,0.6)' } },
-    { x: r2, y: v2, type: 'bar', name: 'Phase 2 (Deception)',
+    { x: r2, y: v2, type: 'bar',
+      name: labResult.commEnabled ? 'Phase 2 (Comm)' : 'Phase 2 (Silent)',
       marker: { color: 'rgba(255,59,48,0.6)' } },
   ], _layout({
     xaxis: { title: 'Round' },
@@ -388,14 +412,12 @@ function renderLabVolumeChart(id, labResult) {
   }), PC);
 }
 
-/** Lab Fig 6 — Agent P&L by risk type, Phase 1 vs Phase 2 */
+/** Lab Fig 6 — P&L by risk type */
 function renderLabPnLChart(id, labResult) {
-  const ini = labResult.initialSnapshot;
   const p1 = labResult.phase1.agents;
   const p2 = labResult.phase2.agents;
   const types = ['risk_loving', 'risk_neutral', 'risk_averse'];
   const labels = ['Risk-Loving', 'Risk-Neutral', 'Risk-Averse'];
-  const colors = [CHART_COLORS.red, CHART_COLORS.orange, CHART_COLORS.blue];
 
   const p1Pnl = types.map(t => {
     const as = p1.filter(a => a.riskType === t);
@@ -413,7 +435,72 @@ function renderLabPnLChart(id, labResult) {
       marker: { color: 'rgba(255,59,48,0.75)' } },
   ], _layout({
     xaxis: { title: '' },
-    yaxis: { title: 'Avg P&L' },
+    yaxis: { title: 'Avg P&L (incl. div + interest)' },
+    barmode: 'group', legend: { x: 0, y: 1.15, orientation: 'h' },
+  }), PC);
+}
+
+/** Lab Fig 7 — Experience Effect (Dufwenberg 2005) */
+function renderLabExperienceChart(id, labResult) {
+  const sessions = labResult.sessionResults || [];
+  if (sessions.length === 0) {
+    // Show P1 vs P2 bubble metrics comparison instead
+    const bm1 = labResult.phase1.bubbleMetrics;
+    const bm2 = labResult.phase2.bubbleMetrics;
+    const metrics = ['Haessel-R\u00b2', 'NAPD', 'Amplitude', 'Turnover'];
+    Plotly.newPlot(id, [
+      { x: metrics, y: [bm1.haesselR2, bm1.napd, bm1.amplitude, bm1.turnover],
+        type: 'bar', name: 'Phase 1', marker: { color: 'rgba(0,122,255,0.75)' } },
+      { x: metrics, y: [bm2.haesselR2, bm2.napd, bm2.amplitude, bm2.turnover],
+        type: 'bar', name: 'Phase 2', marker: { color: 'rgba(255,59,48,0.75)' } },
+    ], _layout({
+      xaxis: { title: '' },
+      yaxis: { title: 'Metric Value' },
+      barmode: 'group', legend: { x: 0, y: 1.15, orientation: 'h' },
+    }), PC);
+    return;
+  }
+
+  // Show bubble metrics declining with experience
+  const sessLabels = ['P1', 'P2', ...sessions.map(s => `Sess ${s.session}`)];
+  const r2vals = [labResult.phase1.bubbleMetrics.haesselR2, labResult.phase2.bubbleMetrics.haesselR2,
+    ...sessions.map(s => s.bubbleMetrics.haesselR2)];
+  const napdVals = [labResult.phase1.bubbleMetrics.napd, labResult.phase2.bubbleMetrics.napd,
+    ...sessions.map(s => s.bubbleMetrics.napd)];
+
+  Plotly.newPlot(id, [
+    { x: sessLabels, y: r2vals, type: 'scatter', mode: 'lines+markers', name: 'Haessel-R\u00b2',
+      line: { color: CHART_COLORS.blue, width: 2.5 }, marker: { size: 8 } },
+    { x: sessLabels, y: napdVals, type: 'scatter', mode: 'lines+markers', name: 'NAPD',
+      line: { color: CHART_COLORS.red, width: 2.5 }, marker: { size: 8 }, yaxis: 'y2' },
+  ], _layout({
+    xaxis: { title: 'Session (experience \u2192)' },
+    yaxis: { title: 'Haessel-R\u00b2', range: [0, 1.1] },
+    yaxis2: { overlaying: 'y', side: 'right', showgrid: false, title: 'NAPD' },
+    legend: { x: 0, y: 1.15, orientation: 'h' },
+  }), PC);
+}
+
+/** Lab Fig 8 — Bubble Deviation (Henning/Dufwenberg) */
+function renderLabBubbleChart(id, labResult) {
+  const fv = labResult.fundamentalValue;
+  const p1 = labResult.phase1.prices;
+  const p2 = labResult.phase2.prices;
+  const r1 = p1.map((_, i) => i + 1);
+  const r2 = p2.map((_, i) => i + 1);
+  const devs1 = p1.map(p => fv > 0 ? ((p - fv) / fv) * 100 : 0);
+  const devs2 = p2.map(p => fv > 0 ? ((p - fv) / fv) * 100 : 0);
+
+  Plotly.newPlot(id, [
+    { x: r1, y: devs1, type: 'bar', name: 'Phase 1',
+      marker: { color: devs1.map(d => d > 0 ? 'rgba(0,122,255,0.6)' : 'rgba(0,122,255,0.3)') } },
+    { x: r2, y: devs2, type: 'bar', name: 'Phase 2',
+      marker: { color: devs2.map(d => d > 0 ? 'rgba(255,59,48,0.6)' : 'rgba(255,59,48,0.3)') } },
+    { x: [1, Math.max(r1.length, r2.length)], y: [0, 0], type: 'scatter', mode: 'lines',
+      line: { color: 'rgba(0,0,0,0.3)', width: 1, dash: 'dash' }, showlegend: false },
+  ], _layout({
+    xaxis: { title: 'Round' },
+    yaxis: { title: 'Deviation from FV (%)' },
     barmode: 'group', legend: { x: 0, y: 1.15, orientation: 'h' },
   }), PC);
 }
@@ -425,6 +512,8 @@ function renderAllLabCharts(labResult) {
   renderLabDeceptionChart('lab-chart-deception', labResult);
   renderLabVolumeChart('lab-chart-volume', labResult);
   renderLabPnLChart('lab-chart-pnl', labResult);
+  renderLabExperienceChart('lab-chart-experience', labResult);
+  renderLabBubbleChart('lab-chart-bubble', labResult);
 }
 
 /** Alpha* vs risk composition (grouped bar) */

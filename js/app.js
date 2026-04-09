@@ -349,6 +349,9 @@ let _labResult = null;
 
 function readLabParams() {
   const v = id => { const el = document.getElementById(id); return el ? +el.value : 0; };
+  const c = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+  const divLowEl = document.getElementById('lab-divLow');
+  const divHighEl = document.getElementById('lab-divHigh');
   return {
     n: v('p-n'),
     baseValue: v('lab-baseVal'),
@@ -359,6 +362,14 @@ function readLabParams() {
     sharesMean: v('lab-shares'),
     endowVar: v('lab-endowVar') / 100,
     labRounds: v('lab-rounds'),
+    // Henning (2025): dividends & interest
+    divLow: divLowEl ? +divLowEl.value : 0.4,
+    divHigh: divHighEl ? +divHighEl.value : 1.0,
+    interestRate: v('lab-interest') / 100,
+    // Dufwenberg (2005): experience sessions
+    experienceRounds: v('lab-expRounds'),
+    // Sobel (2020): communication toggle
+    commEnabled: c('lab-comm-on'),
     deceptStrength: v('lab-decept') / 100,
     credulity: v('lab-credul') / 100,
     seed: v('p-seed'),
@@ -402,9 +413,30 @@ function renderLabResults(lab) {
   document.getElementById('sc-lab-eff1').style.color = eff1 > 0.5 ? 'var(--green)' : 'var(--red)';
   document.getElementById('sc-lab-eff2').textContent = (eff2 * 100).toFixed(1) + '%';
   document.getElementById('sc-lab-eff2').style.color = eff2 > 0.5 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('sc-lab-corr1').textContent = lab.phase1.allocation.correlation.toFixed(3);
-  document.getElementById('sc-lab-corr2').textContent = lab.phase2.allocation.correlation.toFixed(3);
 
+  // Bubble metrics (Henning/Dufwenberg)
+  const bm = lab.phase1.bubbleMetrics;
+  document.getElementById('sc-lab-r2').textContent = bm.haesselR2.toFixed(3);
+  document.getElementById('sc-lab-r2').style.color = bm.haesselR2 > 0.5 ? 'var(--green)' : 'var(--red)';
+
+  // Hypothesis classification (Henning)
+  const hypEl = document.getElementById('sc-lab-hyp');
+  const hypLabels = { R: 'Rational', H: 'Human', E: 'Erratic' };
+  const hypColors = { R: 'var(--green)', H: 'var(--amber)', E: 'var(--red)' };
+  hypEl.textContent = bm.hypothesis + ' (' + hypLabels[bm.hypothesis] + ')';
+  hypEl.style.color = hypColors[bm.hypothesis];
+
+  // Sobel deception stats
+  const dec = lab.deception;
+  const liesEl = document.getElementById('sc-lab-lies');
+  if (lab.commEnabled && dec.totalMessages > 0) {
+    liesEl.innerHTML = `${dec.totalLies}/${dec.totalMessages}<br><span style="font-size:0.7em">${dec.totalDeceptions} deceptive | ${dec.totalDamaging} damaging</span>`;
+  } else {
+    liesEl.textContent = 'Comm OFF';
+    liesEl.style.color = 'var(--fg-2)';
+  }
+
+  // Coase theorem agent
   const top = lab.highestPsiAgent;
   document.getElementById('sc-lab-top').innerHTML =
     `${top.name}<br><span style="font-size:0.75em">&psi;=${top.psi.toFixed(0)} | ${top.sharePercent.toFixed(0)}% shares</span>`;
@@ -419,6 +451,13 @@ function renderLabResults(lab) {
 function renderLabLog(lab) {
   const log = document.getElementById('lab-log');
   log.innerHTML = '';
+
+  // FV info
+  const fvDiv = document.createElement('div');
+  fvDiv.className = 'log-entry';
+  fvDiv.style.cssText = 'font-weight:700;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px';
+  fvDiv.innerHTML = `FV = E[div]/r = ${((lab.params.divLow+lab.params.divHigh)/2).toFixed(2)}/${lab.params.interestRate.toFixed(2)} = ${lab.fundamentalValue.toFixed(1)} | Comm: ${lab.commEnabled ? 'ON (Sobel)' : 'OFF'}`;
+  log.appendChild(fvDiv);
 
   // Initial state
   const initDet = document.createElement('details');
@@ -438,22 +477,63 @@ function renderLabLog(lab) {
   _appendPhaseLog(log, 'Phase 1 (Silent Trading)', lab.phase1, lab.initialSnapshot);
 
   // Phase 2
-  _appendPhaseLog(log, 'Phase 2 (Communication + Deception)', lab.phase2, lab.phase1.agents);
+  const p2Label = lab.commEnabled ? 'Phase 2 (Sobel Communication)' : 'Phase 2 (Silent Control)';
+  _appendPhaseLog(log, p2Label, lab.phase2, lab.phase1.agents);
 
-  // Deception summary
-  const decDet = document.createElement('details');
-  decDet.className = 'log-round';
-  const decSum = document.createElement('summary');
-  const dec = lab.deception;
-  decSum.textContent = `Deception Summary: ${dec.totalLies}/${dec.totalMessages} lies (${(dec.lieRate*100).toFixed(0)}%) | Inflations: ${dec.inflations} | Deflations: ${dec.deflations}`;
-  decDet.appendChild(decSum);
-  for (const rt of ['risk_loving', 'risk_neutral', 'risk_averse']) {
-    const d = document.createElement('div'); d.className = 'log-entry';
-    const rd = dec.byRiskType[rt];
-    d.textContent = `${rt.replace('_','-')}: ${rd.lies}/${rd.total} lies (${rd.total > 0 ? (rd.lies/rd.total*100).toFixed(0) : 0}%)`;
-    decDet.appendChild(d);
+  // Sobel deception summary (only if comm enabled)
+  if (lab.commEnabled) {
+    const decDet = document.createElement('details');
+    decDet.className = 'log-round';
+    const decSum = document.createElement('summary');
+    const dec = lab.deception;
+    decSum.textContent = `Sobel Summary: ${dec.totalLies} lies | ${dec.totalDeceptions} deceptions | ${dec.totalDamaging} damaging | ${dec.inflations} inflate / ${dec.deflations} deflate`;
+    decDet.appendChild(decSum);
+
+    // Sobel definitions legend
+    const legend = document.createElement('div'); legend.className = 'log-entry';
+    legend.style.cssText = 'font-size:0.85em;color:var(--fg-2);margin-bottom:6px';
+    legend.innerHTML = '<em>Sobel (2020 JPE): Lying = false report (Def 1). Deception = inducing inferior beliefs (Def 4). Damage = welfare-reducing (Sec V).</em>';
+    decDet.appendChild(legend);
+
+    for (const rt of ['risk_loving', 'risk_neutral', 'risk_averse']) {
+      const d = document.createElement('div'); d.className = 'log-entry';
+      const rd = dec.byRiskType[rt];
+      d.textContent = `${rt.replace('_','-')}: ${rd.lies} lies / ${rd.deceptions} deceptive / ${rd.damaging} damaging (of ${rd.total})`;
+      decDet.appendChild(d);
+    }
+    log.appendChild(decDet);
   }
-  log.appendChild(decDet);
+
+  // Bubble metrics summary
+  const bmDet = document.createElement('details');
+  bmDet.className = 'log-round';
+  const bmSum = document.createElement('summary');
+  const bm1 = lab.phase1.bubbleMetrics;
+  const bm2 = lab.phase2.bubbleMetrics;
+  bmSum.textContent = `Bubble Metrics: P1 ${bm1.hypothesis} (R\u00b2=${bm1.haesselR2.toFixed(2)}) | P2 ${bm2.hypothesis} (R\u00b2=${bm2.haesselR2.toFixed(2)})`;
+  bmDet.appendChild(bmSum);
+  for (const [label, bm] of [['Phase 1', bm1], ['Phase 2', bm2]]) {
+    const d = document.createElement('div'); d.className = 'log-entry';
+    d.textContent = `${label}: Haessel-R\u00b2=${bm.haesselR2.toFixed(3)} | MSE=${bm.mse.toFixed(2)} | NAPD=${bm.napd.toFixed(3)} | Amplitude=${bm.amplitude.toFixed(3)} | Turnover=${bm.turnover.toFixed(2)} | ${bm.hypothesis}`;
+    bmDet.appendChild(d);
+  }
+  log.appendChild(bmDet);
+
+  // Experience sessions (Dufwenberg)
+  if (lab.sessionResults && lab.sessionResults.length > 0) {
+    const expDet = document.createElement('details');
+    expDet.className = 'log-round';
+    const expSum = document.createElement('summary');
+    expSum.textContent = `Experience Sessions (Dufwenberg 2005): ${lab.sessionResults.length} additional sessions`;
+    expDet.appendChild(expSum);
+    for (const sess of lab.sessionResults) {
+      const d = document.createElement('div'); d.className = 'log-entry';
+      const sbm = sess.bubbleMetrics;
+      d.textContent = `Session ${sess.session} (exp=${sess.experience}): R\u00b2=${sbm.haesselR2.toFixed(3)} | NAPD=${sbm.napd.toFixed(3)} | Eff=${(sess.allocation.efficiency*100).toFixed(1)}% | ${sbm.hypothesis}`;
+      expDet.appendChild(d);
+    }
+    log.appendChild(expDet);
+  }
 
   // Final verdict
   const verdict = document.createElement('div');
@@ -585,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const upd = () => {
       if (['p-alpha','p-bias','p-noise','p-anchor','p-momentum','p-rl','p-rn','p-ra'].includes(inp.id))
         ve.textContent = inp.value + '%';
-      else if (['lab-endowVar','lab-decept','lab-credul'].includes(inp.id))
+      else if (['lab-endowVar','lab-decept','lab-credul','lab-interest'].includes(inp.id))
         ve.textContent = inp.value + '%';
       else if (inp.id === 'exp-threshold')
         ve.textContent = (+inp.value / 100).toFixed(2);
