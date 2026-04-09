@@ -153,7 +153,7 @@ const BUILDINGS = [
   { id: 'hub',    label: 'gw.hub',    w: BASE_W, h: 180, color: '#E8F5E9', darkColor: '#1a2e1a', phaseNum: '1' },
   { id: 'signal', label: 'gw.signal', w: BASE_W, h: 180, color: '#E3F2FD', darkColor: '#1a2540', phaseNum: '2' },
   { id: 'pit',    label: 'gw.pit',    w: BASE_W, h: 320, color: '#FFF3E0', darkColor: '#2d2614', _stageH: 80, phaseNum: '3' },
-  { id: 'comm',   label: 'gw.comm',   w: 200, h: 180, color: '#F3E5F5', darkColor: '#231a35' },
+  { id: 'comm',   label: 'gw.comm',   w: 300, h: 280, color: '#F3E5F5', darkColor: '#231a35' },
   { id: 'settle', label: 'gw.settle', w: BASE_W, h: 200, color: '#FFFDE7', darkColor: '#2d2a14', phaseNum: '4' },
 ];
 
