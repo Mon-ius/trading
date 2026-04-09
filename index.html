@@ -12,7 +12,12 @@
   <!-- ===== Navbar ===== -->
   <nav class="navbar">
     <div class="nav-brand" data-i18n="app.title">Market Microstructure</div>
-    <div class="nav-tabs"></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="experiment" data-i18n="nav.experiment">Experiment</button>
+      <button class="nav-tab" data-tab="slides" data-i18n="nav.slides">Slides</button>
+      <button class="nav-tab" data-tab="architecture" data-i18n="nav.architecture">Architecture</button>
+      <button class="nav-tab" data-tab="glossary" data-i18n="nav.glossary">Glossary</button>
+    </div>
     <div class="nav-menu" id="nav-menu">
       <div class="nav-tools">
         <button class="mobile-toggle" id="sidebar-toggle" title="Parameters">
@@ -175,7 +180,7 @@
 
     <!-- Main area -->
     <div class="main-area">
-      <div id="tab-experiment">
+      <div id="tab-experiment" class="tab-content active">
       <div class="view-toggle">
         <button class="view-btn active" data-view="chart" data-i18n="btn.charts">Charts</button>
         <button class="view-btn" data-view="game" data-i18n="btn.game">Trading Floor</button>
@@ -275,7 +280,7 @@
       </div><!-- /experiment -->
 
       <!-- ===== Slides ===== -->
-      <div id="tab-slides">
+      <div id="tab-slides" class="tab-content">
         <div class="slides-wrap">
           <div class="slides-nav">
             <button class="slide-prev" onclick="changeSlide(-1)">&larr;</button>
@@ -691,7 +696,7 @@
       </div><!-- /slides -->
 
       <!-- ===== System Architecture ===== -->
-      <div id="tab-architecture">
+      <div id="tab-architecture" class="tab-content">
         <div class="arch-wrap">
           <div class="arch-header">
             <div>
@@ -850,7 +855,7 @@
       </div><!-- /architecture -->
 
       <!-- ===== Glossary ===== -->
-      <div id="tab-glossary">
+      <div id="tab-glossary" class="tab-content">
         <div class="glossary-wrap">
           <h2>Glossary &amp; Reference</h2>
 

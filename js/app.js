@@ -354,6 +354,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_labResult) renderLabResults(_labResult);
   });
 
+  // Nav tabs
+  document.querySelectorAll('.nav-tab').forEach(tab => tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab.dataset.tab));
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    const target = document.getElementById('tab-' + tab.dataset.tab);
+    if (target) target.classList.add('active');
+    document.getElementById('nav-menu').classList.remove('open');
+  }));
+
   // Sidebar
   const sidebar = document.getElementById('sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
