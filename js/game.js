@@ -126,21 +126,24 @@ class Sprite {
       ctx.globalAlpha = 1;
     }
 
-    // Speech bubble
+    // Speech bubble — positioned to the right to avoid overlap in tight grids
     if (this.bubble) {
       const b = this.bubble;
       ctx.globalAlpha = Math.min(1, b.alpha);
-      const bx = x, by = y - r - 24 * sc;
-      const bw = 44 * sc, bh = 16 * sc;
+      const bx = x + r + 22 * sc, by = y - 2 * sc;
+      ctx.textAlign = 'left';
+      ctx.font = `600 ${6.5 * sc}px -apple-system, sans-serif`;
+      const tw = ctx.measureText(b.text).width;
+      const bw = tw + 8 * sc, bh = 12 * sc;
       ctx.fillStyle = b.isLie ? 'rgba(255,59,48,0.15)' : 'rgba(52,199,89,0.15)';
       ctx.strokeStyle = b.isLie ? '#FF3B30' : '#34C759';
       ctx.lineWidth = 1 * sc;
       ctx.beginPath();
-      ctx.roundRect(bx - bw / 2, by - bh / 2, bw, bh, 4 * sc);
+      ctx.roundRect(bx - 4 * sc, by - bh / 2, bw, bh, 3 * sc);
       ctx.fill(); ctx.stroke();
       ctx.fillStyle = b.isLie ? '#FF3B30' : '#34C759';
-      ctx.font = `600 ${7 * sc}px -apple-system, sans-serif`;
-      ctx.fillText(b.text, bx, by + 3 * sc);
+      ctx.fillText(b.text, bx, by + 2.5 * sc);
+      ctx.textAlign = 'center';
       ctx.globalAlpha = 1;
     }
   }
