@@ -847,7 +847,7 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
 }
 .slide h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -.02em; }
 .slide-text { font-size: .95rem; color: var(--fg-1); line-height: 1.65; margin-top: 8px; }
-.slide-sm { font-size: .82rem; color: var(--fg-2); line-height: 1.55; margin-bottom: 16px; }
+.slide-sm { font-size: .82rem; color: var(--fg-2); line-height: 1.55; margin-bottom: 8px; }
 .slide h4 { font-size: .88rem; margin: 10px 0 4px; color: var(--accent); }
 .slide p, .slide li { font-size: .82rem; line-height: 1.55; color: var(--fg-1); }
 .slide ul { padding-left: 18px; margin: 4px 0 8px; }
@@ -859,10 +859,15 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
 .two-col, .slide-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 .slide-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 8px 0; }
 .slide-card {
-  background: var(--bg-2); border-radius: var(--radius); padding: 20px 24px;
-  margin-bottom: 16px;
+  background: var(--bg-2); border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 8px;
 }
-.slide-card h4 { margin-top: 0; }
+.slide-card h4 { margin-top: 0; font-size: .82rem; }
+.slide-card p, .slide-card li { font-size: .78rem; line-height: 1.45; }
+.slide-card .gloss-table th { font-size: .66rem; padding: 5px 8px; }
+.slide-card .gloss-table td { font-size: .75rem; padding: 6px 8px; }
+.slide-card .gloss-table { table-layout: fixed; }
+.slide-card .formula { font-size: .78rem; }
 .slide-col { display: flex; flex-direction: column; }
 .slide-col > .slide-card:only-child { flex: 1; }
 .slide-formula-card { text-align: center; background: var(--bg-1); border: 1px solid var(--border); }
