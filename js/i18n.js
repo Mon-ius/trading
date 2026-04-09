@@ -109,6 +109,7 @@ const I18N = {
     'hint.grid': 'Sweeps \u03b1 from 0\u2013100% for each (n, risk, knowledge) combo. Uses T, E[d], Seed from panels above.',
     'arch.edit': 'Edit in draw.io',
     // Navigation
+    'nav.slides': 'Slides',
     'nav.architecture': 'Architecture',
     'nav.glossary': 'Glossary',
     // Architecture
@@ -280,6 +281,7 @@ const I18N = {
     'hint.grid': '\u5bf9\u6bcf\u4e2a(n,\u98ce\u9669,\u77e5\u8bc6)\u7ec4\u5408\u626b\u63cf\u03b1\u4ece0\u52301\u3002\u4f7f\u7528\u4e0a\u65b9\u9762\u677f\u7684T\u3001E[d]\u3001\u79cd\u5b50\u3002',
     'arch.edit': '\u5728draw.io\u4e2d\u7f16\u8f91',
     // Navigation
+    'nav.slides': '\u6f14\u793a',
     'nav.architecture': '\u67b6\u6784',
     'nav.glossary': '\u672f\u8bed\u8868',
     // Architecture
