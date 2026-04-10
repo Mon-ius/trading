@@ -482,7 +482,6 @@ class Sprite {
     this.agent = null;
     this.active = false;
     this.pnlFlash = null;
-    this.bubble = null;
     this.label = '';
   }
 
@@ -496,10 +495,6 @@ class Sprite {
     if (this.pnlFlash) {
       this.pnlFlash.alpha -= dt * 1.5;
       if (this.pnlFlash.alpha <= 0) this.pnlFlash = null;
-    }
-    if (this.bubble) {
-      this.bubble.alpha -= dt * 0.8;
-      if (this.bubble.alpha <= 0) this.bubble = null;
     }
   }
 
@@ -534,73 +529,56 @@ class Sprite {
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2 * sc;
     ctx.stroke();
 
-    // Name pill
+    // Name pill (below body) — width depends only on the name, never on PnL
     const nameText = this.displayName;
     ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
     ctx.textAlign = 'center';
-
-    let pnlText = '';
-    let pnlColor = '';
-    if (this.pnlFlash) {
-      const pf = this.pnlFlash;
-      pnlText = (pf.value >= 0 ? '+' : '') + pf.value.toFixed(0);
-      pnlColor = pf.value >= 0 ? '#34C759' : '#FF3B30';
-    }
-
     const nameW = ctx.measureText(nameText).width;
-    ctx.font = `700 ${7 * sc}px monospace`;
-    const pnlW = pnlText ? ctx.measureText(pnlText).width : 0;
-    const totalW = nameW + (pnlText ? pnlW + 6 * sc : 0) + 8 * sc;
+    const pillW = nameW + 10 * sc;
     const ny = y + r + 12 * sc;
 
     ctx.fillStyle = isDark ? 'rgba(22,27,34,0.85)' : 'rgba(255,255,255,0.9)';
     ctx.beginPath();
-    ctx.roundRect(x - totalW / 2, ny - 8 * sc, totalW, 11 * sc, 3 * sc);
+    ctx.roundRect(x - pillW / 2, ny - 8 * sc, pillW, 11 * sc, 3 * sc);
     ctx.fill();
 
-    const nameX = pnlText ? x - (pnlW + 6 * sc) / 2 : x;
-    ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
     ctx.fillStyle = fgMain;
-    ctx.fillText(nameText, nameX, ny);
+    ctx.fillText(nameText, x, ny);
 
-    if (pnlText) {
+    // PnL flash floats ABOVE the body, centered on the agent — no horizontal bleed
+    if (this.pnlFlash) {
       const pf = this.pnlFlash;
+      const pnlText = (pf.value >= 0 ? '+' : '') + pf.value.toFixed(0);
+      const pnlColor = pf.value >= 0 ? '#34C759' : '#FF3B30';
       ctx.globalAlpha = Math.min(1, pf.alpha);
-      ctx.font = `700 ${7 * sc}px monospace`;
-      ctx.fillStyle = pnlColor;
-      ctx.fillText(pnlText, nameX + nameW / 2 + 4 * sc + pnlW / 2, ny);
-      ctx.globalAlpha = 1;
-    }
-
-    if (this.bubble) {
-      const b = this.bubble;
-      ctx.globalAlpha = Math.min(1, b.alpha);
-      const bx = x + r + 22 * sc, by = y - 2 * sc;
-      ctx.textAlign = 'left';
-      ctx.font = `600 ${6.5 * sc}px -apple-system, sans-serif`;
-      const tw = ctx.measureText(b.text).width;
-      const bw = tw + 8 * sc, bh = 12 * sc;
-      ctx.fillStyle = 'rgba(52,199,89,0.15)';
-      ctx.strokeStyle = '#34C759';
+      ctx.font = `700 ${8 * sc}px monospace`;
+      const pnlW = ctx.measureText(pnlText).width;
+      const bw = pnlW + 8 * sc, bh = 12 * sc;
+      const py = y - r - bh / 2 - 4 * sc;
+      ctx.fillStyle = pf.value >= 0 ? 'rgba(52,199,89,0.18)' : 'rgba(255,59,48,0.18)';
+      ctx.strokeStyle = pnlColor;
       ctx.lineWidth = 1 * sc;
       ctx.beginPath();
-      ctx.roundRect(bx - 4 * sc, by - bh / 2, bw, bh, 3 * sc);
+      ctx.roundRect(x - bw / 2, py - bh / 2, bw, bh, 3 * sc);
       ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#34C759';
-      ctx.fillText(b.text, bx, by + 2.5 * sc);
-      ctx.textAlign = 'center';
+      ctx.fillStyle = pnlColor;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pnlText, x, py);
+      ctx.textBaseline = 'alphabetic';
       ctx.globalAlpha = 1;
     }
   }
 }
 
-/* ---- Building definitions — main flow only, no comm lounge ---- */
-const BASE_W = 400;
+/* ---- Building definitions — DLM/Lopez-Lira pipeline stages ---- */
+const BASE_W = 520;
+const CELL_W = 60;  // unscaled per-agent cell width
+const CELL_H = 68;  // unscaled per-agent cell height
 const BUILDINGS = [
-  { id: 'hub',    label: 'gw.hub',    w: BASE_W, h: 180, color: '#E8F5E9', darkColor: '#1a2e1a', phaseNum: '1' },
-  { id: 'signal', label: 'gw.signal', w: BASE_W, h: 180, color: '#E3F2FD', darkColor: '#1a2540', phaseNum: '2' },
-  { id: 'pit',    label: 'gw.pit',    w: BASE_W, h: 320, color: '#FFF3E0', darkColor: '#2d2614', _stageH: 80, phaseNum: '3' },
-  { id: 'settle', label: 'gw.settle', w: BASE_W, h: 200, color: '#FFFDE7', darkColor: '#2d2a14', phaseNum: '4' },
+  { id: 'hub',    label: 'gw.hub',    w: BASE_W, h: 200, color: '#E8F5E9', darkColor: '#1a2e1a', phaseNum: '1' },
+  { id: 'signal', label: 'gw.signal', w: BASE_W, h: 200, color: '#E3F2FD', darkColor: '#1a2540', phaseNum: '2' },
+  { id: 'pit',    label: 'gw.pit',    w: BASE_W, h: 360, color: '#FFF3E0', darkColor: '#2d2614', _stageH: 90, phaseNum: '3' },
+  { id: 'settle', label: 'gw.settle', w: BASE_W, h: 220, color: '#FFFDE7', darkColor: '#2d2a14', phaseNum: '4' },
 ];
 
 class TradingFloor {
@@ -643,19 +621,19 @@ class TradingFloor {
     const sc = Math.max(0.6, Math.min(1, 10 / Math.sqrt(n)));
     this._scale = sc;
 
-    const uniformW = Math.max(BASE_W, cols * 42 * sc + 50);
+    const uniformW = Math.max(BASE_W, cols * CELL_W * sc + 60);
 
     for (const b of BUILDINGS) {
       const copy = { ...b };
       copy.w = uniformW;
       if (b.id === 'hub' || b.id === 'signal' || b.id === 'settle') {
-        copy.h = Math.max(b.h, rows * 48 * sc + 55);
+        copy.h = Math.max(b.h, rows * CELL_H * sc + 60);
       }
       if (b.id === 'pit') {
         const chartH = 70;
         copy._chartH = chartH;
-        copy._stageH = Math.max(80, 65 * sc + 30);
-        copy.h = Math.max(b.h, rows * 48 * sc + 55 + chartH + copy._stageH);
+        copy._stageH = Math.max(90, 70 * sc + 30);
+        copy.h = Math.max(b.h, rows * CELL_H * sc + 60 + chartH + copy._stageH);
       }
       this._buildingMap[copy.id] = copy;
     }
@@ -761,8 +739,8 @@ class TradingFloor {
     const headerH = 28;
     const chartH = b._chartH || 0;
     const stageH = b._stageH || 0;
-    const padX = 20, padY = 14;
-    const cellW = 42 * sc, cellH = 48 * sc;
+    const padX = 24, padY = 16;
+    const cellW = CELL_W * sc, cellH = CELL_H * sc;
     const areaTop = b.y - b.h / 2 + headerH + chartH + stageH;
     const areaW = b.w - padX * 2;
     const cols = Math.max(1, Math.floor(areaW / cellW));
@@ -881,7 +859,7 @@ class TradingFloor {
       ctx.closePath();
       ctx.fill();
 
-      const labels = ['Initialize', 'Belief', 'Trade'];
+      const labels = ['Calibrate \u03b3', 'Form Beliefs', 'Match Orders'];
       ctx.fillStyle = textColor;
       ctx.font = `600 ${8 * sc}px -apple-system, sans-serif`;
       ctx.textAlign = 'left';
@@ -1132,14 +1110,14 @@ class TradingFloor {
     this._phase = 'hub';
     this._arrangeIn('hub', this.sprites, true);
     this._focusBuilding('hub');
-    this._log('phase', '1. Agent Hub', `${agents.length} agents initialized`);
+    this._log('phase', '1. Trader Initialization', `${agents.length} CARA agents — \u03b3 drawn, endowments allocated`);
     await this._wait(1500);
 
     // Phase 2: Belief formation
     this._phase = 'signal';
     this._arrangeIn('signal', this.sprites, true);
     this._focusBuilding('signal');
-    this._log('phase', '2. Belief Formation', 'Experienced agents track FV; inexperienced anchor');
+    this._log('phase', '2. Belief Formation', 'Experienced track FV (DLM \u03b1-treatment); inexperienced anchor + bias');
     await this._wait(1000);
 
     const fv0 = (history.fvs && history.fvs[0]) || 100;
@@ -1155,7 +1133,7 @@ class TradingFloor {
     this._phase = 'trading';
     this._arrangeIn('pit', this.sprites, true);
     this._focusBuilding('pit');
-    this._log('phase', '3. Trading Pit', `${rounds.length} rounds of CDA trading`);
+    this._log('phase', '3. Continuous Double Auction', `${rounds.length} periods — bid \u2265 ask matching at reservation prices`);
     await this._wait(1000);
 
     const totalRounds = rounds.length;
@@ -1215,7 +1193,7 @@ class TradingFloor {
     this._phase = 'settle';
     this._arrangeIn('settle', this.sprites, true);
     this._focusBuilding('settle');
-    this._log('phase', '4. Settlement', 'Final P&L calculated');
+    this._log('phase', '4. Dividend Settlement', 'Period payoffs paid; total P&L realised');
     await this._wait(1000);
 
     for (const sp of this.sprites) {
