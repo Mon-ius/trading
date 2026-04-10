@@ -1,10 +1,13 @@
 /**
  * App Controller — Theme, i18n, export, UI binding.
+ * Unified DLM (2005, AER) + Lopez-Lira (2025) experiment.
  */
 
-let _history = null, _floor = null, _labResult = null;
+let _result = null, _floor = null;
 
-/* Slide navigation */
+/* ================================================================
+   Slide navigation
+   ================================================================ */
 let _curSlide = 1;
 function _slideCount() { return document.querySelectorAll('#slides-viewport .slide').length; }
 function slideNav(dir) {
@@ -20,12 +23,10 @@ function slideNav(dir) {
   document.getElementById('slide-next').disabled = _curSlide >= total;
 }
 function toggleSlideFullscreen() {
-  const vp = document.getElementById('slides-viewport');
-  vp.classList.toggle('fullscreen');
+  document.getElementById('slides-viewport').classList.toggle('fullscreen');
 }
 function toggleReadingMode() {
-  const vp = document.getElementById('slides-viewport');
-  vp.classList.toggle('reading-mode');
+  document.getElementById('slides-viewport').classList.toggle('reading-mode');
 }
 function exportSlidesPDF() {
   const vp = document.getElementById('slides-viewport');
@@ -68,124 +69,95 @@ function applyTheme() { document.documentElement.setAttribute('data-theme', loca
 function _isDark() { return getEffectiveTheme() === 'dark'; }
 
 /* ================================================================
-   Agent numbered names: "1.Ada", "2.Ben"
+   Read experiment parameters
    ================================================================ */
-function assignDisplayNames(agents) {
-  agents.forEach(a => { a.displayName = `${a.id + 1}.${a.name}`; });
-}
-
-/* ================================================================
-   Read experiment parameters (unified)
-   ================================================================ */
-function readLabParams() {
+function readSimParams() {
   const v = id => { const el = document.getElementById(id); return el ? +el.value : 0; };
-  const c = id => { const el = document.getElementById(id); return el ? el.checked : false; };
   return {
     n: v('p-n'),
-    baseValue: v('lab-baseVal'),
-    valSpread: v('lab-valSpread'),
+    T: v('sim-T'),
+    expectedDiv: v('sim-edv') / 10,
+    initialCash: v('sim-cash'),
+    initialShares: v('sim-shares'),
+    endowVar: v('sim-endow'),
+    seed: v('p-seed'),
+    alpha: v('sim-alpha') / 100,
+    experienceRounds: v('sim-exp'),
+    inexpBias: v('sim-bias') / 100,
+    inexpAnchor: v('sim-anchor') / 100,
+    inexpNoise: v('sim-noise') / 100,
+    momentum: v('sim-mom') / 100,
+    expNoise: 0.05,
     rlPct: v('p-rl'),
     rnPct: v('p-rn'),
-    cashMean: v('lab-cash'),
-    sharesMean: v('lab-shares'),
-    endowVar: v('lab-endowVar') / 100,
-    labRounds: v('lab-rounds'),
-    // Henning (2025): dividends & interest
-    divLow: v('lab-divLow') / 10,
-    divHigh: v('lab-divHigh') / 10,
-    interestRate: v('lab-interest') / 100,
-    // Dufwenberg (2005): experience sessions
-    experienceRounds: v('lab-expRounds'),
-    // Communication
-    commEnabled: c('lab-comm-on'),
-    commNoise: v('lab-comm-noise') / 100,
-    signalWeight: v('lab-signal-weight') / 100,
-    seed: v('p-seed'),
   };
 }
 
-function runExperiment() {
+/* ================================================================
+   Run experiment
+   ================================================================ */
+function runSimExperiment() {
   const btn = document.getElementById('btn-run');
-  btn.disabled = true; btn.textContent = 'Running...';
+  btn.disabled = true; btn.textContent = t('btn.running');
   setTimeout(() => {
     try {
-      const params = readLabParams();
-      _labResult = runLabExperiment(params);
-      renderLabResults(_labResult);
+      const params = readSimParams();
+      _result = runExperiment(params);
+      renderResults(_result);
     } catch (e) {
       console.error('Experiment error:', e);
     } finally {
-      btn.disabled = false; btn.textContent = 'Run Experiment';
+      btn.disabled = false; btn.textContent = t('btn.run');
     }
   }, 30);
 }
 
-function renderLabResults(lab) {
-  // Show results
-  document.getElementById('lab-log-card').style.display = 'block';
+function renderResults(result) {
+  document.getElementById('log-card').style.display = 'block';
 
   // Summary cards
-  const eff1 = lab.phase1.allocation.efficiency;
-  const eff2 = lab.phase2.allocation.efficiency;
-  document.getElementById('sc-lab-eff1').textContent = (eff1 * 100).toFixed(1) + '%';
-  document.getElementById('sc-lab-eff1').style.color = eff1 > 0.5 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('sc-lab-eff2').textContent = (eff2 * 100).toFixed(1) + '%';
-  document.getElementById('sc-lab-eff2').style.color = eff2 > 0.5 ? 'var(--green)' : 'var(--red)';
+  const bm = result.session.bubbleMetrics;
+  const cards = {
+    'sc-r2':    { val: bm.haesselR2.toFixed(3),         color: bm.haesselR2 > 0.5 ? 'var(--green)' : 'var(--red)' },
+    'sc-napd':  { val: bm.napd.toFixed(3),              color: bm.napd < 0.15 ? 'var(--green)' : 'var(--red)' },
+    'sc-amp':   { val: bm.amplitude.toFixed(2),         color: bm.amplitude < 0.5 ? 'var(--green)' : 'var(--amber)' },
+    'sc-turn':  { val: bm.turnover.toFixed(2),          color: 'var(--accent)' },
+    'sc-trades':{ val: result.session.totalTrades,      color: 'var(--accent)' },
+    'sc-sess':  { val: (result.sessionResults || []).length, color: 'var(--accent)' },
+  };
+  for (const [id, c] of Object.entries(cards)) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = c.val;
+      el.style.color = c.color;
+    }
+  }
 
-  // Bubble metrics (Henning/Dufwenberg)
-  const bm = lab.phase1.bubbleMetrics;
-  document.getElementById('sc-lab-r2').textContent = bm.haesselR2.toFixed(3);
-  document.getElementById('sc-lab-r2').style.color = bm.haesselR2 > 0.5 ? 'var(--green)' : 'var(--red)';
+  renderAllCharts(result);
+  renderLog(result);
 
-  // Hypothesis classification (Henning)
-  const hypEl = document.getElementById('sc-lab-hyp');
-  const hypLabels = { R: 'Rational', H: 'Human', E: 'Erratic' };
-  const hypColors = { R: 'var(--green)', H: 'var(--amber)', E: 'var(--red)' };
-  hypEl.textContent = bm.hypothesis + ' (' + hypLabels[bm.hypothesis] + ')';
-  hypEl.style.color = hypColors[bm.hypothesis];
-
-  // Communication status
-  const commEl = document.getElementById('sc-lab-comm');
-  const totalMsgs = lab.phase2.rounds.reduce((s, r) => s + (r.messages ? r.messages.length : 0), 0);
-  commEl.textContent = lab.commEnabled ? `${totalMsgs} signals` : 'OFF';
-  commEl.style.color = lab.commEnabled ? 'var(--accent)' : 'var(--fg-2)';
-
-  // Coase theorem agent
-  const top = lab.highestPsiAgent;
-  document.getElementById('sc-lab-top').innerHTML =
-    `${top.name}<div class="sc-detail">&psi;=${top.psi.toFixed(0)} · ${top.sharePercent.toFixed(0)}% shares</div>`;
-
-  // Charts
-  renderAllLabCharts(lab);
-
-  // Build game-compatible history from lab result for Trading Floor
-  _history = labResultToHistory(lab);
-
-  // Init game if game view active
-  if (document.querySelector('.view-btn[data-view="game"].active')) initGame(_history);
-
-  // Log
-  renderLabLog(lab);
+  // Build floor history from result
+  const history = resultToHistory(result);
+  if (document.querySelector('.view-btn[data-view="game"].active')) initGame(history);
 }
 
 /* ================================================================
-   Convert lab result to TradingFloor-compatible history
+   Convert experiment result to TradingFloor history
    ================================================================ */
-function labResultToHistory(lab) {
-  const phase = lab.phase2 || lab.phase1;
+function resultToHistory(result) {
+  const session = result.session;
   return {
-    agents: lab.initialSnapshot,
-    prices: phase.prices,
-    fvs: phase.fvs,
-    volumes: phase.volumes,
-    spreads: phase.rounds.map(r => (r.bestAsk || 0) - (r.bestBid || 0)),
-    rounds: phase.rounds.map((r, i) => ({
-      period: i, fv: phase.fvs[i], div: r.dividend || 0,
+    agents: result.initialSnapshot,
+    prices: session.prices,
+    fvs: session.fvs,
+    volumes: session.volumes,
+    spreads: session.spreads,
+    rounds: session.rounds.map((r, i) => ({
+      period: i, fv: session.fvs[i], div: r.dividend || 0,
       trades: r.trades || [], vwap: r.vwap, volume: r.volume || 0,
-      bestBid: r.bestBid, bestAsk: r.bestAsk, messages: r.messages,
+      bestBid: r.bestBid, bestAsk: r.bestAsk,
     })),
-    bubble: phase.bubbleMetrics,
-    _raw: { agents: lab.initialSnapshot, rounds: phase.rounds, prices: phase.prices, fvs: phase.fvs, volumes: phase.volumes },
+    bubble: session.bubbleMetrics,
   };
 }
 
@@ -193,26 +165,39 @@ function labResultToHistory(lab) {
    Export — JSON & CSV
    ================================================================ */
 function exportJSON() {
-  if (!_labResult) return;
-  const blob = new Blob([JSON.stringify(_labResult, null, 2)], { type: 'application/json' });
+  if (!_result) return;
+  const blob = new Blob([JSON.stringify(_result, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = 'experiment_data.json'; a.click(); URL.revokeObjectURL(a.href);
 }
 
 function exportCSV() {
-  if (!_labResult) return;
-  const agents = _labResult.initialSnapshot;
-  const header = 'id,name,riskType,alpha,psi,cash,shares,totalPnL';
-  const rows = agents.map(a =>
-    `${a.id},${a.displayName},${a.riskType},${a.gamma.toFixed(4)},${a.psi.toFixed(1)},${a.cash.toFixed(0)},${a.shares},${(a.totalPnL||0).toFixed(2)}`);
-  const pHeader = '\nphase,round,fv,price,volume';
-  const pRows = [];
-  for (const [label, phase] of [['P1', _labResult.phase1], ['P2', _labResult.phase2]]) {
-    phase.rounds.forEach((r, i) => {
-      pRows.push(`${label},${i+1},${phase.fvs[i].toFixed(2)},${r.vwap != null ? r.vwap.toFixed(2) : ''},${r.volume || 0}`);
+  if (!_result) return;
+  const lines = [];
+  // Agents header
+  lines.push('# AGENTS');
+  lines.push('id,name,expType,riskType,gamma,initialCash,initialShares');
+  for (const a of _result.initialSnapshot) {
+    lines.push(`${a.id},${a.displayName},${a.expType},${a.riskType},${a.gamma.toFixed(4)},${a.cash},${a.shares}`);
+  }
+  // Sessions
+  lines.push('');
+  lines.push('# SESSIONS');
+  lines.push('session,experience,period,fv,price,volume,dividend');
+  for (const sess of _result.sessionResults) {
+    sess.rounds.forEach((r, i) => {
+      lines.push(`${sess.session},${sess.experience},${i + 1},${sess.fvs[i].toFixed(2)},${r.vwap != null ? r.vwap.toFixed(2) : ''},${r.volume || 0},${(r.dividend || 0).toFixed(2)}`);
     });
   }
-  const blob = new Blob([[header, ...rows, pHeader, ...pRows].join('\n')], { type: 'text/csv' });
+  // Bubble metrics
+  lines.push('');
+  lines.push('# BUBBLE METRICS');
+  lines.push('session,experience,haesselR2,mse,napd,amplitude,turnover');
+  for (const sess of _result.sessionResults) {
+    const bm = sess.bubbleMetrics;
+    lines.push(`${sess.session},${sess.experience},${bm.haesselR2.toFixed(4)},${bm.mse.toFixed(4)},${bm.napd.toFixed(4)},${bm.amplitude.toFixed(4)},${bm.turnover.toFixed(4)}`);
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = 'experiment_data.csv'; a.click(); URL.revokeObjectURL(a.href);
 }
@@ -222,111 +207,68 @@ function exportCSV() {
    ================================================================ */
 function initGame(h) {
   if (_floor) _floor.stop();
-  _floor = new TradingFloor(document.getElementById('game-canvas'), h._raw || h);
+  _floor = new TradingFloor(document.getElementById('game-canvas'), h);
   _floor.start();
 }
 
-function renderLabLog(lab) {
-  const log = document.getElementById('lab-log');
+/* ================================================================
+   Log
+   ================================================================ */
+function renderLog(result) {
+  const log = document.getElementById('log-body');
   log.innerHTML = '';
 
-  // FV info
-  const fvDiv = document.createElement('div');
-  fvDiv.className = 'log-entry';
-  fvDiv.style.cssText = 'font-weight:700;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px';
-  fvDiv.innerHTML = `FV = E[div]/r = ${((lab.params.divLow+lab.params.divHigh)/2).toFixed(2)}/${lab.params.interestRate.toFixed(2)} = ${lab.fundamentalValue.toFixed(1)} | Comm: ${lab.commEnabled ? 'ON' : 'OFF'}`;
-  log.appendChild(fvDiv);
+  // Header
+  const head = document.createElement('div');
+  head.className = 'log-entry';
+  head.style.cssText = 'font-weight:700;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px';
+  const fv0 = result.fv0;
+  head.innerHTML = `T=${result.T} periods | E[d]=${result.expectedDiv.toFixed(2)} | FV(0)=${fv0.toFixed(1)} | n=${result.initialSnapshot.length} agents`;
+  log.appendChild(head);
 
-  // Initial state
+  // Initial roster
   const initDet = document.createElement('details');
-  initDet.className = 'log-round'; initDet.open = true;
+  initDet.className = 'log-round'; initDet.open = false;
   const initSum = document.createElement('summary');
-  initSum.textContent = `Initial State: ${lab.initialSnapshot.length} agents | Efficiency: ${(lab.initialAlloc.efficiency * 100).toFixed(1)}%`;
+  const nExp = result.initialSnapshot.filter(a => a.expType === 'experienced').length;
+  initSum.textContent = `Initial Roster: ${result.initialSnapshot.length} agents (${nExp} experienced, ${result.initialSnapshot.length - nExp} inexperienced)`;
   initDet.appendChild(initSum);
-  for (const a of lab.initialSnapshot) {
+  for (const a of result.initialSnapshot) {
     const d = document.createElement('div'); d.className = 'log-entry';
     const rColor = a.riskType === 'risk_loving' ? 'var(--red)' : a.riskType === 'risk_neutral' ? 'var(--amber)' : 'var(--blue)';
     const rLabel = a.riskType === 'risk_loving' ? t('rt.rl') : a.riskType === 'risk_neutral' ? t('rt.rn') : t('rt.ra');
-    d.innerHTML = `<strong>${a.displayName}</strong> <span style="color:${rColor}">${rLabel}</span> | &psi;=${a.psi.toFixed(1)} | &alpha;=${a.gamma.toFixed(4)} | cash=$${a.cash} | shares=${a.shares}`;
+    const eLabel = a.expType === 'experienced' ? t('info.experienced') : t('info.inexperienced');
+    d.innerHTML = `<strong>${a.displayName}</strong> <span style="color:${rColor}">${rLabel}</span> | ${eLabel} | \u03b3=${a.gamma.toFixed(4)} | cash=$${a.cash} | shares=${a.shares}`;
     initDet.appendChild(d);
   }
   log.appendChild(initDet);
 
-  // Phase 1
-  _appendPhaseLog(log, 'Phase 1 (Silent Trading)', lab.phase1, lab.initialSnapshot);
+  // Each session
+  for (const sess of result.sessionResults) {
+    const det = document.createElement('details');
+    det.className = 'log-round';
+    det.open = sess.session === 1;
+    const sum = document.createElement('summary');
+    const bm = sess.bubbleMetrics;
+    sum.textContent = `Session ${sess.session} (exp=${sess.experience}): R\u00b2=${bm.haesselR2.toFixed(2)} | NAPD=${bm.napd.toFixed(2)} | Amp=${bm.amplitude.toFixed(2)} | trades=${sess.totalTrades}`;
+    det.appendChild(sum);
 
-  // Phase 2
-  const p2Label = lab.commEnabled ? 'Phase 2 (Communication)' : 'Phase 2 (Silent Control)';
-  _appendPhaseLog(log, p2Label, lab.phase2, lab.phase1.agents);
-
-  // Bubble metrics summary
-  const bmDet = document.createElement('details');
-  bmDet.className = 'log-round';
-  const bmSum = document.createElement('summary');
-  const bm1 = lab.phase1.bubbleMetrics;
-  const bm2 = lab.phase2.bubbleMetrics;
-  bmSum.textContent = `Bubble Metrics: P1 ${bm1.hypothesis} (R\u00b2=${bm1.haesselR2.toFixed(2)}) | P2 ${bm2.hypothesis} (R\u00b2=${bm2.haesselR2.toFixed(2)})`;
-  bmDet.appendChild(bmSum);
-  for (const [label, bm] of [['Phase 1', bm1], ['Phase 2', bm2]]) {
-    const d = document.createElement('div'); d.className = 'log-entry';
-    d.textContent = `${label}: Haessel-R\u00b2=${bm.haesselR2.toFixed(3)} | MSE=${bm.mse.toFixed(2)} | NAPD=${bm.napd.toFixed(3)} | Amplitude=${bm.amplitude.toFixed(3)} | Turnover=${bm.turnover.toFixed(2)} | ${bm.hypothesis}`;
-    bmDet.appendChild(d);
-  }
-  log.appendChild(bmDet);
-
-  // Experience sessions (Dufwenberg)
-  if (lab.sessionResults && lab.sessionResults.length > 0) {
-    const expDet = document.createElement('details');
-    expDet.className = 'log-round';
-    const expSum = document.createElement('summary');
-    expSum.textContent = `Experience Sessions (Dufwenberg 2005): ${lab.sessionResults.length} additional sessions`;
-    expDet.appendChild(expSum);
-    for (const sess of lab.sessionResults) {
+    for (const r of sess.rounds) {
       const d = document.createElement('div'); d.className = 'log-entry';
-      const sbm = sess.bubbleMetrics;
-      d.textContent = `Session ${sess.session} (exp=${sess.experience}): R\u00b2=${sbm.haesselR2.toFixed(3)} | NAPD=${sbm.napd.toFixed(3)} | Eff=${(sess.allocation.efficiency*100).toFixed(1)}% | ${sbm.hypothesis}`;
-      expDet.appendChild(d);
+      const prStr = r.vwap != null ? `P=$${r.vwap.toFixed(1)}` : 'no trades';
+      d.textContent = `Period ${r.period + 1}: FV=${r.fv.toFixed(1)} | ${r.volume} trades | ${prStr} | div=${r.dividend.toFixed(1)}`;
+      det.appendChild(d);
     }
-    log.appendChild(expDet);
-  }
 
-  // Final verdict
-  const verdict = document.createElement('div');
-  verdict.className = 'log-entry';
-  verdict.style.cssText = 'font-weight:700;border-top:2px solid var(--accent);padding-top:8px;margin-top:8px;font-size:1.05em';
-  const top = lab.highestPsiAgent;
-  const coaseHolds = top.sharePercent > 100 / lab.initialSnapshot.length * 1.5;
-  verdict.innerHTML = coaseHolds
-    ? `Coase Theorem Supported: ${top.name} (&psi;=${top.psi.toFixed(0)}) holds ${top.sharePercent.toFixed(0)}% of all shares`
-    : `Coase Theorem Challenged: ${top.name} (&psi;=${top.psi.toFixed(0)}) holds only ${top.sharePercent.toFixed(0)}% of shares`;
-  verdict.style.color = coaseHolds ? 'var(--green)' : 'var(--red)';
-  log.appendChild(verdict);
-}
-
-function _appendPhaseLog(container, title, phase, prevAgents) {
-  const det = document.createElement('details');
-  det.className = 'log-round';
-  const sum = document.createElement('summary');
-  const eff = phase.allocation.efficiency;
-  const corr = phase.allocation.correlation;
-  sum.textContent = `${title}: Efficiency=${(eff*100).toFixed(1)}% | Corr(psi,shares)=${corr.toFixed(3)} | ${phase.rounds.length} rounds`;
-  det.appendChild(sum);
-  for (const r of phase.rounds) {
-    const d = document.createElement('div'); d.className = 'log-entry';
-    const prStr = r.vwap != null ? `P=$${r.vwap.toFixed(1)}` : 'no trades';
-    const commStr = r.messages ? ` | ${r.messages.length} signals` : '';
-    d.textContent = `Round ${r.round+1}: ${r.volume} trades | ${prStr}${commStr}`;
-    det.appendChild(d);
+    // Per-agent P&L summary
+    for (const a of sess.agents) {
+      const d = document.createElement('div'); d.className = 'log-entry';
+      const eLabel = a.expType === 'experienced' ? 'Exp' : 'Inexp';
+      d.innerHTML = `<strong>${a.displayName}</strong> ${eLabel} | shares=${a.shares} | P&L=${a.totalPnL >= 0 ? '+' : ''}${a.totalPnL.toFixed(0)} | div=${a.dividendsReceived.toFixed(0)}`;
+      det.appendChild(d);
+    }
+    log.appendChild(det);
   }
-  // Agent summary
-  for (const a of phase.agents) {
-    const prev = prevAgents.find(p => p.id === a.id);
-    const shareDelta = prev ? a.shares - prev.shares : 0;
-    const d = document.createElement('div'); d.className = 'log-entry';
-    d.innerHTML = `<strong>${a.displayName}</strong> &psi;=${a.psi.toFixed(1)} | shares=${a.shares} (${shareDelta >= 0 ? '+' : ''}${shareDelta}) | P&L=${a.totalPnL >= 0 ? '+' : ''}${a.totalPnL.toFixed(0)}`;
-    det.appendChild(d);
-  }
-  container.appendChild(det);
 }
 
 /* ================================================================
@@ -351,16 +293,16 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('theme-toggle').addEventListener('click', () => {
     const next = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
     localStorage.setItem(THEME_KEY, next); applyTheme();
-    if (_labResult) renderAllLabCharts(_labResult);
+    if (_result) renderAllCharts(_result);
   });
   window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => {
-    applyTheme(); if (_labResult) renderAllLabCharts(_labResult);
+    applyTheme(); if (_result) renderAllCharts(_result);
   });
 
   // Language
-  document.getElementById('lang-select').addEventListener('change', function() {
+  document.getElementById('lang-select').addEventListener('change', function () {
     setLang(this.value); fullI18N();
-    if (_labResult) renderLabResults(_labResult);
+    if (_result) renderResults(_result);
   });
 
   // Nav tabs
@@ -370,11 +312,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = document.getElementById('tab-' + tab.dataset.tab);
     if (target) target.classList.add('active');
     document.getElementById('nav-menu').classList.remove('open');
-    // Hide sidebar & toggle on non-experiment tabs
     const isExp = tab.dataset.tab === 'experiment';
     document.getElementById('sidebar').style.display = isExp ? '' : 'none';
     document.getElementById('sidebar-toggle').style.display = isExp ? '' : 'none';
-    if (!isExp) { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-backdrop').classList.remove('visible'); }
+    if (!isExp) {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebar-backdrop').classList.remove('visible');
+    }
   }));
 
   // Sidebar
@@ -399,37 +343,35 @@ document.addEventListener('DOMContentLoaded', () => {
   // Draw.io link
   (function setupDrawio() {
     const btn = document.getElementById('btn-drawio');
-    if (btn) {
-      btn.href = 'https://app.diagrams.net/#HMon-ius%2Ftrading%2Fmaster%2Farchitecture.svg';
-    }
+    if (btn) btn.href = 'https://app.diagrams.net/#HMon-ius%2Ftrading%2Fmaster%2Farchitecture.svg';
   })();
 
   // View toggle
   document.querySelectorAll('.view-btn').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active'); const view = btn.dataset.view;
+    btn.classList.add('active');
+    const view = btn.dataset.view;
     document.getElementById('chart-view').style.display = view === 'chart' ? 'block' : 'none';
     document.getElementById('game-view').style.display = view === 'game' ? 'block' : 'none';
-    if (view === 'game' && _history && !_floor) initGame(_history);
+    if (view === 'game' && _result && !_floor) initGame(resultToHistory(_result));
     if (view === 'chart' && _floor) { _floor.stop(); _floor = null; }
   }));
 
-  // Range displays — auto-sync all sliders
+  // Range displays — auto-sync
   document.querySelectorAll('.sidebar input[type=range]').forEach(inp => {
-    const vid = inp.id.startsWith('exp-') ? 'v-' + inp.id
-      : inp.id.startsWith('lab-') ? 'v-' + inp.id
-      : 'v-' + inp.id.slice(2);
+    const vid = inp.id.startsWith('sim-') ? 'v-' + inp.id : 'v-' + inp.id.slice(2);
     const ve = document.getElementById(vid);
     if (!ve) return;
     const upd = () => {
-      if (['p-rl','p-rn','p-ra'].includes(inp.id))
+      if (['p-rl', 'p-rn', 'p-ra'].includes(inp.id)) {
         ve.textContent = inp.value + '%';
-      else if (['lab-endowVar','lab-comm-noise','lab-signal-weight','lab-interest'].includes(inp.id))
+      } else if (['sim-endow', 'sim-alpha', 'sim-bias', 'sim-anchor', 'sim-noise', 'sim-mom'].includes(inp.id)) {
         ve.textContent = inp.value + '%';
-      else if (['lab-divLow','lab-divHigh'].includes(inp.id))
+      } else if (inp.id === 'sim-edv') {
         ve.textContent = (inp.value / 10).toFixed(1);
-      else
+      } else {
         ve.textContent = inp.value;
+      }
     };
     inp.addEventListener('input', upd);
     upd();
@@ -479,28 +421,52 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCompBar();
 
   // Game controls
-  document.getElementById('btn-play').addEventListener('click', () => { if (_floor && _floor.paused) _floor.togglePause(); else if (_history) initGame(_history); else if (_labResult) { _history = labResultToHistory(_labResult); initGame(_history); } });
+  document.getElementById('btn-play').addEventListener('click', () => {
+    if (_floor && _floor.paused) _floor.togglePause();
+    else if (_result) initGame(resultToHistory(_result));
+  });
   document.getElementById('btn-pause').addEventListener('click', () => { if (_floor) _floor.togglePause(); });
-  document.getElementById('btn-follow').addEventListener('click', function() { if (_floor) { _floor._camFollow = !_floor._camFollow; this.classList.toggle('active', _floor._camFollow); }});
-  document.getElementById('game-speed').addEventListener('input', function() { document.getElementById('speed-val').textContent = (+this.value).toFixed(1) + 'x'; if (_floor) _floor.speed = +this.value; });
-  document.getElementById('btn-zoom-in').addEventListener('click', () => { if (_floor) { const z = Math.min(4, _floor._camZoom * 1.2); _floor._camZoom = z; if (_floor._camTarget) _floor._camTarget.zoom = z; document.getElementById('zoom-val').textContent = Math.round(z * 100) + '%'; }});
-  document.getElementById('btn-zoom-out').addEventListener('click', () => { if (_floor) { const z = Math.max(0.3, _floor._camZoom / 1.2); _floor._camZoom = z; if (_floor._camTarget) _floor._camTarget.zoom = z; document.getElementById('zoom-val').textContent = Math.round(z * 100) + '%'; }});
+  document.getElementById('btn-follow').addEventListener('click', function () {
+    if (_floor) { _floor._camFollow = !_floor._camFollow; this.classList.toggle('active', _floor._camFollow); }
+  });
+  document.getElementById('game-speed').addEventListener('input', function () {
+    document.getElementById('speed-val').textContent = (+this.value).toFixed(1) + 'x';
+    if (_floor) _floor.speed = +this.value;
+  });
+  document.getElementById('btn-zoom-in').addEventListener('click', () => {
+    if (_floor) {
+      const z = Math.min(4, _floor._camZoom * 1.2);
+      _floor._camZoom = z;
+      if (_floor._camTarget) _floor._camTarget.zoom = z;
+      document.getElementById('zoom-val').textContent = Math.round(z * 100) + '%';
+    }
+  });
+  document.getElementById('btn-zoom-out').addEventListener('click', () => {
+    if (_floor) {
+      const z = Math.max(0.3, _floor._camZoom / 1.2);
+      _floor._camZoom = z;
+      if (_floor._camTarget) _floor._camTarget.zoom = z;
+      document.getElementById('zoom-val').textContent = Math.round(z * 100) + '%';
+    }
+  });
 
-  // AI provider → sync endpoint placeholder with default
+  // AI provider → sync endpoint placeholder
   const provSel = document.getElementById('ai-provider');
   const epInput = document.getElementById('ai-endpoint');
   function syncEndpoint() {
     const p = typeof PROVIDERS !== 'undefined' && PROVIDERS[provSel.value];
     epInput.placeholder = p && p.defaultEndpoint ? p.defaultEndpoint : 'Endpoint (optional)';
   }
-  provSel.addEventListener('change', syncEndpoint);
-  syncEndpoint();
+  if (provSel) {
+    provSel.addEventListener('change', syncEndpoint);
+    syncEndpoint();
+  }
 
   // Run button
-  document.getElementById('btn-run').addEventListener('click', runExperiment);
+  document.getElementById('btn-run').addEventListener('click', runSimExperiment);
 
   fullI18N();
 
-  // Auto-run experiment on load
-  setTimeout(() => runExperiment(), 200);
+  // Auto-run on load
+  setTimeout(() => runSimExperiment(), 200);
 });

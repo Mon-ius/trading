@@ -18,12 +18,12 @@ Never leave changes uncommitted or unpushed. The site must always reflect the la
 
 Static SPA — no build step. All files served directly:
 
-- `index.html` — single page app (navbar, sidebar, chart/game views, architecture, glossary)
+- `index.html` — single page app (navbar, sidebar, chart/game views, slides, architecture, glossary)
 - `css/style.css` — design tokens, dark mode, responsive layout
-- `js/engine.js` — simulation engine (CDA, agents, bubble metrics, alpha sweep)
+- `js/sim.js` — unified simulation engine: CDA, CARA agents, bubble metrics, experience replays, Trading Floor canvas
 - `js/i18n.js` — EN + ZH translations
-- `js/charts.js` — Plotly chart rendering (6 sim + 4 experiment charts)
-- `js/game.js` — canvas 2D trading floor visualization
+- `js/charts.js` — Plotly chart rendering (6 charts: price, volume, bubble, beliefs, P&L, experience)
+- `js/ai-agent.js` — optional LLM provider hooks (Claude / GPT) for belief updates
 - `js/app.js` — UI controller (theme, export, panel logic, event binding)
 - `favicon.svg` — candlestick + alpha-star icon
 
@@ -31,14 +31,17 @@ Static SPA — no build step. All files served directly:
 
 - i18n: every user-visible string uses `data-i18n` attributes + `t()` function
 - Dark mode: CSS variables on `[data-theme]`, auto-detect via `prefers-color-scheme`
-- Agent names: numbered format `"1.Ada"`, `"2.Ben"` — set via `assignDisplayNames()`
+- Agent names: numbered format `"1.Ada"`, `"2.Ben"` — assigned in `runExperiment()`
 - Risk sliders: linked comp-bar, always sum to 100% via `constrainRisk()`
 - Charts: HTML `<h4 class="chart-title">` above Plotly div, Plotly has `margin.t: 8` (no internal title)
 - Game canvas: separate mouse/touch/wheel handlers — never use pointer events (conflict-prone)
-- Sidebar: unified panels (no mode tabs), experiment params collapsed below divider
-- Export: JSON and CSV from same `_history` / `_expResults` data source
+- Sidebar: unified panels (no mode tabs), market params and experience controls
+- Export: JSON and CSV from `_result` (single experiment result with sessionResults array)
 
 ## Research context
 
-Based on Dufwenberg, Lindqvist & Moore (2005, AER) "Bubbles and Experience."
-Core result: alpha* = f(n, risk_distribution, knowledge_distribution)
+Based on TWO papers:
+- Dufwenberg, Lindqvist & Moore (2005, AER) "Bubbles and Experience" — declining FV asset, CDA market, experience effect
+- Lopez-Lira (2025) "Can LLMs Trade?" — CARA utility agents, reservation prices, optional LLM substitution
+
+The project replaces human subjects in the DLM experiment with Lopez-Lira CARA / LLM agents. Two experience levers: within-session α (DLM transfer treatment) and across-session experience replays (DLM main result, modelled as bias × 0.5^experience).
