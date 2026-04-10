@@ -69,31 +69,29 @@
           <span class="icon">&#x1F4B0;</span><h3 data-i18n="grp.market">Market Parameters</h3><span class="chevron">&#x25BC;</span>
         </div>
         <div class="panel-body">
-          <label><span data-i18n="p.agents">Agents (n)</span>
+          <label><span data-i18n="p.agents">N &mdash; traders</span>
             <div class="range-wrap"><input type="range" id="p-n" value="20" min="2" max="128"><span class="range-val" id="v-n">20</span></div></label>
-          <div class="form-hint">Population size. DLM (2005) used n=6; we default to n=20 for richer dynamics.</div>
+          <div class="form-hint">DLM (2005) used N = 6; we default to N = 20 for richer CDA dynamics.</div>
 
-          <label><span data-i18n="p.periods">Periods (T)</span>
+          <label><span data-i18n="p.periods">T &mdash; periods</span>
             <div class="range-wrap"><input type="range" id="sim-T" value="15" min="3" max="50"><span class="range-val" id="v-sim-T">15</span></div></label>
-          <div class="form-hint">Asset life in periods. FV(t) = (T&minus;t)&times;E[d] declines linearly to zero (DLM 2005).</div>
+          <div class="form-hint">Asset life. FV(t) = (T&minus;t)&times;E[d] declines linearly to zero (DLM 2005).</div>
 
-          <label><span data-i18n="p.div">E[dividend]</span>
+          <label><span data-i18n="p.div">E[d] &mdash; expected dividend</span>
             <div class="range-wrap"><input type="range" id="sim-edv" value="24" min="2" max="100"><span class="range-val" id="v-sim-edv">2.4</span></div></label>
-          <div class="form-hint">Expected per-period dividend. Realised dividend &in; {0, 2&middot;E[d]} with equal probability.</div>
+          <div class="form-hint">Per-period dividend draw &in; {0, 2&middot;E[d]} with Pr = 0.5 (DLM 2005).</div>
 
-          <label><span data-i18n="p.cash">Initial Cash</span>
+          <label><span data-i18n="p.cash">C&#x2080; &mdash; initial cash</span>
             <div class="range-wrap"><input type="range" id="sim-cash" value="500" min="100" max="5000" step="100"><span class="range-val" id="v-sim-cash">500</span></div></label>
+          <div class="form-hint">DLM (2005) trader endowment. Equal across all N traders.</div>
 
-          <label><span data-i18n="p.shares">Initial Shares</span>
+          <label><span data-i18n="p.shares">S&#x2080; &mdash; initial shares</span>
             <div class="range-wrap"><input type="range" id="sim-shares" value="5" min="1" max="30"><span class="range-val" id="v-sim-shares">5</span></div></label>
+          <div class="form-hint">DLM (2005) share endowment. Equal across all N traders.</div>
 
-          <label><span data-i18n="p.endow">Endowment Variance</span>
-            <div class="range-wrap"><input type="range" id="sim-endow" value="30" min="0" max="80"><span class="range-val" id="v-sim-endow">30%</span></div></label>
-          <div class="form-hint">Heterogeneity in initial cash and shares.</div>
-
-          <label><span data-i18n="p.seed">Seed</span>
+          <label><span data-i18n="p.seed">PRNG seed</span>
             <div class="range-wrap"><input type="range" id="p-seed" value="42" min="0" max="9999"><span class="range-val" id="v-seed">42</span></div></label>
-          <div class="form-hint">PRNG seed. Controls dividend draws, agent assignment, and order shuffling.</div>
+          <div class="form-hint">Engineering control: dividend draws, agent assignment, order shuffling.</div>
         </div>
       </div>
 
@@ -108,54 +106,31 @@
             <div class="seg" style="flex:34; background:var(--amber);"><span>34%</span></div>
             <div class="seg" style="flex:33; background:var(--blue);"><span>33%</span></div>
           </div>
-          <label><span data-i18n="label.riskloving">Risk-loving (&gamma;&lt;0)</span>
+          <label><span data-i18n="label.riskloving">&gamma; &lt; 0 &mdash; risk-loving share</span>
             <div class="range-wrap"><input type="range" id="p-rl" value="33" min="0" max="100"><span class="range-val" id="v-rl">33%</span></div></label>
-          <div class="form-hint">&gamma; &lt; 0: aggressive bidding, narrow spreads. CARA utility: U(W) = &minus;exp(&minus;&gamma;W)/&gamma;.</div>
-          <label><span data-i18n="label.riskneutral">Risk-neutral (&gamma;&thickapprox;0)</span>
+          <div class="form-hint">Aggressive bidding, narrow spreads. CARA utility U(W) = &minus;exp(&minus;&gamma;W)/&gamma; (Lopez-Lira 2025 &sect;2).</div>
+          <label><span data-i18n="label.riskneutral">&gamma; &thickapprox; 0 &mdash; risk-neutral share</span>
             <div class="range-wrap"><input type="range" id="p-rn" value="34" min="0" max="100"><span class="range-val" id="v-rn">34%</span></div></label>
-          <div class="form-hint">&gamma; &thickapprox; 0: prices at expected value, moderate spreads.</div>
-          <label><span data-i18n="label.riskaverse">Risk-averse (&gamma;&gt;0)</span>
+          <div class="form-hint">Reservation prices at expected value, moderate spreads.</div>
+          <label><span data-i18n="label.riskaverse">&gamma; &gt; 0 &mdash; risk-averse share</span>
             <div class="range-wrap"><input type="range" id="p-ra" value="33" min="0" max="100"><span class="range-val" id="v-ra">33%</span></div></label>
-          <div class="form-hint">&gamma; &gt; 0: wide spreads, conservative bids. Linked sliders always sum to 100%.</div>
+          <div class="form-hint">Wide spreads, conservative bids. Linked sliders always sum to 100%.</div>
         </div>
       </div>
 
       <!-- ===== Experience (DLM 2005) ===== -->
       <div class="panel" id="p-experience">
         <div class="panel-header" onclick="togglePanel('p-experience')">
-          <span class="icon">&#x1F9E0;</span><h3 data-i18n="grp.experience">Experience (DLM 2005)</h3><span class="chevron">&#x25BC;</span>
+          <span class="icon">&#x1F9E0;</span><h3 data-i18n="grp.experience">Experience &mdash; DLM (2005)</h3><span class="chevron">&#x25BC;</span>
         </div>
         <div class="panel-body">
-          <label><span data-i18n="p.alpha">Experienced %</span>
+          <label><span data-i18n="p.alpha">&alpha; &mdash; experienced fraction</span>
             <div class="range-wrap"><input type="range" id="sim-alpha" value="0" min="0" max="100"><span class="range-val" id="v-sim-alpha">0%</span></div></label>
-          <div class="form-hint">Within-session: fraction of agents who already track FV. DLM "transfer" treatment found one third experienced suffices to suppress bubbles.</div>
+          <div class="form-hint">Within-session DLM &alpha;-treatment: fraction of agents who track FV(t) directly. DLM (2005) found ~&#8531; experienced suffices to suppress bubbles.</div>
 
-          <label><span data-i18n="p.expRounds">Experience Sessions</span>
+          <label><span data-i18n="p.expRounds">e &mdash; experience replays</span>
             <div class="range-wrap"><input type="range" id="sim-exp" value="0" min="0" max="5"><span class="range-val" id="v-sim-exp">0</span></div></label>
-          <div class="form-hint">Across-session replays: same agents, reset endowments, persistent experience counter. Each replay halves residual bias for inexperienced agents.</div>
-        </div>
-      </div>
-
-      <!-- ===== Inexperienced Behavior ===== -->
-      <div class="panel collapsed" id="p-inexp">
-        <div class="panel-header" onclick="togglePanel('p-inexp')">
-          <span class="icon">&#x1F4C8;</span><h3 data-i18n="grp.inexp">Inexperienced Behavior</h3><span class="chevron">&#x25BC;</span>
-        </div>
-        <div class="panel-body">
-          <label><span data-i18n="p.bias">Optimism Bias</span>
-            <div class="range-wrap"><input type="range" id="sim-bias" value="20" min="0" max="80"><span class="range-val" id="v-sim-bias">20%</span></div></label>
-          <div class="form-hint">Upward bias on belief &mdash; the source of bubble formation.</div>
-
-          <label><span data-i18n="p.anchor">FV Anchoring</span>
-            <div class="range-wrap"><input type="range" id="sim-anchor" value="40" min="0" max="100"><span class="range-val" id="v-sim-anchor">40%</span></div></label>
-          <div class="form-hint">Weight on initial FV vs current FV. Higher = slower to update.</div>
-
-          <label><span data-i18n="p.noise">Belief Noise</span>
-            <div class="range-wrap"><input type="range" id="sim-noise" value="20" min="0" max="80"><span class="range-val" id="v-sim-noise">20%</span></div></label>
-
-          <label><span data-i18n="p.momentum">Momentum</span>
-            <div class="range-wrap"><input type="range" id="sim-mom" value="10" min="0" max="80"><span class="range-val" id="v-sim-mom">10%</span></div></label>
-          <div class="form-hint">Trend chasing: react to recent price changes. Each replay halves all four parameters.</div>
+          <div class="form-hint">DLM Table 2 channel: same agents replay with reset endowments. Inexperienced belief = FV(0)&middot;0.5<sup>e</sup> + FV(t)&middot;(1&minus;0.5<sup>e</sup>).</div>
         </div>
       </div>
 
@@ -217,7 +192,7 @@
           <div class="chart-card">
             <h4 class="chart-title" data-i18n="chart.beliefs"><span class="dot" style="background:var(--teal)"></span> Fig. 4 &mdash; Belief Trajectories</h4>
             <div id="chart-beliefs"></div>
-            <p class="chart-note"><strong>Note.</strong> Sampled agent beliefs over time. Solid blue = experienced (track FV); dotted red = inexperienced (anchor + bias + momentum). Green dashed = FV.</p>
+            <p class="chart-note"><strong>Note.</strong> Sampled agent beliefs over time. Solid blue = experienced (track FV(t) directly); dotted red = inexperienced (anchored on FV(0), shed at rate 0.5<sup>e</sup>). Green dashed = FV(t).</p>
           </div>
           <div class="chart-card">
             <h4 class="chart-title" data-i18n="chart.pnl"><span class="dot" style="background:var(--amber)"></span> Fig. 5 &mdash; P&amp;L by Risk Type</h4>
@@ -299,7 +274,7 @@
                 <div class="slide-col">
                   <div class="slide-card" style="border-left:3px solid var(--accent)"><h4>DLM (2005, AER) asset</h4><p>Declining FV(t) = (T&minus;t)&times;E[d]; stochastic dividends &in; {0, 2&middot;E[d]}; CDA market.</p></div>
                   <div class="slide-card" style="border-left:3px solid var(--green)"><h4>Lopez-Lira (2025) agents</h4><p>CARA utility, heterogeneous &gamma;, reservation prices bid/ask = belief &#x2213; &gamma;&sigma;&sup2;/2.</p></div>
-                  <div class="slide-card" style="border-left:3px solid var(--purple)"><h4>Experience replay</h4><p>Same agents, reset endowments, persistent experience counter. Each replay halves residual bias.</p></div>
+                  <div class="slide-card" style="border-left:3px solid var(--purple)"><h4>Experience replay</h4><p>Same agents, reset endowments, persistent counter <em>e</em>. Inexperienced anchor on FV(0) with weight 0.5<sup>e</sup> &mdash; the only DLM-grounded experience knob.</p></div>
                   <div class="slide-card" style="border-left:3px solid var(--red)"><h4>Optional LLM agents</h4><p>Provide an API key (Claude / GPT) and the same protocol runs with real LLM decisions.</p></div>
                 </div>
               </div>
@@ -318,7 +293,7 @@
                   <thead><tr><th>RQ</th><th>Question</th><th>Source</th></tr></thead>
                   <tbody>
                     <tr><td class="term">RQ1</td><td>Do CARA agents with heterogeneous &gamma; produce DLM-style bubble-crash dynamics under a declining FV asset?</td><td>DLM (2005); Lopez-Lira (2025)</td></tr>
-                    <tr><td class="term">RQ2</td><td>Does the DLM experience effect (bubbles shrink across replays) reproduce when "experience" is modelled as bias attenuation?</td><td>DLM (2005, AER)</td></tr>
+                    <tr><td class="term">RQ2</td><td>Does the DLM experience effect (bubbles shrink across replays) reproduce when "experience" is modelled as decaying FV(0)-anchoring?</td><td>DLM (2005, AER)</td></tr>
                     <tr><td class="term">RQ3</td><td>Within a single session, what fraction &alpha; of experienced (FV-tracking) agents is needed to suppress the bubble?</td><td>DLM "transfer" treatment</td></tr>
                     <tr><td class="term">RQ4</td><td>Do real LLM agents (Claude/GPT), when plugged into the same CDA protocol, behave like the stochastic CARA baseline?</td><td>Lopez-Lira (2025)</td></tr>
                   </tbody>
@@ -361,8 +336,8 @@
                 </div>
                 <div class="slide-card" style="border-left:4px solid var(--purple)">
                   <h4>Unification: bubble experiment &times; LLM agents</h4>
-                  <p>The DLM (2005) declining-FV asset and CDA market structure are kept exactly. The only thing replaced is the human trader: instead of a subject in a z-Tree lab, each seat is filled by a CARA-stochastic agent (or, optionally, by a real LLM call). Belief dynamics follow DLM intuition: experienced agents track FV with small noise; inexperienced agents are anchored, optimistic, and momentum-chasing. Each replay halves residual bias &mdash; our minimal computational analogue of "learning from playing the market".</p>
-                  <div class="formula">belief<sup>exp</sup> = FV&middot;(1+noise&middot;&epsilon;) &nbsp;|&nbsp; belief<sup>inexp</sup> = anchored + biased + momentum, all &times; 0.5<sup>experience</sup></div>
+                  <p>The DLM (2005) declining-FV asset and CDA market structure are kept exactly. The only thing replaced is the human trader: instead of a subject in a z-Tree lab, each seat is filled by a CARA-stochastic agent (or, optionally, by a real LLM call). Belief dynamics follow DLM intuition strictly: experienced agents track FV(t); inexperienced agents anchor on the initial FV(0) and progressively shed that anchor at rate 0.5<sup>e</sup>. No behavioural knobs &mdash; the experience counter <em>e</em> is the only learning lever.</p>
+                  <div class="formula">belief<sup>exp</sup> = FV(t)&middot;(1+&epsilon;) &nbsp;|&nbsp; belief<sup>inexp</sup> = [FV(0)&middot;0.5<sup>e</sup> + FV(t)&middot;(1&minus;0.5<sup>e</sup>)]&middot;(1+&epsilon;)</div>
                 </div>
               </div>
             </div>
@@ -378,11 +353,11 @@
               <div class="slide-col">
                 <h4>Experiment Protocol</h4>
                 <ol>
-                  <li><strong>Agent Creation</strong>: n agents with CARA risk parameter &gamma;<sub>i</sub>, randomly assigned experience type (fraction &alpha; experienced), heterogeneous initial cash and shares.</li>
-                  <li><strong>Belief Update</strong>: Each period, experienced agents draw beliefs around FV(t) with small noise; inexperienced agents combine FV anchoring, optimism bias, momentum chasing, and noise.</li>
+                  <li><strong>Agent Creation</strong>: N agents with CARA risk parameter &gamma;<sub>i</sub>, randomly assigned experience type (fraction &alpha; experienced), equal endowments (C&#x2080;, S&#x2080;) per DLM (2005).</li>
+                  <li><strong>Belief Update</strong>: Each period, experienced agents track FV(t); inexperienced agents anchor on FV(0) with weight 0.5<sup>e</sup> and converge on FV(t) as <em>e</em> grows. Small symmetric noise &epsilon; on both.</li>
                   <li><strong>CDA Round</strong>: Each agent submits one bid and one ask at CARA reservation prices. Orders shuffled, matched if bid &ge; ask, executed at midpoint. Dividends paid to share-holders.</li>
                   <li><strong>Repeat T periods</strong>: FV declines linearly to zero. Bubble metrics (Haessel-R&sup2;, NAPD, amplitude, turnover) computed over the realized price path.</li>
-                  <li><strong>Experience Replays</strong>: 0&ndash;5 additional sessions with reset endowments but persistent experience. Each replay halves residual inexperienced bias &mdash; the DLM "learning from playing" channel.</li>
+                  <li><strong>Experience Replays</strong>: 0&ndash;5 additional sessions with reset endowments but persistent <em>e</em>. The anchor weight halves at every replay &mdash; the DLM (2005) Table 2 channel.</li>
                 </ol>
                 <h4>Stochastic vs LLM Decision-Making</h4>
                 <div class="formula">Stochastic: bid = belief &minus; &gamma;&sigma;&sup2;/2</div>
@@ -399,7 +374,7 @@
                     <tr><td class="term">Dividends</td><td>div &in; {0, 2&middot;E[d]}, P=0.5</td><td>DLM dividend distribution; preserves E[d] expectations</td></tr>
                     <tr><td class="term">Utility</td><td>CARA: U = &minus;e<sup>&minus;&gamma;W</sup>/&gamma;</td><td>Lopez-Lira (2025); closed-form reservation prices</td></tr>
                     <tr><td class="term">Within-session &alpha;</td><td>Fraction of FV-tracking agents</td><td>DLM transfer treatment</td></tr>
-                    <tr><td class="term">Across-session experience</td><td>Bias &times; 0.5<sup>experience</sup></td><td>Minimal model of DLM "bubbles diminish"</td></tr>
+                    <tr><td class="term">Across-session experience</td><td>Anchor weight = 0.5<sup>e</sup></td><td>Minimal model of DLM "bubbles diminish"</td></tr>
                     <tr><td class="term">Agent fallback</td><td>Stochastic CARA model</td><td>No API key required; fully reproducible</td></tr>
                   </tbody>
                 </table>
@@ -423,15 +398,16 @@
                   <thead><tr><th>Parameter</th><th>Symbol</th><th>Distribution</th></tr></thead>
                   <tbody>
                     <tr><td class="term">Risk aversion</td><td>&gamma;<sub>i</sub></td><td>RL: &gamma; &in; [&minus;0.008, 0.002]; RN: &gamma; &in; [0.002, 0.012]; RA: &gamma; &in; [0.012, 0.060]</td></tr>
-                    <tr><td class="term">Experience type</td><td>e<sub>i</sub></td><td>{experienced, inexperienced}; experienced fraction = &alpha;</td></tr>
-                    <tr><td class="term">Initial cash</td><td>c<sub>i,0</sub></td><td>cash &times; max(0.3, 1 + &sigma;<sub>endow</sub>&middot;&epsilon;)</td></tr>
-                    <tr><td class="term">Initial shares</td><td>s<sub>i,0</sub></td><td>shares &times; max(0, 1 + &sigma;<sub>endow</sub>&middot;&epsilon;)</td></tr>
+                    <tr><td class="term">Experience type</td><td>x<sub>i</sub></td><td>{experienced, inexperienced}; experienced fraction = &alpha;</td></tr>
+                    <tr><td class="term">Initial cash</td><td>C&#x2080;</td><td>Equal across all N traders (DLM 2005)</td></tr>
+                    <tr><td class="term">Initial shares</td><td>S&#x2080;</td><td>Equal across all N traders (DLM 2005)</td></tr>
+                    <tr><td class="term">Replay counter</td><td>e</td><td>0, 1, 2, &hellip; &mdash; persists across DLM Table 2 sessions</td></tr>
                   </tbody>
                 </table>
                 <h4>Belief Update (per period)</h4>
-                <div class="formula">decay = 0.5<sup>experience</sup></div>
-                <div class="formula">exp: belief = FV(t)&middot;(1 + 0.05&middot;decay&middot;&epsilon;)</div>
-                <div class="formula">inexp: belief = [FV(t)(1&minus;a) + FV(0)&middot;a]&middot;(1+bias) + mom&middot;&Delta;P + noise</div>
+                <div class="formula">decay = 0.5<sup>e</sup></div>
+                <div class="formula">exp: belief = FV(t) &middot; (1 + &epsilon;)</div>
+                <div class="formula">inexp: belief = [FV(0)&middot;decay + FV(t)&middot;(1&minus;decay)] &middot; (1 + &epsilon;)</div>
                 <h4>CARA Reservation Prices</h4>
                 <div class="formula">bid<sub>i</sub> = belief<sub>i</sub> &minus; &gamma;<sub>i</sub>&middot;&sigma;&sup2;/2 &nbsp;|&nbsp; ask<sub>i</sub> = belief<sub>i</sub> + &gamma;<sub>i</sub>&middot;&sigma;&sup2;/2</div>
               </div>
@@ -526,15 +502,15 @@
                   </tbody>
                 </table>
                 <h4>Two channels of "experience"</h4>
-                <p>We model the DLM experience effect with the simplest possible primitive: every replay of the market multiplies the inexperienced agents&rsquo; bias, anchor, noise, and momentum parameters by 0.5. After two replays they retain a quarter of their initial bias; after four, only 1/16. This deliberately minimal model is enough to reproduce the qualitative pattern in DLM Table 2.</p>
-                <div class="formula">decay = 0.5<sup>experience</sup> &mdash; applied to bias, anchor, noise, momentum</div>
+                <p>We model the DLM experience effect with the simplest possible primitive: inexperienced traders begin fully anchored on the initial fundamental value FV(0). Every replay of the market halves their reliance on that anchor. After two replays they retain a quarter of the FV(0) weight; after four, only 1/16. The replay counter <em>e</em> is the only learning lever &mdash; no behavioural knobs.</p>
+                <div class="formula">belief<sup>inexp</sup>(t) = FV(0)&middot;0.5<sup>e</sup> + FV(t)&middot;(1&minus;0.5<sup>e</sup>)</div>
               </div>
               <div class="slide-col">
                 <h4>Within-Session: &alpha; (transfer treatment)</h4>
-                <p>The Experienced % slider sets the fraction &alpha; of agents who, from period 1, already track FV with only small noise. This is the DLM "transfer" treatment in pure form: how many experienced traders are needed before the bubble disappears? Runs at &alpha; = 0, 1/3, 1/2, 2/3, 1 give a within-session counterpart to DLM &sect;II.</p>
+                <p>The &alpha; slider sets the fraction of agents who, from period 1, already track FV(t) directly. This is the DLM &alpha;-treatment in pure form: how many experienced traders are needed before the bubble disappears? Runs at &alpha; = 0, 1/3, 1/2, 2/3, 1 give a within-session counterpart to DLM &sect;II.</p>
 
-                <h4>Across-Session: Experience Replays</h4>
-                <p>The Experience Sessions slider runs additional replays. Same agents, reset endowments, persistent experience counter. The Experience Effect chart (Fig. 6) plots Haessel-R&sup2;, NAPD, and Amplitude across sessions &mdash; the direct in-silico analogue of DLM Table 2.</p>
+                <h4>Across-Session: e (replay counter)</h4>
+                <p>The <em>e</em> slider runs additional replays. Same agents, reset endowments, persistent counter. The Experience Effect chart (Fig. 6) plots Haessel-R&sup2;, NAPD, and Amplitude across sessions &mdash; the direct in-silico analogue of DLM Table 2.</p>
 
                 <h4>Expected Outcome</h4>
                 <p>Across replays: R&sup2; rises monotonically, NAPD and Amplitude fall. With sufficient experience, the realized price hugs the declining FV path almost perfectly &mdash; bubbles diminish, exactly as DLM (2005) reported for human subjects.</p>
@@ -570,7 +546,7 @@
                 <ul>
                   <li><strong>Real LLM agents at scale</strong>: run the same experiment with Claude, GPT-5, and open-weight models; quantify how each model maps onto the DLM experience curve.</li>
                   <li><strong>Mixed-experience markets</strong>: directly recreate DLM Round 4 by sprinkling fresh inexperienced LLM agents into a previously trained pool.</li>
-                  <li><strong>Belief-formation ablations</strong>: test alternative learning rules (Bayesian updating, RL) instead of the simple bias-decay primitive.</li>
+                  <li><strong>Belief-formation ablations</strong>: test alternative learning rules (Bayesian updating, RL) instead of the simple FV(0)-anchor decay primitive.</li>
                   <li><strong>Mechanism design</strong>: swap the CDA for call auction or frequent batch auction and measure the bubble effect.</li>
                   <li><strong>Human / AI hybrid markets</strong>: place real human traders alongside LLM agents and study emergent interaction dynamics.</li>
                 </ul>
@@ -616,9 +592,9 @@
               <line x1="230" y1="69" x2="270" y2="69" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
               <rect x="280" y="24" width="220" height="90" rx="10" fill="#2563eb" opacity=".08" stroke="#2563eb" stroke-opacity=".3" stroke-width="1.5"/>
               <text x="390" y="48" class="box-title" text-anchor="middle">Experience Type</text>
-              <text x="390" y="64" class="box-sub" text-anchor="middle">&alpha; = experienced fraction</text>
-              <text x="390" y="80" class="box-detail" text-anchor="middle">exp: belief = FV(t)+noise</text>
-              <text x="390" y="94" class="box-detail" text-anchor="middle">inexp: bias + anchor + mom</text>
+              <text x="390" y="64" class="box-sub" text-anchor="middle">&alpha; experienced + e replays</text>
+              <text x="390" y="80" class="box-detail" text-anchor="middle">exp: belief = FV(t)</text>
+              <text x="390" y="94" class="box-detail" text-anchor="middle">inexp: FV(0)&middot;0.5^e + FV(t)&middot;(1&minus;0.5^e)</text>
               <line x1="500" y1="69" x2="540" y2="69" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
               <rect x="550" y="24" width="180" height="90" rx="10" fill="#2563eb" opacity=".08" stroke="#2563eb" stroke-opacity=".3" stroke-width="1.5"/>
               <text x="640" y="48" class="box-title" text-anchor="middle">Risk Types</text>
@@ -638,7 +614,7 @@
               <rect x="30" y="160" width="900" height="100" rx="12" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".25" stroke-width="1.5"/>
               <rect x="50" y="175" width="160" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
               <text x="130" y="197" class="box-sub" text-anchor="middle">Update Belief</text>
-              <text x="130" y="212" class="box-detail" text-anchor="middle">FV / anchor / mom / noise</text>
+              <text x="130" y="212" class="box-detail" text-anchor="middle">exp = FV(t); inexp = anchor on FV(0)</text>
               <line x1="210" y1="200" x2="240" y2="200" stroke="#16a34a" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="250" y="175" width="160" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
               <text x="330" y="197" class="box-sub" text-anchor="middle">Reservation Prices</text>
@@ -665,12 +641,12 @@
               <text x="150" y="357" class="box-detail" text-anchor="middle">cash, shares &rarr; initial</text>
               <line x1="250" y1="345" x2="290" y2="345" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="300" y="320" width="200" height="55" rx="8" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".2" stroke-width="1"/>
-              <text x="400" y="342" class="box-sub" text-anchor="middle">Increment Experience</text>
-              <text x="400" y="357" class="box-detail" text-anchor="middle">decay = 0.5<tspan baseline-shift="super">exp</tspan></text>
+              <text x="400" y="342" class="box-sub" text-anchor="middle">Increment e</text>
+              <text x="400" y="357" class="box-detail" text-anchor="middle">anchor weight = 0.5<tspan baseline-shift="super">e</tspan></text>
               <line x1="500" y1="345" x2="540" y2="345" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="550" y="320" width="200" height="55" rx="8" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".2" stroke-width="1"/>
-              <text x="650" y="342" class="box-sub" text-anchor="middle">Halve Inexp Bias</text>
-              <text x="650" y="357" class="box-detail" text-anchor="middle">bias, anchor, noise &times; 0.5</text>
+              <text x="650" y="342" class="box-sub" text-anchor="middle">Halve FV(0) Anchor</text>
+              <text x="650" y="357" class="box-detail" text-anchor="middle">weight 0.5<tspan baseline-shift="super">e</tspan> &rarr; 0.5<tspan baseline-shift="super">e+1</tspan></text>
               <line x1="750" y1="345" x2="790" y2="345" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="800" y="320" width="110" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
               <text x="855" y="342" class="box-sub" text-anchor="middle">Re-run CDA</text>
@@ -719,13 +695,13 @@
             </div>
             <div class="arch-def-card">
               <h4 data-i18n="def.bubble.t">Bubble Formation</h4>
-              <p data-i18n="def.bubble.d">Occurs when the market price persistently exceeds fundamental value, driven by inexperienced agents' optimism bias and momentum chasing.</p>
+              <p data-i18n="def.bubble.d">Occurs when the market price persistently exceeds fundamental value, driven by inexperienced agents anchoring on the initial high FV(0) and shedding that anchor only with experience.</p>
               <div class="formula">P(t) &gt; FV(t) for many periods &rarr; positive NAPD</div>
               <span class="formula-ref">DLM (2005) Table 2; bubble metrics</span>
             </div>
             <div class="arch-def-card">
               <h4 data-i18n="def.exp.t">Experience Effect</h4>
-              <p data-i18n="def.exp.d">DLM (2005) found bubbles diminish when traders replay the market. We model this by halving the residual bias of inexperienced agents at each replay.</p>
+              <p data-i18n="def.exp.d">DLM (2005) found bubbles diminish when traders replay the market. We model this by halving the FV(0) anchor weight of inexperienced agents at each replay: weight = 0.5<sup>e</sup>.</p>
               <div class="formula">decay = 0.5<sup>experience</sup></div>
               <span class="formula-ref">DLM (2005) &sect;II Table 2 p.1735</span>
             </div>
@@ -761,8 +737,8 @@
                 <tr><td class="term">Amp</td><td>Price Amplitude</td><td>(max(P&minus;FV) &minus; min(P&minus;FV)) / FV(0). Total swing capturing bubble + crash.</td></tr>
                 <tr><td class="term">Turnover</td><td>Trade Turnover</td><td>Total trades / total shares outstanding. Liquidity and disagreement proxy. DLM (2005) Table 2.</td></tr>
                 <tr><td class="term">VWAP</td><td>Volume-Weighted Avg Price</td><td>Per-period average trade price: &Sigma;(P<sub>i</sub>&times;V<sub>i</sub>)/&Sigma;V<sub>i</sub>.</td></tr>
-                <tr><td class="term">Experience</td><td>Replay Counter</td><td>Number of sessions an agent has played. Each replay halves the residual bias of inexperienced agents (DLM 2005 channel).</td></tr>
-                <tr><td class="term">decay</td><td>Bias Attenuation</td><td>decay = 0.5<sup>experience</sup>. Multiplicatively shrinks inexperienced agents&rsquo; bias, anchor, noise, and momentum at each replay.</td></tr>
+                <tr><td class="term">e</td><td>Experience Replay Counter</td><td>Number of sessions an agent has played. Each replay halves the FV(0) anchor weight of inexperienced agents (DLM 2005 Table 2 channel).</td></tr>
+                <tr><td class="term">0.5<sup>e</sup></td><td>Anchor Weight</td><td>Inexperienced anchor weight on the initial fundamental value FV(0). At <em>e</em>=0 the agent is fully anchored; at <em>e</em>=4 only 1/16 of the anchor remains.</td></tr>
               </tbody>
             </table>
           </div>
@@ -778,9 +754,9 @@
                 <tr><td class="math">div<sub>t</sub> &in; {0, 2&middot;E[d]}, P=0.5</td><td>Stochastic dividend payment per period. Preserves E[d].</td></tr>
                 <tr><td class="math">bid<sub>i</sub> = belief<sub>i</sub> &minus; &gamma;<sub>i</sub>&sigma;&sup2;/2</td><td>CARA-optimal buy reservation price. Lopez-Lira (2025) &sect;2.2.</td></tr>
                 <tr><td class="math">ask<sub>i</sub> = belief<sub>i</sub> + &gamma;<sub>i</sub>&sigma;&sup2;/2</td><td>CARA-optimal sell reservation price. Lopez-Lira (2025) &sect;2.2.</td></tr>
-                <tr><td class="math">belief<sup>exp</sup> = FV(t)&middot;(1+noise&middot;&epsilon;)</td><td>Experienced agents track FV with small noise.</td></tr>
-                <tr><td class="math">belief<sup>inexp</sup> = base&middot;(1+bias) + mom&middot;&Delta;P + &sigma;&middot;&epsilon;</td><td>Inexperienced agents: anchored, biased, momentum-chasing. base = (1&minus;a)&middot;FV(t)+a&middot;FV(0).</td></tr>
-                <tr><td class="math">decay = 0.5<sup>experience</sup></td><td>Multiplicative bias attenuation across replays (DLM 2005 experience channel).</td></tr>
+                <tr><td class="math">belief<sup>exp</sup> = FV(t)&middot;(1+&epsilon;)</td><td>Experienced agents track FV(t) directly &mdash; the DLM &alpha;-treatment baseline.</td></tr>
+                <tr><td class="math">belief<sup>inexp</sup> = [FV(0)&middot;0.5<sup>e</sup> + FV(t)&middot;(1&minus;0.5<sup>e</sup>)]&middot;(1+&epsilon;)</td><td>Inexperienced agents anchor on FV(0); the anchor weight halves at every replay <em>e</em>.</td></tr>
+                <tr><td class="math">e &isin; {0, 1, 2, &hellip;}</td><td>Persistent replay counter. DLM (2005) Table 2 reports four consecutive sessions with the same subjects.</td></tr>
                 <tr><td class="math">R&sup2; = 1&minus;&Sigma;(P&minus;FV)&sup2;/&Sigma;(FV&minus;F&#x0304;V)&sup2;</td><td>Haessel R-squared: price tracking quality. DLM &sect;II; Haessel (1978).</td></tr>
                 <tr><td class="math">NAPD = &Sigma;|P&minus;FV| / shares</td><td>Normalized absolute price deviation. DLM &sect;II p.1733&ndash;34.</td></tr>
                 <tr><td class="math">Amp = (max(P&minus;FV) &minus; min(P&minus;FV)) / FV(0)</td><td>Bubble amplitude relative to initial FV. DLM Table 2.</td></tr>
@@ -820,7 +796,7 @@
               <div class="plot-icon" style="background:#0d9488;">4</div>
               <div class="plot-info">
                 <h4>Belief Trajectories</h4>
-                <p>Sampled agent beliefs over time. Solid blue = experienced agents (track FV with small noise). Dotted red = inexperienced agents (anchored + bias + momentum). Green dashed = FV(t). Lets you see exactly which population is causing the bubble.</p>
+                <p>Sampled agent beliefs over time. Solid blue = experienced agents (track FV(t) directly). Dotted red = inexperienced agents (anchored on FV(0), shedding the anchor at rate 0.5<sup>e</sup>). Green dashed = FV(t). Lets you see exactly which population is causing the bubble.</p>
               </div>
             </div>
 

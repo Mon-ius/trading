@@ -1,241 +1,136 @@
-# Market Microstructure Simulator — Design Document
+# Virtual Trading Simulator — Design Document
 
-## Theoretical Foundation
-
-This simulator visualizes price discovery, bubble formation, and strategic communication in a continuous double auction (CDA) market populated by heterogeneous agents.
-
-**Core papers:**
-
-- **Kyle (1985)** — "Continuous Auctions and Insider Trading": Informed trading and price impact
-- **Glosten & Milgrom (1985)** — "Bid, Ask and Transaction Prices": Adverse selection in order-driven markets
-- **Grossman & Stiglitz (1980)** — "On the Impossibility of Informationally Efficient Markets": Information aggregation limits
-- **Smith, Suchanek & Williams (1988)** — "Bubbles, Crashes, and Endogenous Expectations": Experimental bubbles
-- **Choi, Lee & Lim (2025)** — "The Anatomy of Honesty": Lying/deception costs in strategic communication
-- **Benabou & Laroque (1992)** — "Using Privileged Information to Manipulate Markets"
+A naive in-silico replacement of the human laboratory in **Dufwenberg, Lindqvist & Moore (2005, AER)** "Bubbles and Experience", with the human subjects swapped out for the **Lopez-Lira (2025)** CARA / LLM trading-agent framework.
 
 ---
 
-## Core Model
+## Source Papers
 
-### True Value
+- **Dufwenberg, Lindqvist & Moore (2005)** — *"Bubbles and Experience: An Experiment"*, **American Economic Review** 95(5):1731–1737. Defines the declining-FV asset, the CDA market, the bubble metrics (Haessel-R², NAPD, amplitude, turnover), and the *experience effect* (bubbles diminish across replays of the market with the same subjects).
+- **Lopez-Lira (2025)** — *"Can Large Language Models Trade? Testing Financial Theories with LLM Agents in Market Simulations."* Provides the CARA utility agent architecture, the closed-form reservation prices `bid = belief − γσ²/2`, and the CDA matching engine that replaces human traders.
 
-An asset has a true fundamental value V* known only to the experimenter. Agents receive noisy private signals about V*.
+---
 
-### Agent Types by Information
+## Setting Panel — Every Slider Comes From a Paper Symbol
 
-| Type | Signal Noise (σ) | Precision (τ = 1/σ²) | Interpretation |
-|------|------------------|-----------------------|----------------|
-| **Informed** | 5% of V* | High | Knows value well (insider/analyst) |
-| **Partial** | 15% of V* | Medium | Has some idea (sector expert) |
-| **Uninformed** | 40% of V* | Low | Very uncertain (noise trader) |
+The sidebar exposes only parameters that appear (by name or by symbol) in one of the two source papers. Behavioural knobs that have no paper symbol (optimism bias, FV anchoring, momentum, belief noise, endowment variance) have all been removed. The full list:
 
-Each agent i receives signal: **s_i = V* + bias_i + ε_i**, where ε_i ~ N(0, σ²_i)
+| Symbol | Slider | Source | Meaning |
+|---|---|---|---|
+| **N** | Traders | DLM (2005) §I | Number of CDA traders. DLM used N = 6; we default to 20. |
+| **T** | Periods | DLM (2005) §I | Asset life. FV(t) = (T − t)·E[d], reaches zero at period T. |
+| **E[d]** | Expected dividend | DLM (2005) §I | Per-period dividend draw ∈ {0, 2·E[d]} with Pr = 0.5. |
+| **C₀** | Initial cash | DLM (2005) §I | Cash endowment, equal across all N traders. |
+| **S₀** | Initial shares | DLM (2005) §I | Share endowment, equal across all N traders. |
+| **α** | Experienced fraction | DLM (2005) §II "α-treatment" | Within-session: fraction of agents who track FV(t) directly. |
+| **e** | Experience replays | DLM (2005) Table 2 | Across-session: persistent replay counter. |
+| **γ < 0 share** | Risk-loving fraction | Lopez-Lira (2025) §2 | CARA risk parameter γ ∈ [−0.008, 0.002]. |
+| **γ ≈ 0 share** | Risk-neutral fraction | Lopez-Lira (2025) §2 | γ ∈ [0.002, 0.012]. |
+| **γ > 0 share** | Risk-averse fraction | Lopez-Lira (2025) §2 | γ ∈ [0.012, 0.060]. |
+| **PRNG seed** | Engineering | — | Reproducibility control: dividend draws, agent assignment, order shuffling. |
 
-Uninformed agents may have an optimism bias (shift), creating systematic mispricing.
+There are no behavioural knobs. The only learning lever is the experience counter `e`.
 
-### Risk Preferences (CARA Utility)
+---
 
-Agent utility: U_i(W) = -exp(-α_i * W)
+## Belief Dynamics
 
-| Type | α (risk aversion) | Behavior |
-|------|-------------------|----------|
-| **Risk-Loving** | ~0.003 | Trades aggressively, tight spreads |
-| **Risk-Neutral** | ~0.015 | Moderate trading |
-| **Risk-Averse** | ~0.060 | Trades cautiously, wide spreads |
-
-### Order Computation
-
-Given belief μ_i and precision τ_i:
+Every input is from the source papers. Experienced agents track the rational fundamental; inexperienced agents anchor on the *initial* fundamental value FV(0) and shed the anchor as their experience counter `e` grows.
 
 ```
-Bid price = μ_i - α_i / (2 * τ_i)     (max willing to pay)
-Ask price = μ_i + α_i / (2 * τ_i)     (min willing to sell)
+ε ~ small symmetric noise (0.05)
+
+belief^exp(t)   = FV(t) · (1 + ε)
+belief^inexp(t) = [ FV(0)·0.5^e + FV(t)·(1 − 0.5^e) ] · (1 + ε)
 ```
 
-The spread width reflects both uncertainty (1/τ) and risk aversion (α).
+At `e = 0` an inexperienced agent is fully anchored on FV(0) — the source of bubbles. After two replays the anchor weight is 1/4; after four, 1/16. This is the simplest possible computational analogue of DLM's "learning from playing the market" channel.
+
+---
+
+## CARA Reservation Prices (Lopez-Lira 2025)
+
+Each agent submits one bid and one ask at the closed-form CARA-optimal reservation prices:
+
+```
+bid_i = belief_i − γ_i · σ² / 2
+ask_i = belief_i + γ_i · σ² / 2
+```
+
+`γ` is signed: γ < 0 → risk-loving (narrow spreads, aggressive bidding); γ > 0 → risk-averse (wide spreads, conservative bids); γ ≈ 0 → reservation prices coincide with belief.
 
 ---
 
 ## Trading Mechanism: Continuous Double Auction
 
-Each round:
+Each period:
 
-1. **Order submission**: Every agent computes bid and ask prices
-2. **Matching**: Bids sorted descending, asks ascending. Match while bid ≥ ask
-3. **Execution**: Trade price = midpoint of matched bid and ask
-4. **Market price**: Volume-weighted average of all transaction prices (VWAP)
-5. **Belief update**: Agents learn from market price via Bayesian updating
-
-### Bayesian Learning from Prices
-
-After observing market price P_t:
-
-```
-τ'_i = τ_i + τ_P                    (precision increases)
-μ'_i = (τ_i * μ_i + τ_P * P_t) / τ'_i   (belief moves toward price)
-```
-
-where τ_P is the informativeness of the market price.
+1. **Belief update** for every agent (formulas above).
+2. **Order computation** at CARA reservation prices.
+3. **Shuffle** to remove arrival-order artefacts.
+4. **Match** while max(bid) ≥ min(ask). Trade price = midpoint. No short-selling, no margin.
+5. **Pay dividend** ∈ {0, 2·E[d]} with Pr = 0.5 to every share-holder.
+6. **Record** VWAP, volume, best bid/ask, per-trade P&L.
 
 ---
 
-## Bubble Dynamics
+## Bubble Metrics (DLM 2005 §II)
 
-### Formation Mechanism
-
-Bubbles form when uninformed agents have systematically biased beliefs:
-
-- **Optimism bias > 0**: Uninformed signals biased upward → price inflated above V*
-- **Optimism bias < 0**: Signals biased downward → price depressed below V*
-
-### Momentum (Trend-Following)
-
-Agents may extrapolate price trends:
-
-```
-belief_adjusted = belief + momentum * (P_t - P_{t-1})
-```
-
-High momentum amplifies bubbles and delays correction.
-
-### Correction Mechanism
-
-Informed agents trade against mispricing:
-- When price > V*: Informed agents sell (they know it's overpriced)
-- When price < V*: Informed agents buy (they know it's underpriced)
-
-**Key question**: What percentage of informed agents is needed to bring price to true value?
-
-### Bubble Metrics
-
-- **Price efficiency**: 1 - |P_final - V*| / V*
-- **Max bubble**: max_t |P_t - V*| / V*
-- **Average deviation**: mean |P_t - V*| / V*
-
----
-
-## Strategic Communication
-
-When enabled, agents can send messages (cheap talk) before each trading round.
-
-### Message Strategy
-
-Each agent announces a "claimed value" for the asset:
-
-```
-message_i = signal_i + strategic_bias_i
-```
-
-- **Buyers** (belief > price): bias < 0 — understate value to buy cheap
-- **Sellers** (belief < price): bias > 0 — overstate value to sell dear
-
-### Moral Costs (from Choi et al. 2025)
-
-Strategic bias is modulated by lying and deception costs:
-
-```
-net_benefit = strategic_benefit - c_l * I{bias ≠ 0} - c_d * |belief_distortion|
-```
-
-- **c_l**: Lying cost — penalty for sending message ≠ signal (literal falsehood)
-- **c_d**: Deception cost — penalty for distorting receiver beliefs
-
-### Lying vs Deception in Markets
-
-| | Message ≠ Signal (Lie) | Message = Signal (Truth) |
+| Metric | Formula | Interpretation |
 |---|---|---|
-| **Distorts beliefs** | Deceptive lie (common) | Deceptive truth (e.g., informed trader strategically revealing true signal to trigger panic) |
-| **No belief distortion** | Non-deceptive lie (social convention) | Honest communication |
+| **Haessel-R²** | 1 − Σ(P − FV)² / Σ(FV − F̄V)² | 1 = perfect tracking; <0 = worse than mean |
+| **MSE** | Σ(P − FV)² / T | Average squared mispricing |
+| **NAPD** | Σ\|P − FV\| / (T · FV(0)) | Normalised bubble magnitude (DLM Table 2) |
+| **Amplitude** | (max(P − FV) − min(P − FV)) / FV(0) | Total price swing relative to FV(0) |
+| **Turnover** | Total trades / total shares outstanding | Liquidity / disagreement proxy |
 
-### Receiver Belief Update
+---
 
-Agents weight incoming messages by sender credibility:
+## Experience Replay Loop
+
+`e ∈ {0, 1, 2, …}` is a persistent counter on each agent. When the experiment runs more than one session:
+
+1. Reset cash and shares to (C₀, S₀).
+2. Increment `e` by 1.
+3. Re-run the T-period CDA with the same agents and risk types.
+4. Inexperienced agents' anchor on FV(0) is now multiplied by `0.5^e`.
+
+The Experience Effect chart (Fig. 6) plots Haessel-R², NAPD, and Amplitude across consecutive replays — the direct in-silico analogue of DLM (2005) Table 2.
+
+---
+
+## Visualisation
+
+### Charts (Plotly)
+
+1. **Price vs FV** — VWAP overlaid on the declining FV(t) path; bubble metrics annotated.
+2. **Trading Volume** — trades per period as bars.
+3. **Price Deviation from FV** — (P − FV)/FV per period; red = bubble, green = crash.
+4. **Belief Trajectories** — sampled experienced (blue, FV(t)) and inexperienced (red, anchored) beliefs.
+5. **P&L by Risk Type** — average P&L grouped by γ-type, split by experience.
+6. **Experience Effect** — Haessel-R², NAPD, Amplitude across replays.
+
+### Trading Floor (Canvas 2D)
+
+Four-stage pipeline reflecting the DLM / Lopez-Lira protocol:
+
+1. **Trader Initialization** — CARA agents drawn with γ, endowments allocated.
+2. **Belief Formation** — experienced track FV(t); inexperienced anchor on FV(0) with weight `0.5^e`.
+3. **Continuous Double Auction** — order matching at reservation prices with a live mini price chart and bubble meter.
+4. **Dividend Settlement** — period payoffs paid; total P&L realised.
+
+---
+
+## Optional LLM Backend
+
+If an API key is provided in the AI Agent panel, each agent's belief-formation function is replaced by a Claude / GPT call that receives the market context (period, FV, recent prices, the agent's type) and returns a numeric belief. The CDA, dividend payment, and bubble-metric computation are unchanged. Without an API key the simulator falls back to the closed-form CARA stochastic model — fully reproducible from the PRNG seed.
+
+---
+
+## Reproducibility
+
+Static SPA — no build step, deployable to GitHub Pages. PRNG seeded for exact replication. JSON / CSV export of every session. EN / ZH i18n.
 
 ```
-credibility_k = 1 / (1 + count_of_past_lies_k * 0.5)
+github.com/Mon-ius/trading
 ```
-
-Repeated liars lose credibility — reputation mechanism analogous to Choi et al.'s sender-receiver game.
-
----
-
-## Configurable Parameters
-
-| Parameter | Default | Range | Paper Reference |
-|---|---|---|---|
-| Agents (n) | 20 | 2-128 | Population size |
-| True Value (V*) | 100 | 1-10000 | Fundamental value |
-| Rounds | 20 | 1-200 | Trading sessions |
-| Informed % | 30 | 0-100 | Kyle (1985) |
-| Partial % | 40 | 0-100 | Signal precision |
-| Uninformed % | 30 | 0-100 | Noise traders |
-| Risk-Loving % | 33 | 0-100 | CARA parameter |
-| Risk-Neutral % | 34 | 0-100 | CARA parameter |
-| Risk-Averse % | 33 | 0-100 | CARA parameter |
-| Communication | Off | On/Off | Cheap talk |
-| Lying Cost μ | 0 | -3 to 3 | Choi et al. (2025) |
-| Deception Cost μ | 0 | -3 to 3 | Choi et al. (2025) |
-| Optimism Bias | 20 | -50 to 50 | SSW (1988) |
-| Momentum | 10 | 0-100 | Trend following |
-| Seed | 42 | 0-9999 | Reproducibility |
-
----
-
-## Visualization
-
-### Chart View
-
-1. **Price Discovery**: Market price vs true value over rounds (+ volume bars)
-2. **Bid-Ask Spread**: Best bid/ask evolution showing spread compression
-3. **P&L Distribution**: Histogram by information type (informed earn more)
-4. **Bubble Deviation**: Per-round % deviation from true value
-5. **Belief Convergence**: Sample agents' beliefs converging to true value
-6. **Trading Volume**: Trades per round (+ lies per round if communication on)
-
-### Game View (Trading Floor)
-
-Canvas 2D animation with:
-
-**Buildings/zones:**
-- Agent Hub — agents spawn with info type colors
-- Signal Tower — agents receive private signals (flash values)
-- Trading Pit — stage/queue layout for CDA trading
-- Communication Lounge — speech bubbles with strategic messages
-- Settlement Hall — final P&L display
-
-**In-world displays:**
-- Real-time price chart (mini line chart on canvas)
-- Bubble meter (deviation gauge)
-- Per-trade P&L flashes (+green/-red)
-- Speech bubbles with LIE/TRUTH tags
-
-**Agent sprites:**
-- Color-coded by information type (blue=informed, orange=partial, red=uninformed)
-- Active ring during trades
-- Animated movement with stagger to prevent collisions
-
----
-
-## Output Metrics
-
-| Metric | Description |
-|---|---|
-| Price Efficiency | How close final price is to true value |
-| Max Bubble | Peak price deviation from true value |
-| Total Trades | Number of executed transactions |
-| Avg P&L (Informed) | Average profit of informed agents |
-| Avg P&L (Uninformed) | Average loss of uninformed agents |
-| Info Aggregation Speed | Rounds until price within 5% of V* |
-
----
-
-## References
-
-1. Kyle, A. S. (1985). Continuous Auctions and Insider Trading. *Econometrica*, 53(6), 1315-1335.
-2. Glosten, L. R. & Milgrom, P. R. (1985). Bid, Ask and Transaction Prices. *Journal of Financial Economics*, 14(1), 71-100.
-3. Grossman, S. J. & Stiglitz, J. E. (1980). On the Impossibility of Informationally Efficient Markets. *American Economic Review*, 70(3), 393-408.
-4. Smith, V. L., Suchanek, G. L. & Williams, A. W. (1988). Bubbles, Crashes, and Endogenous Expectations. *Econometrica*, 56(5), 1119-1151.
-5. Choi, S., Lee, C. & Lim, W. (2025). The Anatomy of Honesty: Lying Aversion vs. Deception Aversion. Working Paper.
-6. Sobel, J. (2020). Lying and Deception in Games. *Journal of Political Economy*, 128(3), 907-947.
-7. Benabou, R. & Laroque, G. (1992). Using Privileged Information to Manipulate Markets. *QJE*, 107(3), 921-958.
-8. Crawford, V. & Sobel, J. (1982). Strategic Information Transmission. *Econometrica*, 50(6), 1431-1451.

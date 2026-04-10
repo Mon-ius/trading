@@ -6,10 +6,10 @@
  *   Lopez-Lira (2025) "Can LLMs Trade?" CARA-agent CDA framework.
  *
  *   - Asset:   declining FV(t) = (T - t) × E[d], stochastic dividends {0, 2·E[d]}
- *   - Agents:  CARA utility with heterogeneous risk types (Lopez-Lira)
- *   - Belief:  experienced agents track FV; inexperienced are biased + anchored
- *   - Trading: continuous double auction (CDA), reservation prices = belief ± α·σ²/2
- *   - Sessions: same agents replay the market — bubbles diminish with experience (DLM)
+ *   - Agents:  CARA utility with heterogeneous risk types γ (Lopez-Lira)
+ *   - Belief:  experienced track FV(t); inexperienced anchor on FV(0) with weight 0.5^e
+ *   - Trading: continuous double auction (CDA), reservation prices = belief ± γ·σ²/2
+ *   - Sessions: same agents replay the market — anchor weight halves at every replay (DLM Table 2)
  *   - LLM mode: optional API agents replace stochastic CARA decisions (Lopez-Lira)
  */
 
@@ -89,24 +89,24 @@ function drawDividend(expectedDiv, g) {
 }
 
 /* ================================================================
-   Agent creation — CARA framework, heterogeneous endowments
+   Agent creation — Lopez-Lira CARA framework, equal DLM endowments
    alpha = within-session fraction of experienced agents
    ================================================================ */
 function createAgents(params, g) {
   const {
     n, T, expectedDiv, alpha,
     rlPct, rnPct,
-    initialCash, initialShares, endowVar,
+    initialCash, initialShares,
   } = params;
 
-  // Experience labels — DLM "transfer" treatment within a single session
+  // Experience labels — DLM α-treatment within a single session
   const nExp = Math.round(n * (alpha || 0));
   const expArr = [];
   for (let i = 0; i < nExp; i++) expArr.push('experienced');
   for (let i = 0; i < n - nExp; i++) expArr.push('inexperienced');
   shuffle(expArr, g);
 
-  // Risk types — Lopez-Lira heterogeneous CARA
+  // Risk types — Lopez-Lira heterogeneous CARA γ
   const nRL = Math.round(n * rlPct / 100);
   const nRN = Math.round(n * rnPct / 100);
   const riskArr = [];
@@ -116,16 +116,13 @@ function createAgents(params, g) {
   shuffle(riskArr, g);
 
   const fv0 = fundamentalValue(0, T, expectedDiv);
-  const ev = (endowVar || 0) / 100;
   const agents = [];
 
+  // DLM (2005) gives every trader the same endowment (C₀, S₀).
   for (let i = 0; i < n; i++) {
     const rt = riskArr[i];
     const rp = RISK_PARAMS[rt];
     const gamma = rp.lo + (rp.hi - rp.lo) * g();
-
-    const cashMul = Math.max(0.3, 1 + ev * randn(g));
-    const shareMul = Math.max(0, 1 + ev * randn(g));
 
     agents.push({
       id: i,
@@ -134,10 +131,10 @@ function createAgents(params, g) {
       riskType: rt,
       gamma,
       riskAversion: gamma,           // alias used by ai-agent.js
-      cash: Math.max(50, Math.round(initialCash * cashMul)),
-      shares: Math.max(0, Math.round(initialShares * shareMul)),
-      initialCash: 0,
-      initialShares: 0,
+      cash: initialCash,
+      shares: initialShares,
+      initialCash,
+      initialShares,
       experience: 0,
       belief: fv0,
       trades: [],
@@ -147,44 +144,34 @@ function createAgents(params, g) {
       totalPnL: 0,
     });
   }
-  for (const a of agents) {
-    a.initialCash = a.cash;
-    a.initialShares = a.shares;
-  }
   return agents;
 }
 
 /* ================================================================
-   Belief update — DLM-style optimism bias for inexperienced agents
-   Experience (across sessions) gradually attenuates the bias.
+   Belief update — DLM (2005) experience channel only.
+   Experienced traders track FV(t); inexperienced traders anchor on
+   FV(0) with weight 0.5^e and converge on FV(t) as e grows. There
+   are no behavioural knobs — every input is from the source paper.
    ================================================================ */
-function updateAgentBelief(agent, period, T, expectedDiv, lastPrice, prevPrice, params, g) {
-  const fv = fundamentalValue(period, T, expectedDiv);
-  const fv0 = fundamentalValue(0, T, expectedDiv);
+const BELIEF_NOISE = 0.05;  // small ε around the rational reference
 
-  // Experience attenuation: each replay halves residual bias
-  const exp = agent.experience || 0;
-  const decay = Math.pow(0.5, exp);
+function updateAgentBelief(agent, period, T, expectedDiv, _lp, _pp, _params, g) {
+  const fv  = fundamentalValue(period, T, expectedDiv);
+  const fv0 = fundamentalValue(0, T, expectedDiv);
+  const e     = agent.experience || 0;
+  const decay = Math.pow(0.5, e);
+  const eps   = BELIEF_NOISE * randn(g);
 
   if (agent.expType === 'experienced') {
-    // Experienced traders know FV; small noise only
-    const noise = (params.expNoise || 0.05) * decay;
-    agent.belief = fv * (1 + noise * randn(g));
+    // DLM α-treatment: FV-trackers — Lopez-Lira (2025) rational baseline
+    agent.belief = Math.max(0, fv * (1 + eps));
     return;
   }
 
-  // Inexperienced: anchored, biased, momentum-chasing
-  const bias    = (params.inexpBias    || 0.20) * decay;
-  const anchor  = (params.inexpAnchor  || 0.40) * decay;
-  const noise   = (params.inexpNoise   || 0.20) * decay;
-  const moment  = (params.momentum     || 0.10) * decay;
-
-  const base    = fv * (1 - anchor) + fv0 * anchor;
-  let biased    = base * (1 + bias);
-  if (lastPrice != null && prevPrice != null) {
-    biased += moment * (lastPrice - prevPrice);
-  }
-  agent.belief = Math.max(0, biased + fv * noise * randn(g));
+  // Inexperienced: anchor on FV(0), shed the anchor as experience grows.
+  // belief = FV(0)·0.5^e + FV(t)·(1 − 0.5^e). DLM (2005) Table 2 channel.
+  const anchored = fv0 * decay + fv * (1 - decay);
+  agent.belief = Math.max(0, anchored * (1 + eps));
 }
 
 /* ================================================================
@@ -1117,7 +1104,7 @@ class TradingFloor {
     this._phase = 'signal';
     this._arrangeIn('signal', this.sprites, true);
     this._focusBuilding('signal');
-    this._log('phase', '2. Belief Formation', 'Experienced track FV (DLM \u03b1-treatment); inexperienced anchor + bias');
+    this._log('phase', '2. Belief Formation', 'Experienced track FV(t) (DLM \u03b1); inexperienced anchor on FV(0) with weight 0.5^e');
     await this._wait(1000);
 
     const fv0 = (history.fvs && history.fvs[0]) || 100;

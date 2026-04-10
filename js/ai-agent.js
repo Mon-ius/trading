@@ -125,8 +125,8 @@ MARKET STRUCTURE:
 - Your goal: maximize final cash holdings through profitable trading.
 
 KEY INSIGHTS (from paper):
-- Experienced agents who know FV suppress bubble formation.
-- Inexperienced agents tend to overvalue the asset (optimism bias, anchoring, momentum).
+- Experienced agents who know FV(t) suppress bubble formation.
+- Inexperienced agents anchor on the initial fundamental value FV(0) and only shed that anchor with experience replays e (anchor weight = 0.5^e).
 - The critical fraction α* of experienced agents needed to prevent bubbles is the central research question.
 
 RISK TYPES:

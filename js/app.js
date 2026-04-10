@@ -74,22 +74,16 @@ function _isDark() { return getEffectiveTheme() === 'dark'; }
 function readSimParams() {
   const v = id => { const el = document.getElementById(id); return el ? +el.value : 0; };
   return {
-    n: v('p-n'),
-    T: v('sim-T'),
-    expectedDiv: v('sim-edv') / 10,
-    initialCash: v('sim-cash'),
-    initialShares: v('sim-shares'),
-    endowVar: v('sim-endow'),
-    seed: v('p-seed'),
-    alpha: v('sim-alpha') / 100,
-    experienceRounds: v('sim-exp'),
-    inexpBias: v('sim-bias') / 100,
-    inexpAnchor: v('sim-anchor') / 100,
-    inexpNoise: v('sim-noise') / 100,
-    momentum: v('sim-mom') / 100,
-    expNoise: 0.05,
-    rlPct: v('p-rl'),
-    rnPct: v('p-rn'),
+    n:                v('p-n'),         // N — DLM (2005) trader count
+    T:                v('sim-T'),       // T — DLM finite-life periods
+    expectedDiv:      v('sim-edv') / 10,// E[d] — DLM expected per-period dividend
+    initialCash:      v('sim-cash'),    // C₀ — DLM initial cash endowment
+    initialShares:    v('sim-shares'),  // S₀ — DLM initial share endowment
+    seed:             v('p-seed'),      // PRNG seed (engineering)
+    alpha:            v('sim-alpha') / 100, // α — DLM transfer-treatment fraction
+    experienceRounds: v('sim-exp'),     // e — DLM Table 2 replay counter
+    rlPct:            v('p-rl'),        // γ < 0 share — Lopez-Lira (2025) CARA
+    rnPct:            v('p-rn'),        // γ ≈ 0 share
   };
 }
 
@@ -365,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const upd = () => {
       if (['p-rl', 'p-rn', 'p-ra'].includes(inp.id)) {
         ve.textContent = inp.value + '%';
-      } else if (['sim-endow', 'sim-alpha', 'sim-bias', 'sim-anchor', 'sim-noise', 'sim-mom'].includes(inp.id)) {
+      } else if (inp.id === 'sim-alpha') {
         ve.textContent = inp.value + '%';
       } else if (inp.id === 'sim-edv') {
         ve.textContent = (inp.value / 10).toFixed(1);
