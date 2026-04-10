@@ -96,10 +96,10 @@ function readLabParams() {
     interestRate: v('lab-interest') / 100,
     // Dufwenberg (2005): experience sessions
     experienceRounds: v('lab-expRounds'),
-    // Sobel (2020): communication toggle
+    // Communication
     commEnabled: c('lab-comm-on'),
-    deceptStrength: v('lab-decept') / 100,
-    credulity: v('lab-credul') / 100,
+    commNoise: v('lab-comm-noise') / 100,
+    signalWeight: v('lab-signal-weight') / 100,
     seed: v('p-seed'),
   };
 }
@@ -144,15 +144,11 @@ function renderLabResults(lab) {
   hypEl.textContent = bm.hypothesis + ' (' + hypLabels[bm.hypothesis] + ')';
   hypEl.style.color = hypColors[bm.hypothesis];
 
-  // Sobel deception stats
-  const dec = lab.deception;
-  const liesEl = document.getElementById('sc-lab-lies');
-  if (lab.commEnabled && dec.totalMessages > 0) {
-    liesEl.innerHTML = `${dec.totalLies}/${dec.totalMessages}<div class="sc-detail">${dec.totalDeceptions} deceptive · ${dec.totalDamaging} damaging</div>`;
-  } else {
-    liesEl.textContent = 'Comm OFF';
-    liesEl.style.color = 'var(--fg-2)';
-  }
+  // Communication status
+  const commEl = document.getElementById('sc-lab-comm');
+  const totalMsgs = lab.phase2.rounds.reduce((s, r) => s + (r.messages ? r.messages.length : 0), 0);
+  commEl.textContent = lab.commEnabled ? `${totalMsgs} signals` : 'OFF';
+  commEl.style.color = lab.commEnabled ? 'var(--accent)' : 'var(--fg-2)';
 
   // Coase theorem agent
   const top = lab.highestPsiAgent;
@@ -238,7 +234,7 @@ function renderLabLog(lab) {
   const fvDiv = document.createElement('div');
   fvDiv.className = 'log-entry';
   fvDiv.style.cssText = 'font-weight:700;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:6px';
-  fvDiv.innerHTML = `FV = E[div]/r = ${((lab.params.divLow+lab.params.divHigh)/2).toFixed(2)}/${lab.params.interestRate.toFixed(2)} = ${lab.fundamentalValue.toFixed(1)} | Comm: ${lab.commEnabled ? 'ON (Sobel)' : 'OFF'}`;
+  fvDiv.innerHTML = `FV = E[div]/r = ${((lab.params.divLow+lab.params.divHigh)/2).toFixed(2)}/${lab.params.interestRate.toFixed(2)} = ${lab.fundamentalValue.toFixed(1)} | Comm: ${lab.commEnabled ? 'ON' : 'OFF'}`;
   log.appendChild(fvDiv);
 
   // Initial state
@@ -260,33 +256,8 @@ function renderLabLog(lab) {
   _appendPhaseLog(log, 'Phase 1 (Silent Trading)', lab.phase1, lab.initialSnapshot);
 
   // Phase 2
-  const p2Label = lab.commEnabled ? 'Phase 2 (Sobel Communication)' : 'Phase 2 (Silent Control)';
+  const p2Label = lab.commEnabled ? 'Phase 2 (Communication)' : 'Phase 2 (Silent Control)';
   _appendPhaseLog(log, p2Label, lab.phase2, lab.phase1.agents);
-
-  // Sobel deception summary (only if comm enabled)
-  if (lab.commEnabled) {
-    const decDet = document.createElement('details');
-    decDet.className = 'log-round';
-    const decSum = document.createElement('summary');
-    const dec = lab.deception;
-    decSum.textContent = `Sobel Summary: ${dec.totalLies} lies | ${dec.totalDeceptions} deceptions | ${dec.totalDamaging} damaging | ${dec.inflations} inflate / ${dec.deflations} deflate`;
-    decDet.appendChild(decSum);
-
-    // Sobel definitions legend
-    const legend = document.createElement('div'); legend.className = 'log-entry';
-    legend.style.cssText = 'font-size:0.85em;color:var(--fg-2);margin-bottom:6px';
-    legend.innerHTML = '<em>Sobel (2020 JPE): Lying = false report (Def 1). Deception = inducing inferior beliefs (Def 4). Damage = welfare-reducing (Sec V).</em>';
-    decDet.appendChild(legend);
-
-    for (const rt of ['risk_loving', 'risk_neutral', 'risk_averse']) {
-      const d = document.createElement('div'); d.className = 'log-entry';
-      const rd = dec.byRiskType[rt];
-      const rtLabel = rt === 'risk_loving' ? t('rt.rl') : rt === 'risk_neutral' ? t('rt.rn') : t('rt.ra');
-      d.textContent = `${rtLabel}: ${rd.lies} lies / ${rd.deceptions} deceptive / ${rd.damaging} damaging (of ${rd.total})`;
-      decDet.appendChild(d);
-    }
-    log.appendChild(decDet);
-  }
 
   // Bubble metrics summary
   const bmDet = document.createElement('details');
@@ -343,8 +314,8 @@ function _appendPhaseLog(container, title, phase, prevAgents) {
   for (const r of phase.rounds) {
     const d = document.createElement('div'); d.className = 'log-entry';
     const prStr = r.vwap != null ? `P=$${r.vwap.toFixed(1)}` : 'no trades';
-    const liesStr = r.messages ? ` | ${r.messages.filter(m=>m.isLie).length} lies` : '';
-    d.textContent = `Round ${r.round+1}: ${r.volume} trades | ${prStr}${liesStr}`;
+    const commStr = r.messages ? ` | ${r.messages.length} signals` : '';
+    d.textContent = `Round ${r.round+1}: ${r.volume} trades | ${prStr}${commStr}`;
     det.appendChild(d);
   }
   // Agent summary
@@ -453,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const upd = () => {
       if (['p-rl','p-rn','p-ra'].includes(inp.id))
         ve.textContent = inp.value + '%';
-      else if (['lab-endowVar','lab-decept','lab-credul','lab-interest'].includes(inp.id))
+      else if (['lab-endowVar','lab-comm-noise','lab-signal-weight','lab-interest'].includes(inp.id))
         ve.textContent = inp.value + '%';
       else if (['lab-divLow','lab-divHigh'].includes(inp.id))
         ve.textContent = (inp.value / 10).toFixed(1);

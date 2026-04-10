@@ -135,13 +135,13 @@ class Sprite {
       ctx.font = `600 ${6.5 * sc}px -apple-system, sans-serif`;
       const tw = ctx.measureText(b.text).width;
       const bw = tw + 8 * sc, bh = 12 * sc;
-      ctx.fillStyle = b.isLie ? 'rgba(255,59,48,0.15)' : 'rgba(52,199,89,0.15)';
-      ctx.strokeStyle = b.isLie ? '#FF3B30' : '#34C759';
+      ctx.fillStyle = 'rgba(52,199,89,0.15)';
+      ctx.strokeStyle = '#34C759';
       ctx.lineWidth = 1 * sc;
       ctx.beginPath();
       ctx.roundRect(bx - 4 * sc, by - bh / 2, bw, bh, 3 * sc);
       ctx.fill(); ctx.stroke();
-      ctx.fillStyle = b.isLie ? '#FF3B30' : '#34C759';
+      ctx.fillStyle = '#34C759';
       ctx.fillText(b.text, bx, by + 2.5 * sc);
       ctx.textAlign = 'center';
       ctx.globalAlpha = 1;
@@ -805,9 +805,8 @@ class TradingFloor {
         for (const msg of rd.messages) {
           const sp = this.sprites[msg.senderId];
           if (!sp) continue;
-          const label = msg.isLie ? 'LIE' : 'TRUTH';
           const val = msg.reported ?? msg.message ?? 0;
-          sp.bubble = { text: `$${val.toFixed(0)} ${label}`, alpha: 2.0, isLie: msg.isLie };
+          sp.bubble = { text: `$${val.toFixed(0)}`, alpha: 2.0 };
         }
         await this._wait(Math.round(1200 * stepScale));
 

@@ -153,8 +153,8 @@ function renderBeliefChart(id, history) {
 function renderVolumeChart(id, history) {
   const periods = history.volumes.map((_, i) => i + 1);
   const maxVol = Math.max(1, ...history.volumes);
-  const lies = history.rounds.map(r => r.messages ? r.messages.filter(m => m.isLie).length : 0);
-  const hasComm = lies.some(l => l > 0);
+  const signalCounts = history.rounds.map(r => r.messages ? r.messages.length : 0);
+  const hasComm = signalCounts.some(c => c > 0);
 
   const traces = [
     { x: periods, y: history.volumes, type: 'bar', name: 'Volume',
@@ -169,10 +169,10 @@ function renderVolumeChart(id, history) {
 
   if (hasComm) {
     traces.push({
-      x: periods, y: lies, type: 'scatter', mode: 'lines+markers', name: 'Lies',
-      line: { color: CHART_COLORS.red, width: 2 }, marker: { size: 4 }, yaxis: 'y2',
+      x: periods, y: signalCounts, type: 'scatter', mode: 'lines+markers', name: 'Signals',
+      line: { color: CHART_COLORS.purple, width: 2 }, marker: { size: 4 }, yaxis: 'y2',
     });
-    layout.yaxis2 = { overlaying: 'y', side: 'right', showgrid: false, title: 'Lies' };
+    layout.yaxis2 = { overlaying: 'y', side: 'right', showgrid: false, title: 'Signals' };
   }
 
   Plotly.newPlot(id, traces, layout, PC);
@@ -288,7 +288,7 @@ function renderLabPriceChart(id, labResult) {
     { x: r1, y: p1, type: 'scatter', mode: 'lines+markers', name: 'Phase 1 (Silent)',
       line: { color: CHART_COLORS.blue, width: 2.5 }, marker: { size: 4 } },
     { x: r2, y: p2, type: 'scatter', mode: 'lines+markers',
-      name: labResult.commEnabled ? 'Phase 2 (Sobel Comm)' : 'Phase 2 (Silent)',
+      name: labResult.commEnabled ? 'Phase 2 (Comm)' : 'Phase 2 (Silent)',
       line: { color: CHART_COLORS.red, width: 2.5 }, marker: { size: 4 } },
     { x: [1, maxR], y: [fv, fv], type: 'scatter', mode: 'lines', name: 'FV = E[div]/r',
       line: { color: CHART_COLORS.green, width: 2, dash: 'dash' } },
@@ -354,11 +354,10 @@ function renderLabWelfareChart(id, labResult) {
   }), PC);
 }
 
-/** Lab Fig 4 — Sobel Lying & Deception Analysis */
-function renderLabDeceptionChart(id, labResult) {
+/** Lab Fig 4 — Communication Signal Accuracy */
+function renderLabCommChart(id, labResult) {
   const msgs = labResult.phase2.rounds.flatMap(r => r.messages || []);
   if (msgs.length === 0) {
-    // No communication — show empty state with label
     Plotly.newPlot(id, [], _layout({
       xaxis: { title: 'Communication OFF' }, yaxis: { title: '' },
       annotations: [{ x: 0.5, y: 0.5, xref: 'paper', yref: 'paper', text: 'Communication disabled',
@@ -366,31 +365,24 @@ function renderLabDeceptionChart(id, labResult) {
     }), PC);
     return;
   }
-  // Sobel classification counts by risk type
-  const types = ['risk_loving', 'risk_neutral', 'risk_averse'];
-  const labels = [t('rt.rl'), t('rt.rn'), t('rt.ra')];
-  const colors = ['#dc2626', '#d97706', '#2563eb'];
-
-  // Stacked bar: lies, deceptions, damaging per risk type
-  const sobelCats = ['Truthful', 'Lie only', 'Deceptive', 'Damaging'];
-  const catColors = ['rgba(52,199,89,0.7)', 'rgba(255,149,0,0.7)', 'rgba(255,59,48,0.7)', 'rgba(175,82,222,0.7)'];
-
-  const traces = sobelCats.map((cat, ci) => ({
-    x: labels,
-    y: types.map(t => {
-      const tm = msgs.filter(m => m.riskType === t);
-      if (cat === 'Truthful') return tm.filter(m => !m.isLie).length;
-      if (cat === 'Lie only') return tm.filter(m => m.isLie && !m.isDeceptive).length;
-      if (cat === 'Deceptive') return tm.filter(m => m.isDeceptive && !m.isDamaging).length;
-      return tm.filter(m => m.isDamaging).length;
-    }),
-    type: 'bar', name: cat, marker: { color: catColors[ci] },
-  }));
-
-  Plotly.newPlot(id, traces, _layout({
-    xaxis: { title: '' },
-    yaxis: { title: 'Message Count' },
-    barmode: 'stack', legend: { x: 0, y: 1.15, orientation: 'h' },
+  const RC = { risk_loving: '#dc2626', risk_neutral: '#d97706', risk_averse: '#2563eb' };
+  Plotly.newPlot(id, [{
+    x: msgs.map(m => m.truePsi),
+    y: msgs.map(m => m.reported),
+    type: 'scatter', mode: 'markers', name: 'Signals',
+    marker: { size: 8, color: msgs.map(m => RC[m.riskType]), opacity: 0.7,
+      line: { width: 1, color: '#fff' } },
+    text: msgs.map(m => `Agent ${m.senderId}<br>True \u03c8=${m.truePsi.toFixed(1)}<br>Reported=${m.reported.toFixed(1)}`),
+    hovertemplate: '%{text}<extra></extra>',
+  }, {
+    x: [0, Math.max(...msgs.map(m => m.truePsi)) * 1.1],
+    y: [0, Math.max(...msgs.map(m => m.truePsi)) * 1.1],
+    type: 'scatter', mode: 'lines', name: 'Perfect truth',
+    line: { color: 'rgba(0,0,0,0.3)', width: 1, dash: 'dash' }, showlegend: true,
+  }], _layout({
+    xaxis: { title: 'True \u03c8' },
+    yaxis: { title: 'Reported Signal' },
+    legend: { x: 0, y: 1.15, orientation: 'h' },
   }), PC);
 }
 
@@ -510,7 +502,7 @@ function renderAllLabCharts(labResult) {
   renderLabPriceChart('lab-chart-price', labResult);
   renderLabAllocationChart('lab-chart-alloc', labResult);
   renderLabWelfareChart('lab-chart-welfare', labResult);
-  renderLabDeceptionChart('lab-chart-deception', labResult);
+  renderLabCommChart('lab-chart-comm', labResult);
   renderLabVolumeChart('lab-chart-volume', labResult);
   renderLabPnLChart('lab-chart-pnl', labResult);
   renderLabExperienceChart('lab-chart-experience', labResult);

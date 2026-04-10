@@ -260,7 +260,7 @@ function runMarket(params) {
     rlPct, rnPct,
     initialCash, initialShares,
     expNoise, inexpBias, inexpNoise, inexpAnchor, momentum,
-    communication, clMean, cdMean,
+    communication, commNoise, signalWeight,
     seed,
   } = params;
 
@@ -348,24 +348,19 @@ function runMarket(params) {
 /* ---- Communication for declining FV model ---- */
 function communicationRoundDFV(agents, lastPrice, fv, g, params) {
   const messages = [];
-  const refPrice = lastPrice != null ? lastPrice : fv;
+  const noise = params.commNoise ?? 0.10;
   for (const a of agents) {
-    const cl = Math.max(0, Math.exp((params.clMean || 0) + randn(g)));
-    const cd = Math.max(0, Math.exp((params.cdMean || 0) + randn(g)));
-    const direction = a.belief > refPrice ? -1 : 1;
-    const benefit = Math.abs(a.belief - refPrice) * 0.3;
-    const bias = direction * Math.max(0, benefit - cl - cd * 0.5);
-    const message = a.belief + bias;
-    const isLie = Math.abs(bias) > 0.01 * fv;
-    messages.push({ senderId: a.id, message, bias, isLie, isDeceptive: isLie && Math.abs(bias) > 0.05 * fv });
+    const reported = Math.max(0.01, a.belief * (1 + noise * randn(g)));
+    messages.push({ senderId: a.id, reported, message: reported });
   }
-  // Receivers incorporate messages (simplified)
+  // Receivers incorporate messages
+  const weight = params.signalWeight ?? 0.20;
   for (const a of agents) {
-    if (a.expType === 'inexperienced') {
-      const otherMsgs = messages.filter(m => m.senderId !== a.id);
-      const avgMsg = avg(otherMsgs.map(m => m.message));
-      a.belief = 0.7 * a.belief + 0.3 * avgMsg; // partial update
-    }
+    const otherMsgs = messages.filter(m => m.senderId !== a.id);
+    if (otherMsgs.length === 0) continue;
+    const avgMsg = avg(otherMsgs.map(m => m.reported));
+    const w = Math.min(weight, 0.5);
+    a.belief = a.belief * (1 - w) + avgMsg * w;
   }
   return messages;
 }
@@ -469,7 +464,7 @@ function runSimulation(params) {
   const {
     n, informedPct, partialPct, rlPct, rnPct,
     trueValue, optimismBias, rounds, communication,
-    momentum, clMean, cdMean, seed,
+    momentum, commNoise, signalWeight, seed,
   } = params;
 
   // Map informed% to alpha (experienced fraction)
@@ -490,8 +485,8 @@ function runSimulation(params) {
     inexpAnchor: 0.4,
     momentum: (momentum || 10) / 100,
     communication: communication || false,
-    clMean: clMean || 0,
-    cdMean: cdMean || 0,
+    commNoise: commNoise ?? 0.10,
+    signalWeight: signalWeight ?? 0.20,
     seed: seed || 42,
   });
 

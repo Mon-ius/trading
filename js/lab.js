@@ -8,15 +8,11 @@
  *             hypothesis classification (R/H/E)
  *           Dufwenberg, Lindqvist & Moore (2005, AER) "Bubbles and Experience"
  *           — Experience sessions, mixed-experience markets, experience effect
- *           Sobel (2020, JPE) "Lying and Deception in Games"
- *           — Formal lying vs deception distinction, sender-receiver model,
- *             damage metric, credulity, communication ON/OFF toggle
  *
  * Research questions:
  *   1. Does the asset flow to the highest-valuation agent? (Coase theorem)
- *   2. How does strategic lying/deception affect allocative efficiency?
- *   3. Do bubbles diminish with experience? (Dufwenberg result)
- *   4. Does communication help or hinder price discovery?
+ *   2. Do bubbles diminish with experience? (Dufwenberg result)
+ *   3. Does communication help or hinder price discovery?
  */
 
 /* ================================================================
@@ -99,16 +95,13 @@ function createLabAgents(params, g) {
       name: AGENT_NAMES[i] || `A${i}`,
       riskType: rt,
       gamma,
-      psi,                                    // true private valuation (Sobel: theta)
+      psi,                                    // true private valuation
       effectivePsi: psi,                      // trading valuation (may shift from comm)
       cash: Math.max(50, Math.round(cashMean * cashMul)),
       shares: Math.max(0, Math.round(sharesMean * shareMul)),
       initialCash: 0,
       initialShares: 0,
       experience: 0,                          // Dufwenberg: experience level (session count)
-      // Sobel model properties
-      reportedPsi: null,                      // message m sent by this agent
-      beliefPsi: null,                        // receiver's posterior belief after messages
       trades: [],
       wealthHistory: [],
       shareHistory: [],
@@ -217,153 +210,37 @@ function matchLabOrders(orders, agents) {
 }
 
 /* ================================================================
-   Sobel (2020) Lying & Deception Model
+   Naive Communication Model
    ================================================================
-   Formal definitions from "Lying and Deception in Games" (JPE):
-
-   - Lying (Def 1): A message m is a LIE given true state theta if
-     m = m_{theta_0} and theta not in Theta_0.
-     In our context: agent reports psi_reported where they BELIEVE
-     psi_reported != psi_true. The statement has accepted meaning
-     (the reported valuation) that differs from the truth.
-
-   - Deception (Def 4): A message m is DECEPTIVE given theta and
-     beliefs mu if there exists alternative message n such that
-     mu(.|m) = p*mu(.|n) + (1-p)*rho, where rho has rho(theta)=0.
-     In practice: m induces beliefs FARTHER from truth than some
-     alternative message n could have.
-
-   - Damage (Sec V): An action is DAMAGING if the receiver would
-     make a better decision given an alternative message.
-     In our context: trade price is worse for receiver due to
-     deceptive signal.
-
-   - Credulity (Def 6): Receiver is CREDULOUS if they update
-     beliefs literally: mu(theta|m_theta) = posterior conditional
-     on theta in Theta_0.
-
-   - Bluffing (Sec VI): Deception that benefits the sender.
-     Buyers understate (bluff low) to buy cheap.
-     Sellers overstate (bluff high) to sell dear.
+   Simple pre-trade signal exchange: each agent broadcasts a noisy
+   version of their private valuation ψ.  Receivers average others'
+   signals and blend with their own ψ (weight = signalWeight param).
+   No game-theoretic classification — just truthful ± noise.
    ================================================================ */
 
-/**
- * Sobel communication model
- * @param {Array} agents - All agents
- * @param {number|null} lastPrice - Previous round VWAP
- * @param {Function} g - PRNG
- * @param {Object} params - Experiment parameters
- * @returns {Array} messages with Sobel classifications
- */
-function sobelCommunication(agents, lastPrice, g, params) {
-  const { deceptStrength, credulity } = params;
-  const refPrice = lastPrice || avg(agents.map(a => a.psi));
+function naiveCommunication(agents, lastPrice, g, params) {
+  const noise = params.commNoise ?? 0.10;       // ±10 % noise on signal
+  const weight = params.signalWeight ?? 0.20;    // how much receivers trust signals
   const messages = [];
 
-  // === Phase A: Each agent sends a signal (Sobel: sender chooses m) ===
-  // Deception aggressiveness varies by risk type (Lopez-Lira heterogeneity)
-  const DECEPT_SCALE = {
-    risk_loving: 1.5,    // most aggressive bluffers
-    risk_neutral: 1.0,
-    risk_averse: 0.5,    // cautious, less deceptive
-  };
-
-  // Experience dampens deception (Dufwenberg: experienced traders are wiser)
+  // Each agent broadcasts ψ + noise
   for (const a of agents) {
-    const scale = DECEPT_SCALE[a.riskType] * deceptStrength;
-    const expDampen = Math.max(0.3, 1 - a.experience * 0.15);  // experience reduces deception
-    let reported;
-    let intention = 'truthful';  // Sobel: sender's strategic intent
-
-    if (a.psi > refPrice && a.cash > refPrice) {
-      // BUYER wants price down -> understate valuation (bluff low)
-      reported = a.psi * (1 - scale * expDampen * (0.1 + 0.2 * g()));
-      intention = 'deflate';  // Sobel: bluffing for buyer benefit
-    } else if (a.shares > 0 && a.psi < refPrice) {
-      // SELLER wants price up -> overstate valuation (bluff high)
-      reported = a.psi * (1 + scale * expDampen * (0.1 + 0.2 * g()));
-      intention = 'inflate';  // Sobel: bluffing for seller benefit
-    } else {
-      // No clear strategic motive -> truthful (± small noise)
-      reported = a.psi * (1 + 0.02 * randn(g));
-      intention = 'truthful';
-    }
-
-    a.reportedPsi = Math.max(0.01, reported);
-
-    // === Sobel Classification ===
-    const bias = a.reportedPsi - a.psi;
-    const biasPct = Math.abs(bias) / a.psi;
-
-    // Lying (Sobel Def 1): m has accepted meaning, and sender believes it false
-    // A lie threshold: reported value differs from true value beyond noise
-    const isLie = biasPct > 0.03;
-
-    // Deception (Sobel Def 4): message induces beliefs farther from truth
-    // than alternative message (truth) would. Deception requires intentional
-    // belief manipulation — lies need not be deceptive if discounted.
-    // Deception = isLie AND sender has strategic intent to mislead
-    const isDeceptive = isLie && intention !== 'truthful';
-
-    // Bluffing (Sobel Sec VI): deception for sender's benefit
-    const isBluff = isDeceptive;  // in trading, all strategic deception is bluffing
-
+    const reported = Math.max(0.01, a.psi * (1 + noise * randn(g)));
     messages.push({
       senderId: a.id,
-      truePsi: a.psi,           // Sobel: theta (true state)
-      reported: a.reportedPsi,  // Sobel: m (message)
-      bias,
-      biasPct,
-      isLie,                    // Sobel Def 1
-      isDeceptive,              // Sobel Def 4
-      isBluff,                  // Sobel Sec VI
-      intention,
+      reported,
+      truePsi: a.psi,
       riskType: a.riskType,
-      experience: a.experience,
     });
   }
 
-  // === Phase B: Receivers update beliefs (Sobel: receiver forms mu(.|m)) ===
-  // Credulity model from Sobel Def 6:
-  // Credulous receiver: updates beliefs literally (takes message at face value)
-  // Sophisticated receiver: discounts messages (Bayesian updating with skepticism)
-  const SKEPTICISM = {
-    risk_loving: 0.8,    // credulous (Sobel: takes messages literally)
-    risk_neutral: 1.0,
-    risk_averse: 1.3,    // skeptical (discounts signals)
-  };
-
+  // Receivers blend own ψ with average signal
   for (const a of agents) {
     const otherMsgs = messages.filter(m => m.senderId !== a.id);
     if (otherMsgs.length === 0) continue;
     const avgSignal = avg(otherMsgs.map(m => m.reported));
-
-    // Sobel credulity: how literally agent takes messages
-    // Experienced agents are more skeptical (Dufwenberg experience effect)
-    const expSkepticism = 1 + a.experience * 0.1;
-    const effectiveCredul = credulity / (SKEPTICISM[a.riskType] * expSkepticism);
-    const w = clamp(effectiveCredul, 0, 0.5);
-
-    a.beliefPsi = a.psi * (1 - w) + avgSignal * w;
-    a.effectivePsi = a.beliefPsi;
-  }
-
-  // === Phase C: Compute Sobel damage metric ===
-  // Damage = welfare loss from deception compared to truthful communication
-  // For each agent, compare effectivePsi with what it would be under truth
-  const truthfulAvg = avg(agents.map(a => a.psi));
-  for (const msg of messages) {
-    const receiver_agents = agents.filter(a => a.id !== msg.senderId);
-    // Damage: would the receiver have made a better decision with truthful signal?
-    // Proxy: how much did this sender's lie shift the aggregate signal?
-    if (msg.isDeceptive && receiver_agents.length > 0) {
-      const shiftPerReceiver = msg.bias / receiver_agents.length;
-      msg.damage = Math.abs(shiftPerReceiver);
-    } else {
-      msg.damage = 0;
-    }
-    // isDamaging (Sobel Sec V): deception that actually worsens receiver outcome
-    msg.isDamaging = msg.damage > 0.01 * truthfulAvg;
+    const w = clamp(weight, 0, 0.5);
+    a.effectivePsi = a.psi * (1 - w) + avgSignal * w;
   }
 
   return messages;
@@ -530,10 +407,10 @@ function runLabPhase(agents, params, g, withComm) {
 
     fvs.push(fv);
 
-    // === Communication phase (Sobel model, if enabled) ===
+    // === Communication phase (naive signal exchange, if enabled) ===
     let messages = null;
     if (withComm) {
-      messages = sobelCommunication(agents, lastPrice, g, params);
+      messages = naiveCommunication(agents, lastPrice, g, params);
     }
 
     // Compute orders
@@ -590,64 +467,13 @@ function runLabPhase(agents, params, g, withComm) {
 }
 
 /* ================================================================
-   Sobel Deception Summary — aggregate lying/deception statistics
-   ================================================================ */
-
-function computeDeceptionSummary(allMessages) {
-  if (allMessages.length === 0) {
-    return {
-      totalMessages: 0, totalLies: 0, totalDeceptions: 0, totalDamaging: 0, totalBluffs: 0,
-      lieRate: 0, deceptionRate: 0, damageRate: 0, avgBias: 0, avgDamage: 0,
-      inflations: 0, deflations: 0,
-      byRiskType: {
-        risk_loving:  { lies: 0, deceptions: 0, damaging: 0, total: 0 },
-        risk_neutral: { lies: 0, deceptions: 0, damaging: 0, total: 0 },
-        risk_averse:  { lies: 0, deceptions: 0, damaging: 0, total: 0 },
-      },
-    };
-  }
-
-  const lies = allMessages.filter(m => m.isLie);
-  const deceptions = allMessages.filter(m => m.isDeceptive);
-  const damaging = allMessages.filter(m => m.isDamaging);
-  const bluffs = allMessages.filter(m => m.isBluff);
-
-  const byRiskType = {};
-  for (const rt of ['risk_loving', 'risk_neutral', 'risk_averse']) {
-    const rtMsgs = allMessages.filter(m => m.riskType === rt);
-    byRiskType[rt] = {
-      lies: rtMsgs.filter(m => m.isLie).length,
-      deceptions: rtMsgs.filter(m => m.isDeceptive).length,
-      damaging: rtMsgs.filter(m => m.isDamaging).length,
-      total: rtMsgs.length,
-    };
-  }
-
-  return {
-    totalMessages: allMessages.length,
-    totalLies: lies.length,
-    totalDeceptions: deceptions.length,
-    totalDamaging: damaging.length,
-    totalBluffs: bluffs.length,
-    lieRate: lies.length / allMessages.length,
-    deceptionRate: deceptions.length / allMessages.length,
-    damageRate: damaging.length / allMessages.length,
-    avgBias: avg(allMessages.map(m => m.bias)),
-    avgDamage: avg(allMessages.map(m => m.damage)),
-    inflations: allMessages.filter(m => m.intention === 'inflate').length,
-    deflations: allMessages.filter(m => m.intention === 'deflate').length,
-    byRiskType,
-  };
-}
-
-/* ================================================================
-   Main Lab Experiment — configurable phases with Sobel model
+   Main Lab Experiment
    ================================================================ */
 
 function runLabExperiment(params) {
   const g = mulberry32(params.seed || 42);
   const agents = createLabAgents(params, g);
-  const commEnabled = params.commEnabled !== false;  // default ON for backward compat
+  const commEnabled = params.commEnabled !== false;
 
   agents.forEach(a => { a.displayName = `${a.id + 1}.${a.name}`; });
 
@@ -682,48 +508,24 @@ function runLabExperiment(params) {
   }
 
   // ---- Phase 2: depends on communication toggle ----
-  let phase2 = null;
-  let phase2Snapshot = null;
-  let deception = null;
-
   // Reset trade logs for Phase 2 (keep positions)
   for (const a of agents) {
     a.trades = [];
     a.wealthHistory = [];
     a.shareHistory = [];
     a.effectivePsi = a.psi;
-    a.reportedPsi = null;
-    a.beliefPsi = null;
     a.dividendsReceived = 0;
     a.interestEarned = 0;
   }
 
-  if (commEnabled) {
-    // Phase 2 WITH Sobel communication (lying + deception)
-    phase2 = runLabPhase(agents, params, g, true);
-    phase2Snapshot = agents.map(a => ({
-      id: a.id, name: a.name, displayName: a.displayName,
-      riskType: a.riskType, gamma: a.gamma, psi: a.psi,
-      cash: a.cash, shares: a.shares, experience: a.experience,
-      totalPnL: a.cash - phase1Snapshot.find(s => s.id === a.id).cash,
-      dividendsReceived: a.dividendsReceived,
-    }));
-
-    // Sobel deception summary
-    const allMessages = phase2.rounds.flatMap(r => r.messages || []);
-    deception = computeDeceptionSummary(allMessages);
-  } else {
-    // Phase 2 also silent (no communication) — control condition
-    phase2 = runLabPhase(agents, params, g, false);
-    phase2Snapshot = agents.map(a => ({
-      id: a.id, name: a.name, displayName: a.displayName,
-      riskType: a.riskType, gamma: a.gamma, psi: a.psi,
-      cash: a.cash, shares: a.shares, experience: a.experience,
-      totalPnL: a.cash - phase1Snapshot.find(s => s.id === a.id).cash,
-      dividendsReceived: a.dividendsReceived,
-    }));
-    deception = computeDeceptionSummary([]);
-  }
+  const phase2 = runLabPhase(agents, params, g, commEnabled);
+  const phase2Snapshot = agents.map(a => ({
+    id: a.id, name: a.name, displayName: a.displayName,
+    riskType: a.riskType, gamma: a.gamma, psi: a.psi,
+    cash: a.cash, shares: a.shares, experience: a.experience,
+    totalPnL: a.cash - phase1Snapshot.find(s => s.id === a.id).cash,
+    dividendsReceived: a.dividendsReceived,
+  }));
 
   // Increase experience after Phase 2
   for (const a of agents) {
@@ -744,8 +546,6 @@ function runLabExperiment(params) {
       a.wealthHistory = [];
       a.shareHistory = [];
       a.effectivePsi = a.psi;
-      a.reportedPsi = null;
-      a.beliefPsi = null;
       a.dividendsReceived = 0;
       a.interestEarned = 0;
     }
@@ -775,7 +575,6 @@ function runLabExperiment(params) {
     phase1: { ...phase1, agents: phase1Snapshot },
     phase2: { ...phase2, agents: phase2Snapshot },
     commEnabled,
-    deception,       // Sobel summary
     sessionResults,  // Dufwenberg experience sessions
     finalAgents: agents,
     highestPsiAgent: {

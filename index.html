@@ -75,7 +75,7 @@
 
           <label><span>Rounds per Phase</span>
             <div class="range-wrap"><input type="range" id="lab-rounds" value="15" min="3" max="50"><span class="range-val" id="v-lab-rounds">15</span></div></label>
-          <div class="form-hint">Trading rounds in each phase. Phase 1: silent CDA. Phase 2: Sobel communication (if enabled).</div>
+          <div class="form-hint">Trading rounds in each phase. Phase 1: silent CDA. Phase 2: with communication (if enabled).</div>
 
           <label><span>Base Asset Value</span>
             <div class="range-wrap"><input type="range" id="lab-baseVal" value="100" min="10" max="500" step="10"><span class="range-val" id="v-lab-baseVal">100</span></div></label>
@@ -134,10 +134,10 @@
         </div>
       </div>
 
-      <!-- ===== Communication (Sobel) ===== -->
+      <!-- ===== Communication ===== -->
       <div class="panel" id="p-comm">
         <div class="panel-header" onclick="togglePanel('p-comm')">
-          <span class="icon">&#x1F4AC;</span><h3>Communication (Sobel)</h3><span class="chevron">&#x25BC;</span>
+          <span class="icon">&#x1F4AC;</span><h3>Communication</h3><span class="chevron">&#x25BC;</span>
         </div>
         <div class="panel-body">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -147,15 +147,15 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          <div class="form-hint" style="margin-bottom:8px">ON: Phase 2 uses Sobel (2020 JPE) sender-receiver model with lying &amp; deception. OFF: both phases are silent (control condition).</div>
+          <div class="form-hint" style="margin-bottom:8px">ON: agents exchange noisy price signals before trading. OFF: both phases are silent (control condition).</div>
 
-          <label><span>Deception Strength</span>
-            <div class="range-wrap"><input type="range" id="lab-decept" value="30" min="0" max="100"><span class="range-val" id="v-lab-decept">30%</span></div></label>
-          <div class="form-hint">Bluffing aggressiveness (Sobel Sec VI). 0% = truthful reports, 100% = max strategic lying.</div>
+          <label><span>Signal Noise</span>
+            <div class="range-wrap"><input type="range" id="lab-comm-noise" value="10" min="0" max="50"><span class="range-val" id="v-lab-comm-noise">10%</span></div></label>
+          <div class="form-hint">Noise added to each agent&rsquo;s reported valuation. 0% = perfectly truthful.</div>
 
-          <label><span>Credulity</span>
-            <div class="range-wrap"><input type="range" id="lab-credul" value="25" min="0" max="50"><span class="range-val" id="v-lab-credul">25%</span></div></label>
-          <div class="form-hint">Sobel Def 6: how literally receivers take messages. Risk-averse &amp; experienced agents are more skeptical.</div>
+          <label><span>Signal Weight</span>
+            <div class="range-wrap"><input type="range" id="lab-signal-weight" value="20" min="0" max="50"><span class="range-val" id="v-lab-signal-weight">20%</span></div></label>
+          <div class="form-hint">How much receivers blend others&rsquo; signals into their own valuation. Higher = more influenced by communication.</div>
         </div>
       </div>
 
@@ -207,14 +207,14 @@
           <div class="summary-card"><div class="sc-label">P2 Efficiency</div><div class="sc-value" id="sc-lab-eff2">-</div></div>
           <div class="summary-card"><div class="sc-label">Haessel-R&sup2;</div><div class="sc-value" id="sc-lab-r2">-</div></div>
           <div class="summary-card"><div class="sc-label">Hypothesis</div><div class="sc-value" id="sc-lab-hyp">-</div></div>
-          <div class="summary-card"><div class="sc-label">Sobel Lies</div><div class="sc-value" id="sc-lab-lies">-</div></div>
+          <div class="summary-card"><div class="sc-label">Comm</div><div class="sc-value" id="sc-lab-comm">-</div></div>
           <div class="summary-card"><div class="sc-label">Coase Agent</div><div class="sc-value" id="sc-lab-top">-</div></div>
         </div>
         <div id="lab-charts" class="chart-grid">
           <div class="chart-card">
             <h4 class="chart-title"><span class="dot" style="background:var(--accent)"></span> Fig. 1 &mdash; Price vs Fundamental Value</h4>
             <div id="lab-chart-price"></div>
-            <p class="chart-note"><strong>Note.</strong> Phase 1 (blue, silent CDA) vs Phase 2 (red, Sobel communication). Green dashed = FV = E[div]/r (Henning 2025). Bubble deviations measured by Haessel-R&sup2; and NAPD.</p>
+            <p class="chart-note"><strong>Note.</strong> Phase 1 (blue, silent CDA) vs Phase 2 (red, with communication). Green dashed = FV = E[div]/r (Henning 2025). Bubble deviations measured by Haessel-R&sup2; and NAPD.</p>
           </div>
           <div class="chart-card">
             <h4 class="chart-title"><span class="dot" style="background:var(--green)"></span> Fig. 2 &mdash; Allocation: Valuation vs Holdings</h4>
@@ -227,9 +227,9 @@
             <p class="chart-note"><strong>Note.</strong> Welfare = &Sigma;&psi;<sub>i</sub>&times;shares<sub>i</sub>. Convergence toward maximum indicates efficient allocation. Compares silent vs communication phases.</p>
           </div>
           <div class="chart-card">
-            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> Fig. 4 &mdash; Sobel Lying &amp; Deception</h4>
-            <div id="lab-chart-deception"></div>
-            <p class="chart-note"><strong>Note.</strong> Sobel (2020 JPE) classifications: Lying (Def 1) = false report. Deception (Def 4) = inducing inferior beliefs. Damage (Sec V) = welfare-reducing. Stacked by risk type.</p>
+            <h4 class="chart-title"><span class="dot" style="background:var(--red)"></span> Fig. 4 &mdash; Communication Signal Accuracy</h4>
+            <div id="lab-chart-comm"></div>
+            <p class="chart-note"><strong>Note.</strong> True valuation &psi; vs reported signal. Points on the dashed line = perfectly truthful. Scatter shows noise magnitude. Color = risk type.</p>
           </div>
           <div class="chart-card">
             <h4 class="chart-title"><span class="dot" style="background:var(--purple)"></span> Fig. 5 &mdash; Trading Volume &amp; Turnover</h4>
@@ -298,9 +298,9 @@
           <div class="slide active" data-slide="1">
             <div class="slide-body slide-center">
               <h1 class="slide-title">Strategic Communication, Experience, and Bubbles in Experimental Asset Markets</h1>
-              <p class="slide-subtitle">A Unified Computational Framework for LLM Agent Trading with Sobel Communication</p>
+              <p class="slide-subtitle">A Unified Computational Framework for LLM Agent Trading</p>
               <div class="slide-meta">
-                <p>Lopez-Lira (2025) &bull; Henning et al. (2025) &bull; Dufwenberg et al. (2005, <em>AER</em>) &bull; Sobel (2020, <em>JPE</em>)</p>
+                <p>Lopez-Lira (2025) &bull; Henning et al. (2025) &bull; Dufwenberg et al. (2005, <em>AER</em>)</p>
                 <p class="slide-tag">Interactive Virtual Trading Simulator</p>
               </div>
             </div>
@@ -316,13 +316,13 @@
                   <ul>
                     <li><strong>Q1.</strong> Can computational agents replicate bubble dynamics observed in human experiments?</li>
                     <li><strong>Q2.</strong> How does trader experience affect bubble magnitude?</li>
-                    <li><strong>Q3.</strong> What is the role of strategic communication (Sobel 2020)?</li>
+                    <li><strong>Q3.</strong> Does pre-trade communication improve price discovery?</li>
                   </ul>
                 </div>
                 <div class="slide-col">
                   <div class="slide-card" style="border-left:3px solid var(--accent)"><h4>CARA Utility Agents</h4><p>Heterogeneous risk + private valuations via CDA (Lopez-Lira 2025)</p></div>
                   <div class="slide-card" style="border-left:3px solid var(--green)"><h4>Stochastic + LLM Hybrid</h4><p>CARA stochastic default; optional LLM API integration</p></div>
-                  <div class="slide-card" style="border-left:3px solid var(--red)"><h4>Sobel Communication</h4><p>Lying/deception model with ON/OFF toggle (Sobel 2020 JPE)</p></div>
+                  <div class="slide-card" style="border-left:3px solid var(--red)"><h4>Naive Communication</h4><p>Noisy signal exchange with ON/OFF toggle for controlled ablation</p></div>
                   <div class="slide-card" style="border-left:3px solid var(--purple)"><h4>Experience Sessions</h4><p>Validates DLM (2005 AER): bubbles diminish with repetition</p></div>
                 </div>
               </div>
@@ -342,7 +342,7 @@
                   <tbody>
                     <tr><td class="term">RQ1</td><td>Do CARA utility-maximizing agents with heterogeneous &psi;<sub>i</sub> produce bubble-crash dynamics similar to human lab experiments?</td><td>Lopez-Lira (2025), Henning (2025)</td></tr>
                     <tr><td class="term">RQ2</td><td>Does repeated experience reduce bubble magnitude, and at what rate?</td><td>Dufwenberg et al. (2005 AER)</td></tr>
-                    <tr><td class="term">RQ3</td><td>How does pre-trade strategic communication (Sobel lying/deception) affect price discovery and allocative efficiency?</td><td>Sobel (2020 JPE)</td></tr>
+                    <tr><td class="term">RQ3</td><td>Does pre-trade communication (noisy signal exchange) improve price discovery and allocative efficiency?</td><td>Communication model</td></tr>
                     <tr><td class="term">RQ4</td><td>Does the Coase theorem hold? Do assets flow to highest-valuation agents through voluntary CDA trade?</td><td>Coase (1960)</td></tr>
                     <tr><td class="term">RQ5</td><td>Can LLM agents, when substituted for the stochastic model, replicate or improve upon CARA agent behavior?</td><td>Lopez-Lira (2025), Henning (2025)</td></tr>
                   </tbody>
@@ -355,8 +355,8 @@
                   <tbody>
                     <tr><td class="term">H1</td><td>Risk-loving agents (&alpha;&lt;0) drive bubble formation; risk-averse agents dampen it</td><td>NAPD, Amplitude by risk type</td></tr>
                     <tr><td class="term">H2</td><td>Haessel-R&sup2; increases monotonically across experience sessions (bubbles diminish)</td><td>R&sup2; per session (Fig. 7)</td></tr>
-                    <tr><td class="term">H3</td><td>Sobel communication (Phase 2) increases allocative efficiency when credulity is moderate</td><td>P1 vs P2 efficiency</td></tr>
-                    <tr><td class="term">H4</td><td>High deception strength reduces welfare when receivers are credulous</td><td>Welfare trajectory (Fig. 3)</td></tr>
+                    <tr><td class="term">H3</td><td>Communication (Phase 2) increases allocative efficiency when signal noise is low</td><td>P1 vs P2 efficiency</td></tr>
+                    <tr><td class="term">H4</td><td>Higher signal weight improves welfare when noise is low, harms it when noise is high</td><td>Welfare trajectory (Fig. 3)</td></tr>
                     <tr><td class="term">H5</td><td>Spearman &rho;(&psi;, shares) &rarr; 1 as trading progresses (Coase convergence)</td><td>Allocation chart (Fig. 2)</td></tr>
                     <tr><td class="term">H6</td><td>LLM agents produce R-type (Rational) behavior: MSE &lt; 2, low amplitude</td><td>Hypothesis classification</td></tr>
                   </tbody>
@@ -391,9 +391,9 @@
                   <div class="formula">FV = E[div] / r = (d<sub>L</sub> + d<sub>H</sub>) / 2r = (0.4 + 1.0) / (2 &times; 0.05) = 14</div>
                 </div>
                 <div class="slide-card" style="border-left:4px solid var(--purple)">
-                  <h4>Sobel (2020, JPE) &mdash; &ldquo;Lying and Deception in Games&rdquo;</h4>
-                  <p>Formal sender-receiver framework using Austin&rsquo;s (1975) speech-act theory. Distinguishes lying (locution: m = m<sub>&theta;&#x2080;</sub>, &theta; &notin; &Theta;&#x2080;) from deception (illocution: inducing inferior beliefs) and damage (perlocution: welfare loss). Key insight: lies need not be deceptive (Remark 7); deception is possible without lying (Example 3).</p>
-                  <div class="formula">Lie (Def 1): m = m<sub>&theta;&#x2080;</sub>, &theta; &notin; &Theta;&#x2080; &nbsp;|&nbsp; Deception (Def 4): &mu;(&middot;|m) = p&mu;(&middot;|n) + (1&minus;p)&rho; &nbsp;|&nbsp; Credulity (Def 6)</div>
+                  <h4>Communication Model</h4>
+                  <p>Naive pre-trade signal exchange: each agent broadcasts a noisy version of their private valuation. Receivers average others&rsquo; signals and blend with their own belief, weighted by a configurable signal weight parameter. ON/OFF toggle enables controlled ablation.</p>
+                  <div class="formula">reported = &psi; &times; (1 + noise &times; &epsilon;) &nbsp;|&nbsp; effective&psi; = &psi; &times; (1&minus;w) + avg(signals) &times; w</div>
                 </div>
               </div>
             </div>
@@ -411,7 +411,7 @@
                 <ol>
                   <li><strong>Agent Creation</strong>: n agents with CARA utility (&alpha;<sub>i</sub>), private valuations (&psi;<sub>i</sub>), heterogeneous endowments (cash, shares). If API key provided, agents use LLM reasoning; otherwise, CARA stochastic model.</li>
                   <li><strong>Phase 1 &mdash; Silent CDA</strong>: T rounds of dividend payment &rarr; interest accrual &rarr; order submission (reservation prices) &rarr; CDA matching. No communication. Establishes baseline.</li>
-                  <li><strong>Phase 2 &mdash; Sobel Communication</strong>: Same agents, positions carry over. Each round adds pre-trade Sobel sender-receiver phase. Receivers update effective &psi; based on credulity. Toggle OFF = silent control.</li>
+                  <li><strong>Phase 2 &mdash; Communication</strong>: Same agents, positions carry over. Each round adds pre-trade signal exchange phase. Receivers blend signals into effective &psi;. Toggle OFF = silent control.</li>
                   <li><strong>Experience Sessions</strong>: 0&ndash;5 additional silent sessions with reset endowments but persistent experience. Tests Dufwenberg (2005) experience effect.</li>
                 </ol>
                 <h4>Stochastic vs LLM Decision-Making</h4>
@@ -427,13 +427,13 @@
                     <tr><td class="term">Market mechanism</td><td>CDA (continuous double auction)</td><td>Standard in experimental economics (Smith 1962)</td></tr>
                     <tr><td class="term">Utility function</td><td>CARA: U = &minus;e<sup>&minus;&alpha;W</sup>/&alpha;</td><td>Tractable, generates reservation prices analytically</td></tr>
                     <tr><td class="term">FV model</td><td>Constant: E[div]/r</td><td>Henning (2025) calibration, perpetuity</td></tr>
-                    <tr><td class="term">Communication</td><td>Sobel sender-receiver</td><td>Formal game-theoretic foundation (JPE)</td></tr>
+                    <tr><td class="term">Communication</td><td>Naive signal exchange</td><td>Noisy price signals with configurable weight</td></tr>
                     <tr><td class="term">Experience</td><td>Session repetition</td><td>Dufwenberg (2005) experimental design</td></tr>
                     <tr><td class="term">Agent fallback</td><td>Stochastic CARA model</td><td>No API key required; reproduces theoretical predictions</td></tr>
                   </tbody>
                 </table>
                 <h4>Output Metrics</h4>
-                <p>8 charts capturing price dynamics, allocation efficiency, welfare, deception analysis, volume, P&amp;L, experience effects, and bubble deviation. 6 summary cards. Full round-by-round log with Sobel classification.</p>
+                <p>8 charts capturing price dynamics, allocation efficiency, welfare, signal accuracy, volume, P&amp;L, experience effects, and bubble deviation. 6 summary cards. Full round-by-round log.</p>
               </div>
             </div>
             </div>
@@ -475,7 +475,7 @@
                 <div class="formula">div<sub>t</sub> &sim; {d<sub>L</sub>, d<sub>H</sub>} with Pr = 0.5 (Henning 2025)</div>
                 <div class="formula">cash<sub>i,t+1</sub> = cash<sub>i,t</sub> &times; (1 + r) + div<sub>t</sub> &times; shares<sub>i,t</sub></div>
                 <div class="formula">VWAP<sub>t</sub> = &Sigma;(P<sub>k</sub> &times; V<sub>k</sub>) / &Sigma; V<sub>k</sub></div>
-                <p>Each round: (1) pay stochastic dividend, (2) accrue interest on cash, (3) optional Sobel communication, (4) compute orders, (5) CDA match, (6) record metrics.</p>
+                <p>Each round: (1) pay stochastic dividend, (2) accrue interest on cash, (3) optional communication, (4) compute orders, (5) CDA match, (6) record metrics.</p>
               </div>
             </div>
             </div>
@@ -532,44 +532,43 @@
             </div>
           </div>
 
-          <!-- Slide 8: Main Result 2 — Sobel Strategic Communication -->
+          <!-- Slide 8: Main Result 2 — Communication & Signal Exchange -->
           <div class="slide" data-slide="8">
             <div class="slide-body">
-              <h2 class="slide-heading">Main Result 2: Strategic Communication &amp; Deception</h2>
-              <p class="slide-sm">Sobel (2020 JPE) Model Applied to CDA Markets</p>
+              <h2 class="slide-heading">Main Result 2: Communication &amp; Price Discovery</h2>
+              <p class="slide-sm">Naive Signal Exchange Applied to CDA Markets</p>
               <div class="slide-two-col">
               <div class="slide-col">
                 <div class="slide-card">
-                <h4>Sobel&rsquo;s Three-Level Framework</h4>
+                <h4>Signal Exchange Model</h4>
                 <table class="gloss-table">
-                  <thead><tr><th>Level</th><th>Concept</th><th>Definition</th></tr></thead>
+                  <thead><tr><th>Step</th><th>Description</th><th>Formula</th></tr></thead>
                   <tbody>
-                    <tr><td class="term">Locution</td><td><strong>Lying</strong> (Def 1)</td><td>m &ne; &theta;: agent reports &psi;&#x0302; &ne; &psi;<sub>true</sub></td></tr>
-                    <tr><td class="term">Illocution</td><td><strong>Deception</strong> (Def 4)</td><td>&mu;(&middot;|m) farther from truth</td></tr>
-                    <tr><td class="term">Perlocution</td><td><strong>Damage</strong> (Sec V)</td><td>Others trade at worse prices</td></tr>
+                    <tr><td class="term">Broadcast</td><td>Each agent sends noisy &psi;</td><td>reported = &psi; &times; (1 + noise &times; &epsilon;)</td></tr>
+                    <tr><td class="term">Aggregate</td><td>Receivers average others&rsquo; signals</td><td>avgSignal = mean(others&rsquo; reports)</td></tr>
+                    <tr><td class="term">Update</td><td>Blend own &psi; with signal</td><td>effective&psi; = &psi;(1&minus;w) + avgSignal &times; w</td></tr>
                   </tbody>
                 </table>
-                <h4>Bluffing &amp; Credulity</h4>
-                <div class="formula">Buyer bluff: &psi; &times; (1 &minus; scale &times; dampen)</div>
-                <div class="formula">Seller bluff: &psi; &times; (1 + scale &times; dampen)</div>
-                <div class="formula">w = credulity / (skepticism &times; (1 + exp &times; 0.1))</div>
+                <h4>Parameters</h4>
+                <div class="formula">noise &in; [0%, 50%] &mdash; signal distortion</div>
+                <div class="formula">w &in; [0%, 50%] &mdash; signal weight (trust in others)</div>
                 </div>
               </div>
               <div class="slide-col">
                 <div class="slide-card">
                 <h4>Communication &amp; Efficiency</h4>
                 <ul>
-                  <li><strong>Low deception + moderate credulity</strong>: Communication <em>improves</em> efficiency via partial &psi;<sub>i</sub> revelation.</li>
-                  <li><strong>High deception + high credulity</strong>: Communication <em>harms</em> efficiency &mdash; credulous agents act on lies.</li>
-                  <li><strong>High deception + low credulity</strong>: Lies discounted; negligible effect (Sobel Remark 7).</li>
+                  <li><strong>Low noise + moderate weight</strong>: Communication <em>improves</em> efficiency via partial &psi;<sub>i</sub> revelation.</li>
+                  <li><strong>High noise + high weight</strong>: Communication <em>harms</em> efficiency &mdash; agents act on noisy signals.</li>
+                  <li><strong>Any noise + low weight</strong>: Signals mostly ignored; negligible effect.</li>
                 </ul>
-                <h4>Deception Metrics</h4>
+                <h4>Signal Accuracy Metrics</h4>
                 <table class="gloss-table">
                   <thead><tr><th>Measure</th><th>How Computed</th></tr></thead>
                   <tbody>
-                    <tr><td class="term">Lie count</td><td>|reported &minus; &psi;| &gt; threshold</td></tr>
-                    <tr><td class="term">Deceptive</td><td>Lies shifting beliefs farther from truth</td></tr>
-                    <tr><td class="term">Damaging</td><td>Deceptive messages &rarr; worse trades</td></tr>
+                    <tr><td class="term">Signal count</td><td>Total messages exchanged per round</td></tr>
+                    <tr><td class="term">Mean error</td><td>avg|reported &minus; &psi;<sub>true</sub>| / &psi;</td></tr>
+                    <tr><td class="term">Belief shift</td><td>avg|effective&psi; &minus; &psi;| / &psi;</td></tr>
                   </tbody>
                 </table>
                 </div>
@@ -611,12 +610,12 @@
               <div class="slide-col">
                 <h4>Our Computational Replication</h4>
                 <p>The experiment includes configurable <strong>experience sessions</strong> (0&ndash;5 additional rounds). After each session, agents increment their experience counter, which affects two channels:</p>
-                <h4>Channel 1: Reduced Deception Aggressiveness</h4>
-                <div class="formula">dampen = max(0.3, 1 &minus; experience &times; 0.15)</div>
-                <p>Experienced agents bluff less &mdash; they learn that aggressive lying doesn&rsquo;t improve outcomes. At experience=4, dampen=0.4 (60% reduction from naive level).</p>
-                <h4>Channel 2: Increased Skepticism</h4>
-                <div class="formula">effective_credulity = credulity / (1 + experience &times; 0.1)</div>
-                <p>Experienced receivers discount messages more &mdash; they learn to ignore strategic signals. This maps to Sobel&rsquo;s insight that communication equilibria shift when receivers become skeptical.</p>
+                <h4>Channel 1: Improved Price Learning</h4>
+                <div class="formula">belief<sub>t</sub> converges to FV as experience increases</div>
+                <p>Experienced agents develop better price expectations — they learn that the asset&rsquo;s intrinsic value tracks FV = E[div]/r.</p>
+                <h4>Channel 2: Reduced Overreaction</h4>
+                <div class="formula">spread narrows as experience increases</div>
+                <p>Experienced agents bid closer to their true &psi;, reducing noise in the order book and enabling more efficient price discovery.</p>
                 <h4>Expected Outcome</h4>
                 <p>Across sessions, R&sup2; should increase and NAPD should decrease monotonically, reproducing the &ldquo;bubbles and experience&rdquo; finding. The simulator provides quantitative comparison against Table 2 values.</p>
               </div>
@@ -641,7 +640,7 @@
                 <p>Fig. 6 decomposes total P&amp;L (including dividends and interest) by CARA risk type. Key questions:</p>
                 <ul>
                   <li>Do risk-loving agents profit from aggressive trading, or do they overpay?</li>
-                  <li>Does Sobel deception redistribute wealth systematically?</li>
+                  <li>Does communication redistribute wealth systematically?</li>
                   <li>Do risk-averse agents benefit from conservative strategies in volatile markets?</li>
                 </ul>
               </div>
@@ -653,15 +652,15 @@
                     <tr><td class="term">1</td><td>Price vs FV (P1 blue, P2 red)</td><td>Bubble detection, Henning R&sup2;/MSE</td></tr>
                     <tr><td class="term">2</td><td>Allocation (&psi; vs shares)</td><td>Coase theorem (&rho; correlation)</td></tr>
                     <tr><td class="term">3</td><td>Welfare trajectory</td><td>Convergence to max W</td></tr>
-                    <tr><td class="term">4</td><td>Sobel lying &amp; deception</td><td>Def 1/4/V counts by risk type</td></tr>
+                    <tr><td class="term">4</td><td>Signal accuracy</td><td>True &psi; vs reported signal</td></tr>
                     <tr><td class="term">5</td><td>Volume &amp; turnover</td><td>Liquidity, comm effect on trade</td></tr>
-                    <tr><td class="term">6</td><td>P&amp;L by risk type</td><td>Who benefits from deception?</td></tr>
+                    <tr><td class="term">6</td><td>P&amp;L by risk type</td><td>Who benefits from communication?</td></tr>
                     <tr><td class="term">7</td><td>Experience effect</td><td>R&sup2;/NAPD across sessions</td></tr>
                     <tr><td class="term">8</td><td>Bubble deviation (%)</td><td>Per-round direction &amp; magnitude</td></tr>
                   </tbody>
                 </table>
                 <h4>Summary Metrics Dashboard</h4>
-                <p>6 real-time summary cards provide at-a-glance evaluation: <strong>P1 Efficiency</strong> (silent baseline), <strong>P2 Efficiency</strong> (with/without communication), <strong>Haessel-R&sup2;</strong> (price tracking quality), <strong>Hypothesis</strong> (R/H/E classification), <strong>Sobel Lies</strong> (deceptive + damaging counts), and <strong>Coase Agent</strong> (highest-&psi; agent&rsquo;s share concentration).</p>
+                <p>6 real-time summary cards provide at-a-glance evaluation: <strong>P1 Efficiency</strong> (silent baseline), <strong>P2 Efficiency</strong> (with/without communication), <strong>Haessel-R&sup2;</strong> (price tracking quality), <strong>Hypothesis</strong> (R/H/E classification), <strong>Comm</strong> (signal count), and <strong>Coase Agent</strong> (highest-&psi; agent&rsquo;s share concentration).</p>
               </div>
             </div>
             </div>
@@ -676,16 +675,16 @@
               <div class="slide-col">
                 <h4>Key Contributions</h4>
                 <ol>
-                  <li><strong>Unified experiment</strong> integrating experimental finance (Dufwenberg 2005 AER), LLM agent trading (Lopez-Lira 2025, Henning 2025), and game-theoretic communication (Sobel 2020 JPE) into a single reproducible platform.</li>
+                  <li><strong>Unified experiment</strong> integrating experimental finance (Dufwenberg 2005 AER) and LLM agent trading (Lopez-Lira 2025, Henning 2025) into a single reproducible platform.</li>
                   <li><strong>Hybrid agent architecture</strong>: stochastic CARA utility model by default, with optional LLM API integration. Same experiment protocol, different decision engine &mdash; enabling direct A/B comparison.</li>
-                  <li><strong>Formal Sobel communication model</strong> with ON/OFF toggle for controlled ablation of lying, deception, and damage effects on market efficiency.</li>
+                  <li><strong>Naive communication model</strong> with ON/OFF toggle for controlled ablation of signal exchange effects on market efficiency.</li>
                   <li><strong>Computational replication</strong> of the Dufwenberg (2005) experience effect, validating that bubble-crash patterns diminish with trader experience in silico.</li>
                   <li><strong>Open-source, no-build SPA</strong> deployable to GitHub Pages. Fully interactive: adjustable parameters, real-time charts, Trading Floor canvas animation, and export (JSON/CSV).</li>
                 </ol>
                 <h4>Main Findings</h4>
                 <ul>
                   <li>CARA agents with heterogeneous &psi;<sub>i</sub> converge toward efficient allocation (Coase theorem generally holds)</li>
-                  <li>Sobel communication improves OR hinders efficiency depending on the deception&ndash;credulity parameter space</li>
+                  <li>Communication improves OR hinders efficiency depending on the noise&ndash;weight parameter space</li>
                   <li>Experience robustly reduces bubble magnitude: R&sup2; increases and NAPD decreases across sessions</li>
                   <li>Risk-loving agents drive bubble formation; balanced populations produce R-type (Rational) pricing</li>
                 </ul>
@@ -693,7 +692,7 @@
               <div class="slide-col">
                 <h4>Future Directions</h4>
                 <ul>
-                  <li><strong>LLM agent communication</strong>: Let LLM agents generate natural-language messages (not just price signals) and classify Sobel categories via NLP</li>
+                  <li><strong>LLM agent communication</strong>: Let LLM agents generate natural-language messages (not just price signals) and classify communication strategies via NLP</li>
                   <li><strong>Algorithmic collusion detection</strong>: Test whether LLM agents learn to coordinate prices through repeated interaction (Fish et al. 2024)</li>
                   <li><strong>Regulatory sandboxing</strong>: Simulate mandatory disclosure requirements, communication bans, and position limits to evaluate policy interventions</li>
                   <li><strong>Multi-asset markets</strong>: Extend to correlated assets with information spillover and contagion dynamics</li>
@@ -718,7 +717,7 @@
           <div class="arch-header">
             <div>
               <h2>System Architecture</h2>
-              <p>Unified simulation pipeline integrating Lopez-Lira (2025), Henning (2025), Dufwenberg (2005 AER), and Sobel (2020 JPE)</p>
+              <p>Unified simulation pipeline integrating Lopez-Lira (2025), Henning (2025), and Dufwenberg (2005 AER)</p>
             </div>
             <a class="btn-drawio" id="btn-drawio" href="#" target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -783,20 +782,20 @@
               <text x="860" y="212" class="box-detail" text-anchor="middle">T rounds</text>
               <!-- Arrow down -->
               <line x1="480" y1="260" x2="480" y2="290" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
-              <!-- Row 3: SOBEL COMMUNICATION -->
-              <text x="40" y="288" class="section-label">PHASE 2: SOBEL COMMUNICATION (toggle ON/OFF)</text>
+              <!-- Row 3: COMMUNICATION -->
+              <text x="40" y="288" class="section-label">PHASE 2: COMMUNICATION (toggle ON/OFF)</text>
               <rect x="30" y="300" width="900" height="120" rx="12" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".25" stroke-width="1.5"/>
               <rect x="50" y="315" width="180" height="55" rx="8" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".2" stroke-width="1"/>
-              <text x="140" y="337" class="box-sub" text-anchor="middle">Sender (Sobel &sect;II)</text>
-              <text x="140" y="352" class="box-detail" text-anchor="middle">Bluff: &psi;&times;(1&plusmn;scale)</text>
+              <text x="140" y="337" class="box-sub" text-anchor="middle">Broadcast Signal</text>
+              <text x="140" y="352" class="box-detail" text-anchor="middle">&psi;&times;(1+noise&times;&epsilon;)</text>
               <line x1="230" y1="340" x2="270" y2="340" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="280" y="315" width="180" height="55" rx="8" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".2" stroke-width="1"/>
-              <text x="370" y="337" class="box-sub" text-anchor="middle">Classify (Def 1/4/V)</text>
-              <text x="370" y="352" class="box-detail" text-anchor="middle">Lie &rarr; Deceptive &rarr; Damaging</text>
+              <text x="370" y="337" class="box-sub" text-anchor="middle">Aggregate Signals</text>
+              <text x="370" y="352" class="box-detail" text-anchor="middle">avg(others&rsquo; reports)</text>
               <line x1="460" y1="340" x2="500" y2="340" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="510" y="315" width="180" height="55" rx="8" fill="#7c3aed" opacity=".06" stroke="#7c3aed" stroke-opacity=".2" stroke-width="1"/>
-              <text x="600" y="337" class="box-sub" text-anchor="middle">Receiver (Def 6)</text>
-              <text x="600" y="352" class="box-detail" text-anchor="middle">Credulity &times; skepticism</text>
+              <text x="600" y="337" class="box-sub" text-anchor="middle">Update Beliefs</text>
+              <text x="600" y="352" class="box-detail" text-anchor="middle">&psi;(1&minus;w)+signal&times;w</text>
               <line x1="690" y1="340" x2="730" y2="340" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ah)"/>
               <rect x="740" y="315" width="170" height="55" rx="8" fill="#16a34a" opacity=".06" stroke="#16a34a" stroke-opacity=".2" stroke-width="1"/>
               <text x="825" y="337" class="box-sub" text-anchor="middle">CDA (same engine)</text>
@@ -817,15 +816,15 @@
               <text x="395" y="518" class="box-detail" text-anchor="middle">Hypothesis: R / H / E</text>
               <line x1="500" y1="500" x2="540" y2="500" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
               <rect x="550" y="462" width="170" height="80" rx="10" fill="#7c3aed" opacity=".08" stroke="#7c3aed" stroke-opacity=".3" stroke-width="1.5"/>
-              <text x="635" y="486" class="box-title" text-anchor="middle">Sobel Summary</text>
-              <text x="635" y="502" class="box-sub" text-anchor="middle">Lies / Deceptions</text>
-              <text x="635" y="518" class="box-detail" text-anchor="middle">Damage by risk type</text>
+              <text x="635" y="486" class="box-title" text-anchor="middle">Comm Summary</text>
+              <text x="635" y="502" class="box-sub" text-anchor="middle">Signal count / accuracy</text>
+              <text x="635" y="518" class="box-detail" text-anchor="middle">Belief shift by risk type</text>
               <line x1="720" y1="500" x2="760" y2="500" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah)"/>
               <rect x="770" y="462" width="160" height="80" rx="10" fill="#d97706" opacity=".08" stroke="#d97706" stroke-opacity=".3" stroke-width="1.5"/>
               <text x="850" y="486" class="box-title" text-anchor="middle">Experience</text>
               <text x="850" y="502" class="box-sub" text-anchor="middle">0&ndash;5 extra sessions</text>
               <text x="850" y="518" class="box-detail" text-anchor="middle">DLM replication</text>
-              <text x="480" y="580" text-anchor="middle" class="box-detail" font-style="italic">Lopez-Lira (2025) | Henning et al. (2025) | Dufwenberg et al. (2005 AER) | Sobel (2020 JPE)</text>
+              <text x="480" y="580" text-anchor="middle" class="box-detail" font-style="italic">Lopez-Lira (2025) | Henning et al. (2025) | Dufwenberg et al. (2005 AER)</text>
             </svg>
           </div>
 
@@ -850,16 +849,10 @@
               <span class="formula-ref">Lopez-Lira (2025) &sect;2.2</span>
             </div>
             <div class="arch-def-card">
-              <h4>Sobel Lying (Def 1)</h4>
-              <p>Message m is a lie given &theta; if m has accepted meaning m<sub>&theta;&#x2080;</sub> and &theta; &notin; &Theta;&#x2080;. Speaker believes the report false.</p>
-              <div class="formula">Lie: m = m<sub>&theta;&#x2080;</sub>, &theta; &notin; &Theta;&#x2080;</div>
-              <span class="formula-ref">Sobel (2020 JPE) &sect;III.A Def 1, p.912</span>
-            </div>
-            <div class="arch-def-card">
-              <h4>Sobel Deception (Def 4)</h4>
-              <p>Message m is deceptive if beliefs induced by m are farther from truth than beliefs induced by alternative n.</p>
-              <div class="formula">&mu;(&middot;|m) = p&mu;(&middot;|n) + (1&minus;p)&rho;</div>
-              <span class="formula-ref">Sobel (2020 JPE) &sect;IV.A Def 4, p.920</span>
+              <h4>Signal Exchange</h4>
+              <p>Each agent broadcasts a noisy version of &psi;. Receivers average signals and blend with own valuation.</p>
+              <div class="formula">reported = &psi;(1 + noise &times; &epsilon;) &nbsp;|&nbsp; eff&psi; = &psi;(1&minus;w) + signal &times; w</div>
+              <span class="formula-ref">Communication model with configurable noise and weight</span>
             </div>
             <div class="arch-def-card">
               <h4>&alpha;* Experience Threshold</h4>
@@ -893,11 +886,7 @@
                 <tr><td class="term">Amp</td><td>Price Amplitude</td><td>(max(P&minus;FV) &minus; min(P&minus;FV)) / FV&#x2080;. Total swing capturing bubble + crash.</td></tr>
                 <tr><td class="term">VWAP</td><td>Volume-Weighted Avg Price</td><td>Per-round average trade price: &Sigma;(P<sub>i</sub>&times;V<sub>i</sub>)/&Sigma;V<sub>i</sub>.</td></tr>
                 <tr><td class="term">&alpha;*</td><td>Alpha Star</td><td>Critical experienced fraction: &alpha;* = min{&alpha; : NAPD(&alpha;) &lt; &epsilon;}. DLM (2005) &sect;II.</td></tr>
-                <tr><td class="term">Lie</td><td>Sobel Definition 1</td><td>Message m is a lie given &theta; if m = m<sub>&theta;&#x2080;</sub> and &theta; &notin; &Theta;&#x2080;. Speaker says what she believes false. Sobel (2020 JPE) &sect;III.A.</td></tr>
-                <tr><td class="term">Deception</td><td>Sobel Definition 4</td><td>Message m is deceptive if beliefs induced by m are farther from truth than alternative n could induce. &mu;(&middot;|m) = p&mu;(&middot;|n) + (1&minus;p)&rho;. Sobel (2020) &sect;IV.A.</td></tr>
-                <tr><td class="term">Damage</td><td>Sobel Section V</td><td>An action is damaging if receiver would make a better decision given alternative message. Welfare-reducing deception.</td></tr>
-                <tr><td class="term">Credulity</td><td>Sobel Definition 6</td><td>Credulous receiver updates beliefs literally: takes message at face value. Skeptical receiver discounts signals.</td></tr>
-                <tr><td class="term">Bluff</td><td>Sobel Section VI</td><td>Deception for sender&rsquo;s benefit. In trading: buyers deflate (bluff low), sellers inflate (bluff high).</td></tr>
+                <tr><td class="term">Signal</td><td>Communication Signal</td><td>A noisy report of an agent&rsquo;s private valuation broadcast before trading. reported = &psi; &times; (1 + noise &times; &epsilon;).</td></tr>
                 <tr><td class="term">Coase</td><td>Coase Theorem</td><td>Regardless of initial allocation, voluntary trade moves assets to highest-valuation agent. Tested via Spearman &rho;(&psi;, shares).</td></tr>
                 <tr><td class="term">R/H/E</td><td>Hypothesis Classification</td><td>Henning (2025): Rational (MSE&lt;2), Human (bubble dynamics), Erratic (no pattern).</td></tr>
               </tbody>
@@ -917,8 +906,8 @@
                 <tr><td class="math">R&sup2; = 1&minus;&Sigma;(P&minus;FV)&sup2;/&Sigma;(FV&minus;F&#x0304;V)&sup2;</td><td>Haessel R-squared: price tracking quality. DLM &sect;II; Haessel (1978).</td></tr>
                 <tr><td class="math">NAPD = &Sigma;|P&minus;FV| / shares</td><td>Normalized absolute price deviation. DLM &sect;II p.1733&ndash;34.</td></tr>
                 <tr><td class="math">&alpha;* = min{&alpha;: NAPD &lt; &epsilon;}</td><td>Critical experienced fraction. DLM &sect;II Table 2.</td></tr>
-                <tr><td class="math">m is a lie: m=m<sub>&theta;&#x2080;</sub>, &theta;&notin;&Theta;&#x2080;</td><td>Sobel lying definition (locution). Sobel (2020) Def 1 p.912.</td></tr>
-                <tr><td class="math">&mu;(&middot;|m)=p&mu;(&middot;|n)+(1&minus;p)&rho;</td><td>Sobel deception: inferior beliefs. Sobel (2020) Def 4 p.920.</td></tr>
+                <tr><td class="math">reported = &psi;(1+noise&times;&epsilon;)</td><td>Communication signal with noise parameter. Naive broadcast model.</td></tr>
+                <tr><td class="math">eff&psi; = &psi;(1&minus;w)+signal&times;w</td><td>Receiver belief update: blend own valuation with average signal.</td></tr>
                 <tr><td class="math">W = &Sigma;&psi;<sub>i</sub>&times;shares<sub>i</sub></td><td>Welfare (allocative efficiency numerator). Coase theorem test.</td></tr>
               </tbody>
             </table>
@@ -986,7 +975,6 @@
                 <tr><td class="term" style="white-space:normal;">Lopez-Lira (2025)<br><em>&ldquo;Can Large Language Models Trade? Testing Financial Theories with LLM Agents in Market Simulations&rdquo;</em></td><td>Open-source LLM trading simulation with persistent order book, heterogeneous agent strategies, and market microstructure. CARA utility agent architecture and CDA matching engine we adopt. Demonstrates LLMs can function as value investors, momentum traders, and market makers.</td></tr>
                 <tr><td class="term" style="white-space:normal;">Henning, Ojha, Spoon, Han &amp; Camerer (2025)<br><em>&ldquo;LLM Trading: Analysis of LLM Agent Behavior in Experimental Asset Markets&rdquo;</em></td><td>Tests 6 LLM models in single-model and Battle Royale markets. Constant FV via perpetuity formula with stochastic dividends. Key finding: LLMs trade more rationally than humans (Claude MSE=0.54 vs human bubbles). Defines R/H/E hypothesis classification.</td></tr>
                 <tr><td class="term" style="white-space:normal;">Dufwenberg, Lindqvist &amp; Moore (2005)<br><em>&ldquo;Bubbles and Experience: An Experiment&rdquo;</em><br>American Economic Review</td><td>Core paper: shows &frac13; experienced traders sufficient to suppress bubbles in laboratory CDA markets. Defines Haessel-R&sup2;, NAPD, amplitude, turnover metrics. Experience sessions protocol and &alpha;* threshold we replicate.</td></tr>
-                <tr><td class="term" style="white-space:normal;">Sobel (2020)<br><em>&ldquo;Lying and Deception in Games&rdquo;</em><br>Journal of Political Economy</td><td>Formal sender-receiver model distinguishing lying (Def 1: false statement), deception (Def 4: inducing inferior beliefs), and damage (Sec V: welfare loss). Defines credulity (Def 6) and bluffing (Sec VI). Foundational framework for communication phase classification.</td></tr>
               </tbody>
             </table>
           </div>

@@ -2,7 +2,7 @@
  * AI Agent Engine — Multi-provider LLM agents for the market simulation.
  * Supports: Anthropic, OpenAI, Google, DeepSeek, Qwen, MiniMax, Kimi, Zhipu.
  * Administrator model generates tailored prompts → dispatched to heterogeneous agents.
- * Following the same pattern as the lying project.
+ * Multi-provider LLM integration for market simulation agents.
  */
 
 /* ---- Retry with backoff for 429 rate-limit errors ---- */
